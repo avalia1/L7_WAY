@@ -27,6 +27,9 @@ Every entity must register with:
 - `entity_id`, `entity_type`, `birth_date`, `owner`, `status`, `lineage`, and `l7_declaration`.
 - See `ENTITY_REGISTRY.md` and `REGISTRY_SCHEMA.json`.
 
+## Type Boundary
+Entity type is absolute and sits outside the L7 declaration. L7 describes the entity; type defines what it is.
+
 ## Interoperability Rule
 The registry is automatically propagated through the gateway. Clients do not maintain their own copies; they discover tools at runtime.
 Once an entity is inside, provinces do not need explicit change notices; the gateway is the propagation layer.
@@ -35,6 +38,9 @@ Once an entity is inside, provinces do not need explicit change notices; the gat
 - **Uniqueness prevents duplication**, not experimentation.
 - **Units should be small and composable** at the base layer.
 - **New L7 entities are formed by citizen groups** (composed units), not monoliths.
+
+## Marching Orders Rule (Non-Composable)
+Marching orders are non-composable mission logic and constraints for a legion. They define what must be done and under what constraints, while composition stays with citizens and legions. If something is composable, it belongs to the entity/tool layer, not the orders. This keeps missions simple and preserves composability.
 
 ## Non-Negotiables
 1. **Gateway-only access** for tools (no direct MCP server calls from clients).
@@ -50,3 +56,16 @@ Once an entity is inside, provinces do not need explicit change notices; the gat
 
 ## Migration Rule
 Any project not aligned to this architecture must be called to migrate before new feature work.
+
+## Doctrine
+**Doctrine I — The Translator**  
+All complexity must be expressed through L7.  
+If it cannot be translated, it cannot enter the empire.
+
+**Doctrine II — The Apprentice**  
+Every new project is an apprentice.  
+It earns agency by declaring L7, registering its birth, and speaking through adapters.
+
+**Doctrine III — The Sacred Work**  
+Work and space are sacred.  
+The gateway prevents duplication, enforces composability, and turns similarity into reuse.

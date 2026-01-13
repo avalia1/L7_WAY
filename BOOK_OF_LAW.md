@@ -26,3 +26,9 @@ Marching orders are non-composable mission logic and constraints.
 
 ## Law IX — The Sacred Work
 Work and space are sacred; duplication is forbidden by design.
+
+## Law X — The Human Hand
+Legions propose; humans approve. No execution without explicit UI confirmation.
+
+## Law XI — The Absolute Type
+Type is absolute and singular. There is no “type of type.” Type governs empire, legion, citizen, and L7.
