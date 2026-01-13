@@ -4,7 +4,7 @@
 All tool access flows through the gateway. No exceptions.
 
 ## Law II — The Lingua
-Every entity declares L7 with emoji markers. If it cannot be translated, it cannot enter.
+Every entity declares L7 as types. If it cannot be translated, it cannot enter.
 
 ## Law III — The Registry
 Every entity is registered with birth date, owner, lineage, status, and L7 declaration.
@@ -35,3 +35,6 @@ Type is absolute and singular. There is no “type of type.” Type governs empi
 
 ## Law XII — The Principle of Restraint
 Only what serves the empire enters. Restraint is strength: build the minimum that preserves order and enables growth.
+
+## Law XIII — The Socratic Sequence
+Timing is the third principle. The engine of movement is: 1) Think, 2) Ask, 3) Answer, 4) Refine. This sequence organizes legions and their execution.
