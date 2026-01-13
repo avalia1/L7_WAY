@@ -32,3 +32,6 @@ Legions propose; humans approve. No execution without explicit UI confirmation.
 
 ## Law XI — The Absolute Type
 Type is absolute and singular. There is no “type of type.” Type governs empire, legion, citizen, and L7.
+
+## Law XII — The Principle of Restraint
+Only what serves the empire enters. Restraint is strength: build the minimum that preserves order and enables growth.
