@@ -5,9 +5,17 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
+// Import L7 modules
+const { parseFile, listFiles } = require('../lib/parser');
+const { executeFlow, approve, reject, showStatus, listExecutions } = require('../lib/executor');
+const gateway = require('../lib/gateway');
+const stateManager = require('../lib/state');
+
 const PORT = process.env.EMPIRE_PORT || 7377;
 const L7_DIR = path.join(process.env.HOME || '', '.l7');
 const EMP_DIR = path.join(process.env.HOME || '', '.emp');
+const TOOLS_DIR = path.join(L7_DIR, 'tools');
+const FLOWS_DIR = path.join(L7_DIR, 'flows');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const AUDIT_LOG = process.env.AVLI_AUDIT_LOG || path.join(process.env.HOME || '', '.l7', 'audit.log');
 const TRANSITION_LOG = process.env.AVLI_TRANSITION_LOG || path.join(process.env.HOME || '', '.l7', 'transitions.log');
@@ -78,6 +86,62 @@ function readLogFile(filePath, limit = 120) {
   } catch {
     return [];
   }
+}
+
+/**
+ * Parse JSON body from request
+ */
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; });
+    req.on('end', () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (err) {
+        reject(new Error('Invalid JSON body'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+/**
+ * List .tool files with parsed content
+ */
+function listToolFiles() {
+  if (!fs.existsSync(TOOLS_DIR)) return [];
+  return fs.readdirSync(TOOLS_DIR)
+    .filter(f => f.endsWith('.tool'))
+    .map(f => {
+      const name = path.basename(f, '.tool');
+      const toolPath = path.join(TOOLS_DIR, f);
+      try {
+        const tool = parseFile(toolPath);
+        return { name, ...tool };
+      } catch {
+        return { name, error: 'parse error' };
+      }
+    });
+}
+
+/**
+ * List .flow files with parsed content
+ */
+function listFlowFiles() {
+  if (!fs.existsSync(FLOWS_DIR)) return [];
+  return fs.readdirSync(FLOWS_DIR)
+    .filter(f => f.endsWith('.flow'))
+    .map(f => {
+      const name = path.basename(f, '.flow');
+      const flowPath = path.join(FLOWS_DIR, f);
+      try {
+        const flow = parseFile(flowPath);
+        return { name, ...flow };
+      } catch {
+        return { name, error: 'parse error' };
+      }
+    });
 }
 
 const server = http.createServer((req, res) => {
@@ -209,6 +273,217 @@ const server = http.createServer((req, res) => {
 
   if (parsed.pathname === '/app.js') {
     sendFile(res, path.join(PUBLIC_DIR, 'app.js'), 'application/javascript');
+    return;
+  }
+
+  // ============================================
+  // L7 Flow System API
+  // ============================================
+
+  // List all tools (.tool files)
+  if (parsed.pathname === '/api/tools') {
+    const tools = listToolFiles();
+    sendJson(res, 200, { tools });
+    return;
+  }
+
+  // List all flows (.flow files)
+  if (parsed.pathname === '/api/flows') {
+    const flows = listFlowFiles();
+    sendJson(res, 200, { flows });
+    return;
+  }
+
+  // Get a single flow by name
+  if (parsed.pathname === '/api/flow') {
+    const name = parsed.query.name;
+    if (!name) {
+      sendJson(res, 400, { error: 'Flow name required' });
+      return;
+    }
+    const flowPath = path.join(FLOWS_DIR, `${name}.flow`);
+    if (!fs.existsSync(flowPath)) {
+      sendJson(res, 404, { error: 'Flow not found' });
+      return;
+    }
+    try {
+      const flow = parseFile(flowPath);
+      sendJson(res, 200, { flow });
+    } catch (err) {
+      sendJson(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  // Execute a flow (POST)
+  if (parsed.pathname === '/api/execute' && req.method === 'POST') {
+    parseBody(req).then(async (body) => {
+      const { flow, inputs = {}, dryRun = false } = body;
+
+      if (!flow) {
+        sendJson(res, 400, { error: 'Flow name required' });
+        return;
+      }
+
+      try {
+        const execState = await executeFlow(flow, inputs, { dryRun });
+        sendJson(res, 200, {
+          id: execState.id,
+          flow: execState.flow,
+          status: execState.status,
+          step: execState.step,
+          results: execState.results
+        });
+      } catch (err) {
+        sendJson(res, 500, { error: err.message });
+      }
+    }).catch((err) => {
+      sendJson(res, 400, { error: err.message });
+    });
+    return;
+  }
+
+  // Execute a single tool (POST)
+  if (parsed.pathname === '/api/call' && req.method === 'POST') {
+    parseBody(req).then(async (body) => {
+      const { tool, arguments: args = {} } = body;
+
+      if (!tool) {
+        sendJson(res, 400, { error: 'Tool name required' });
+        return;
+      }
+
+      try {
+        const result = await gateway.execute(tool, args);
+        sendJson(res, 200, result);
+      } catch (err) {
+        sendJson(res, 500, { error: err.message });
+      }
+    }).catch((err) => {
+      sendJson(res, 400, { error: err.message });
+    });
+    return;
+  }
+
+  // Approve a checkpoint (POST)
+  if (parsed.pathname === '/api/approve' && req.method === 'POST') {
+    parseBody(req).then((body) => {
+      const { flow, id } = body;
+
+      if (!flow || !id) {
+        sendJson(res, 400, { error: 'Flow name and id required' });
+        return;
+      }
+
+      try {
+        const execState = approve(flow, id);
+        sendJson(res, 200, {
+          id: execState.id,
+          flow: execState.flow,
+          status: execState.status,
+          message: 'Checkpoint approved'
+        });
+      } catch (err) {
+        sendJson(res, 500, { error: err.message });
+      }
+    }).catch((err) => {
+      sendJson(res, 400, { error: err.message });
+    });
+    return;
+  }
+
+  // Reject a checkpoint (POST)
+  if (parsed.pathname === '/api/reject' && req.method === 'POST') {
+    parseBody(req).then((body) => {
+      const { flow, id } = body;
+
+      if (!flow || !id) {
+        sendJson(res, 400, { error: 'Flow name and id required' });
+        return;
+      }
+
+      try {
+        const execState = reject(flow, id);
+        sendJson(res, 200, {
+          id: execState.id,
+          flow: execState.flow,
+          status: execState.status,
+          message: 'Checkpoint rejected'
+        });
+      } catch (err) {
+        sendJson(res, 500, { error: err.message });
+      }
+    }).catch((err) => {
+      sendJson(res, 400, { error: err.message });
+    });
+    return;
+  }
+
+  // Resume execution after checkpoint approval (POST)
+  if (parsed.pathname === '/api/resume' && req.method === 'POST') {
+    parseBody(req).then(async (body) => {
+      const { flow, id } = body;
+
+      if (!flow || !id) {
+        sendJson(res, 400, { error: 'Flow name and id required' });
+        return;
+      }
+
+      try {
+        const execState = await executeFlow(flow, {}, { resume: id });
+        sendJson(res, 200, {
+          id: execState.id,
+          flow: execState.flow,
+          status: execState.status,
+          step: execState.step,
+          results: execState.results
+        });
+      } catch (err) {
+        sendJson(res, 500, { error: err.message });
+      }
+    }).catch((err) => {
+      sendJson(res, 400, { error: err.message });
+    });
+    return;
+  }
+
+  // Get execution status
+  if (parsed.pathname === '/api/status') {
+    const flow = parsed.query.flow;
+    const id = parsed.query.id;
+
+    if (!flow || !id) {
+      sendJson(res, 400, { error: 'Flow name and id required' });
+      return;
+    }
+
+    const execState = stateManager.load(flow, id);
+    if (!execState) {
+      sendJson(res, 404, { error: 'Execution not found' });
+      return;
+    }
+
+    sendJson(res, 200, execState);
+    return;
+  }
+
+  // List executions
+  if (parsed.pathname === '/api/executions') {
+    const flow = parsed.query.flow || null;
+    const executions = stateManager.list(flow);
+    sendJson(res, 200, { executions });
+    return;
+  }
+
+  // Gateway health check
+  if (parsed.pathname === '/api/gateway/health') {
+    gateway.checkHealth().then((healthy) => {
+      sendJson(res, 200, {
+        gateway: healthy ? 'ok' : 'unavailable',
+        mode: gateway.config.mode,
+        url: gateway.config.gatewayUrl
+      });
+    });
     return;
   }
 
