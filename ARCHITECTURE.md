@@ -22,6 +22,15 @@ Every entity must declare itself using the same seven dimensions:
 ## Citizenship Rule (Empire Minimum)
 Every project, tool, or client must declare itself through the gateway using the L7 emoji markers above. This declaration is the minimum requirement for interoperability.
 
+## Registry Rule
+Every entity must register with:
+- `entity_id`, `entity_type`, `birth_date`, `owner`, `status`, `lineage`, and `l7_declaration`.
+- See `ENTITY_REGISTRY.md` and `REGISTRY_SCHEMA.json`.
+
+## Interoperability Rule
+The registry is automatically propagated through the gateway. Clients do not maintain their own copies; they discover tools at runtime.
+Once an entity is inside, provinces do not need explicit change notices; the gateway is the propagation layer.
+
 ## Non-Negotiables
 1. **Gateway-only access** for tools (no direct MCP server calls from clients).
 2. **Adapters only** in clients; UI never references tool names or endpoints.

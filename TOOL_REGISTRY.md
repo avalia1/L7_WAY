@@ -6,6 +6,10 @@ This registry defines how tools are discovered and used. It is intentionally min
 - `GET {MCP_GATEWAY_URL}/tools`
 - Cache locally if needed, but always treat gateway results as authoritative.
 
+## Interoperability Rule
+The registry is automatically propagated through the gateway. Clients do not maintain their own copies; they discover tools at runtime.
+Once an entity is inside, provinces do not need explicit change notices; the gateway is the propagation layer.
+
 ## Core Tool Categories (Minimal)
 - **Comms**: email, SMS, voice, messaging
 - **Data**: fetch teachers, reports, analytics, exports
