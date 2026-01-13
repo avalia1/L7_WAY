@@ -1,0 +1,18 @@
+entity_id: dial
+entity_type: project
+birth_date: 2026-01-12
+owner: DIAL Team
+status: active
+lineage: 
+
+L7:
+  capability: communicate
+  data: pii, internal, record, live
+  policy_intent: test, low, no_approval, standard
+  presentation: html, standard
+  orchestration: single, manual, none
+  time_versioning: v1, v1, active
+  identity_security: admin, token, audit_on
+
+identity:
+  email: xyz@dial-training.com

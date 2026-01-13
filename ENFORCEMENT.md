@@ -6,7 +6,8 @@ A project is compliant if:
 - UI and components only use adapters.
 - Adapters validate schema and normalize results.
 - Project start files declare MCP Gateway usage.
-- Project declares L7 emoji markers for the common lingua.
+- Project declares L7 types for the common lingua.
+- Legion execution requires explicit human UI confirmation.
 
 ## Project Start Files (must declare compliance)
 At least one of the following must include the MCP gateway declaration:
@@ -17,7 +18,7 @@ At least one of the following must include the MCP gateway declaration:
 
 ## Required Declarations (examples)
 "This project uses the MCP Gateway as the universal entry point for tools. UI uses adapters only."
-"L7 lingua: Capability 🔧, Data 📦, Policy/Intent 🧭, Presentation 🧩, Orchestration 🔗, Time/Versioning 🕒, Identity/Security 🛡️."
+"L7 types: Capability 🔧, Data 📦, Policy/Intent 🧭, Presentation 🧩, Orchestration 🔗, Time/Versioning 🕒, Identity/Security 🛡️."
 
 ## Enforcement Flow
 1. Detect projects under home directory.

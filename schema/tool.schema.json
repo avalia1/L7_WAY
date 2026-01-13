@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "L7 Tool",
+  "description": "A tool definition with L7 metadata",
+  "type": "object",
+  "required": ["name", "does", "server"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Tool identifier (lowercase, underscores ok)"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this tool does"
+    },
+    "does": {
+      "type": "string",
+      "enum": ["communicate", "fetch", "analyze", "automate", "render", "search"],
+      "description": "Primary capability category"
+    },
+    "server": {
+      "type": "string",
+      "description": "MCP server name (e.g., dialpad, ncls-comprehensive)"
+    },
+    "mcp_tool": {
+      "type": "string",
+      "description": "Full MCP tool name if different from 'name'"
+    },
+    "needs": {
+      "type": "object",
+      "description": "Required input parameters",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "$ref": "#/$defs/paramDef" }
+        ]
+      }
+    },
+    "optional": {
+      "type": "object",
+      "description": "Optional input parameters",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string" },
+          { "$ref": "#/$defs/paramDef" }
+        ]
+      }
+    },
+    "gives": {
+      "type": "object",
+      "description": "Output fields",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "pii": {
+      "type": "boolean",
+      "default": false,
+      "description": "Does this tool handle personally identifiable information?"
+    },
+    "approval": {
+      "type": "boolean",
+      "default": false,
+      "description": "Does this tool require human approval before execution?"
+    },
+    "audit": {
+      "type": "boolean",
+      "default": true,
+      "description": "Should executions be logged to audit trail?"
+    },
+    "output": {
+      "type": "string",
+      "enum": ["json", "html", "text", "file", "binary"],
+      "default": "json",
+      "description": "Primary output format"
+    },
+    "runs": {
+      "type": "string",
+      "enum": ["once", "batch", "stream"],
+      "default": "once",
+      "description": "Execution mode"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^v[0-9]+$",
+      "default": "v1",
+      "description": "Tool version"
+    },
+    "deprecated": {
+      "type": "boolean",
+      "default": false
+    },
+    "replaced_by": {
+      "type": "string",
+      "description": "If deprecated, which tool replaces this one"
+    }
+  },
+  "$defs": {
+    "paramDef": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "array", "object", "phone", "email", "date"]
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": {},
+        "enum": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "email.dispatch",
+  "version": "v1",
+  "description": "Dispatch email intent through the gateway; selects best provider based on L7 identity and policy.",
+  "parameters": {
+    "type": "object",
+    "required": ["entity_id", "intent", "payload"],
+    "properties": {
+      "entity_id": { "type": "string", "description": "L7 entity id (e.g., dial)" },
+      "intent": { "type": "string", "enum": ["send", "preview", "receive"], "description": "Email intent" },
+      "payload": {
+        "type": "object",
+        "description": "Intent-specific payload",
+        "properties": {
+          "to": { "type": "array", "items": { "type": "string" } },
+          "subject": { "type": "string" },
+          "html": { "type": "string" },
+          "text": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": { "type": "boolean" },
+      "provider": { "type": "string" },
+      "message_id": { "type": "string" },
+      "error": { "type": "string" }
+    }
+  }
+}

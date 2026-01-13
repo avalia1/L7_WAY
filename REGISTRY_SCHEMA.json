@@ -1,0 +1,23 @@
+{
+  "title": "L7 Entity Registry Schema",
+  "type": "object",
+  "required": [
+    "entity_id",
+    "entity_type",
+    "birth_date",
+    "owner",
+    "status",
+    "lineage",
+    "l7_declaration"
+  ],
+  "properties": {
+    "entity_id": { "type": "string" },
+    "entity_type": { "type": "string", "enum": ["tool", "service", "workflow", "ui", "project"] },
+    "birth_date": { "type": "string", "format": "date" },
+    "owner": { "type": "string" },
+    "status": { "type": "string", "enum": ["active", "deprecated", "archived"] },
+    "lineage": { "type": "string" },
+    "l7_declaration": { "$ref": "L7_SCHEMA.json" }
+  },
+  "additionalProperties": false
+}

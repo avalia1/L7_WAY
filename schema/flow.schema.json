@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "L7 Flow",
+  "description": "A workflow that orchestrates multiple tools",
+  "type": "object",
+  "required": ["name", "steps"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$",
+      "description": "Flow identifier (lowercase, no spaces)"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Team or person who owns this flow"
+    },
+    "description": {
+      "type": "string",
+      "description": "What this flow does"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/doStep" },
+          { "$ref": "#/$defs/waitStep" }
+        ]
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/inputDef"
+      }
+    }
+  },
+  "$defs": {
+    "doStep": {
+      "type": "object",
+      "required": ["do"],
+      "properties": {
+        "do": {
+          "type": "string",
+          "description": "Tool name to execute"
+        },
+        "as": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Variable name to store result"
+        },
+        "with": {
+          "type": "object",
+          "description": "Parameters to pass to the tool"
+        },
+        "each": {
+          "type": "string",
+          "description": "Variable to iterate over (enables $item)"
+        },
+        "if": {
+          "type": "string",
+          "description": "Condition expression (skip if false)"
+        },
+        "on_fail": {
+          "type": "string",
+          "enum": ["continue", "halt", "retry", "skip"],
+          "default": "halt"
+        },
+        "retry": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 0
+        },
+        "throttle": {
+          "type": "string",
+          "pattern": "^[0-9]+/(second|minute|hour)$",
+          "description": "Rate limit (e.g., 50/minute)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "waitStep": {
+      "type": "object",
+      "required": ["wait"],
+      "properties": {
+        "wait": {
+          "type": "string",
+          "description": "Message to show at checkpoint (supports {{ }} templates)"
+        },
+        "if": {
+          "type": "string",
+          "description": "Only show checkpoint if condition is true"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^[0-9]+(m|h|d)$",
+          "description": "Auto-action after timeout (e.g., 24h)"
+        },
+        "on_timeout": {
+          "type": "string",
+          "enum": ["continue", "halt", "abort"],
+          "default": "halt"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rule": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "only": {
+          "type": "string",
+          "description": "Time constraint (e.g., 9am-6pm, weekdays)"
+        },
+        "max": {
+          "type": "string",
+          "pattern": "^[0-9]+/(second|minute|hour|day)$",
+          "description": "Rate limit (e.g., 200/hour)"
+        },
+        "skip": {
+          "type": "string",
+          "description": "Field name - skip items where this is truthy"
+        },
+        "require": {
+          "type": "string",
+          "description": "Field name - skip items where this is falsy"
+        },
+        "on_fail": {
+          "type": "string",
+          "enum": ["continue", "halt", "retry", "skip"],
+          "description": "Default failure behavior for all steps"
+        }
+      },
+      "additionalProperties": false
+    },
+    "inputDef": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "array", "object"]
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "default": {},
+        "description": {
+          "type": "string"
+        },
+        "enum": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

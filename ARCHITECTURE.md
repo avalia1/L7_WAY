@@ -10,7 +10,7 @@ Create a single common language that lets any tool, workflow, UI, or project plu
 - **Clients**: Adapter layer + UI (UI is a renderable tool consuming structured data).
 
 ## 7D Common Lingua (System Dimensions)
-Every entity must declare itself using the same seven dimensions:
+Every entity must declare itself using the same seven L7 types:
 1. **Capability** 🔧: what tools and actions exist.
 2. **Data** 📦: schemas, inputs, outputs, and sources.
 3. **Policy/Intent** 🧭: what is allowed, required, and prioritized.
@@ -20,7 +20,7 @@ Every entity must declare itself using the same seven dimensions:
 7. **Identity/Security** 🛡️: access control, audit, and trust.
 
 ## Citizenship Rule (Empire Minimum)
-Every project, tool, or client must declare itself through the gateway using the L7 emoji markers above. This declaration is the minimum requirement for interoperability.
+Every project, tool, or client must declare itself through the gateway using the L7 types above. This declaration is the minimum requirement for interoperability.
 
 ## Registry Rule
 Every entity must register with:

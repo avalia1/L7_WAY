@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Empire</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <h1>Empire</h1>
+        <p class="subtitle">Citizens and Legions</p>
+        <div class="command">
+          <label for="command-input">Command</label>
+          <input id="command-input" type="text" placeholder="email → send → to Mary" />
+          <div id="command-response" class="command-response"></div>
+        </div>
+        <div class="section">
+          <h3>Catalog</h3>
+          <div id="catalog" class="catalog"></div>
+        </div>
+        <div class="section">
+          <h3>Legions</h3>
+          <div id="legions" class="citizens"></div>
+        </div>
+        <div class="section">
+          <h3>Launchers</h3>
+          <div id="launchers" class="citizens"></div>
+        </div>
+      </aside>
+      <main class="content">
+        <div class="panel">
+          <h2 id="citizen-title">Legion Map</h2>
+          <div id="legion-map" class="legion-map"></div>
+          <h2 id="citizen-title-secondary">Select a citizen</h2>
+          <div id="graph" class="graph"></div>
+          <div class="sidecar">
+            <h3>Sidecar</h3>
+            <div id="sidecar-list" class="sidecar-list"></div>
+            <pre id="sidecar-content" class="sidecar-content"></pre>
+          </div>
+          <div class="audit">
+            <div class="audit-header">
+              <h3>Audit Ledger</h3>
+              <div class="audit-tabs">
+                <button class="audit-tab active" data-audit="audit">Audit</button>
+                <button class="audit-tab" data-audit="transitions">Transitions</button>
+              </div>
+            </div>
+            <div id="audit-feed" class="audit-feed"></div>
+          </div>
+          <div class="tabs">
+            <button class="tab active" data-tab="rendered">Rendered</button>
+            <button class="tab" data-tab="raw">Raw</button>
+          </div>
+          <div id="rendered" class="view view-active"></div>
+          <pre id="raw" class="view"></pre>
+        </div>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>
