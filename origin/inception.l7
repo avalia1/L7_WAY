@@ -1,0 +1,47 @@
+record_id: inception
+birth_date: 2026-01-12
+owner: L7_WAY
+status: active
+lineage: initial_concept
+
+summary:
+  - Established L7_WAY as the common language and gateway doctrine.
+  - Defined L7 types, schemas, enforcement, and type boundary.
+  - Created citizens filesystem (.l7), UI filesystem (.emp), and legion format (.lg).
+  - Built Empire UI with catalog, legion map, graph, sidecar, and command input.
+  - Added governance: doctrine, law, apprentice, transformer, lifecycle, manifesto.
+
+key_decisions:
+  - Gateway is universal entry point; tools are accessed via gateway only.
+  - L7 are types (not emojis); entity type is absolute and outside L7.
+  - Registry is propagated by gateway; provinces do not need change notices.
+  - Entities must register birth date, owner, lineage, status, and L7.
+  - Uniqueness prevents duplication; entities should be small and composable.
+  - Marching orders are non-composable mission logic.
+  - Node network is gateway intelligence for clustering tools.
+  - Legions propose; humans approve. Execution requires explicit UI confirmation.
+  - Restraint is strength; only what serves the empire enters.
+
+artifacts_created:
+  - L7_WAY docs: ARCHITECTURE.md, BOOK_OF_LAW.md, ENFORCEMENT.md, TOOL_REGISTRY.md
+  - L7 schemas: L7_SCHEMA.json, REGISTRY_SCHEMA.json
+  - Entity registry system: ENTITY_REGISTRY.md, ENTITY_REGISTRY.json, ENTITY_TEMPLATE.md
+  - Lifecycle and lore: PROJECT_LIFECYCLE.md, HERO_JOURNEY.md, APPRENTICE_PROTOCOL.md
+  - Intelligence and onboarding: RAG_INTELLIGENCE.md, TRANSFORMER.md
+  - CLI spec: L7_CLI_SPEC.md
+  - Empire UI: empire/ with server and web UI
+  - Citizens filesystem: ~/.l7 with template, email.l7, and tool citizens
+  - UI filesystem: ~/.emp with EmpireUI.emp launcher and template
+  - Legion template: ~/.l7/legion.lg
+  - Manifesto: MANIFESTO.md
+
+conversation_record:
+  - Defined empire metaphor: gateway as road, L7 as lingua, citizens/legions as structure.
+  - Formalized doctrine, laws, restraint, and type boundary.
+  - Implemented Empire UI interactions: force-directed L7 nodes, legion map, sidecar.
+  - Added wikilinks for composability and semantic relations.
+  - Onboarded MCP tools into .l7 citizens from services-registry.
+
+notes:
+  - Keep origin records updated for key decisions and milestones.
+  - Maintain coherence between local L7_WAY and GitHub.
