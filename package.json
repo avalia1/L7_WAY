@@ -14,6 +14,7 @@
     "test": "node test/parser.test.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.2",
     "ajv": "^8.12.0",
     "js-yaml": "^4.1.0"
   },
