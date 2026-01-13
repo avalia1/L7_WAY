@@ -38,3 +38,6 @@ Only what serves the empire enters. Restraint is strength: build the minimum tha
 
 ## Law XIII — The Socratic Sequence
 Timing is the third principle. The engine of movement is: 1) Think, 2) Ask, 3) Answer, 4) Refine. This sequence organizes legions and their execution.
+
+## Law XIV — The Spiral (Rebirth)
+Completion restarts the cycle at a higher level. 4 becomes 1, and 13 opens the next sequence. In the system, this is versioning: endings become beginnings.
