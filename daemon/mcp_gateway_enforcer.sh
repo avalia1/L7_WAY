@@ -10,6 +10,7 @@ REPORT_FILE="${REPORT_DIR}/compliance_${DATE_STAMP}.txt"
 
 REQUIRED_DECLARATION="This project uses the MCP Gateway as the universal entry point for tools. UI uses adapters only."
 L7_DECLARATION="L7 lingua: Capability 🔧, Data 📦, Policy/Intent 🧭, Presentation 🧩, Orchestration 🔗, Time/Versioning 🕒, Identity/Security 🛡️."
+MCP_GATEWAY_URL="${MCP_GATEWAY_URL:-}"
 
 # Heuristic project roots: contains package.json, pyproject.toml, or README.md
 find "${HOME}" -maxdepth 4 -type f \( -name "package.json" -o -name "pyproject.toml" -o -name "README.md" \) \
@@ -19,6 +20,16 @@ find "${HOME}" -maxdepth 4 -type f \( -name "package.json" -o -name "pyproject.t
 {
   echo "L7_WAY Compliance Report"
   echo "Generated: ${DATE_STAMP}"
+  echo ""
+  if [[ -n "${MCP_GATEWAY_URL}" ]]; then
+    if curl -fsS "${MCP_GATEWAY_URL}/health" >/dev/null 2>&1; then
+      echo "Gateway Health: OK (${MCP_GATEWAY_URL})"
+    else
+      echo "Gateway Health: UNREACHABLE (${MCP_GATEWAY_URL})"
+    fi
+  else
+    echo "Gateway Health: SKIPPED (MCP_GATEWAY_URL not set)"
+  fi
   echo ""
 
   while read -r project_root; do

@@ -39,3 +39,4 @@ launchctl load ~/Library/LaunchAgents/com.avli.l7-way-enforcer.plist
 ## Notes
 - The daemon only reports; it does not auto-edit projects.
 - Compliance is a declaration check by design; enforcement is policy-driven.
+- Set `MCP_GATEWAY_URL` in your environment to enable health checks.

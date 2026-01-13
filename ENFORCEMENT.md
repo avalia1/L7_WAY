@@ -23,7 +23,8 @@ At least one of the following must include the MCP gateway declaration:
 1. Detect projects under home directory.
 2. Find project start files.
 3. Check for the required declaration strings.
-4. Report non-compliant projects.
+4. Verify gateway health and registry availability.
+5. Report non-compliant projects.
 
 ## Output
 - Write reports to `~/L7_WAY/daemon/reports/`.
