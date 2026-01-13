@@ -31,6 +31,11 @@ Every entity must register with:
 The registry is automatically propagated through the gateway. Clients do not maintain their own copies; they discover tools at runtime.
 Once an entity is inside, provinces do not need explicit change notices; the gateway is the propagation layer.
 
+## Uniqueness and Composition Rule
+- **Uniqueness prevents duplication**, not experimentation.
+- **Units should be small and composable** at the base layer.
+- **New L7 entities are formed by citizen groups** (composed units), not monoliths.
+
 ## Non-Negotiables
 1. **Gateway-only access** for tools (no direct MCP server calls from clients).
 2. **Adapters only** in clients; UI never references tool names or endpoints.
