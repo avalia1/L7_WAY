@@ -13,6 +13,7 @@ Tool ecosystems grow fast and fracture faster. L7_WAY stops divergence by requir
 
 ## Required Reading (for every new project)
 - `ARCHITECTURE.md`
+- `BOOK_OF_LAW.md`
 - `TOOL_REGISTRY.md`
 - `ENFORCEMENT.md`
 - `L7_SCHEMA.json`
@@ -22,7 +23,15 @@ For every new project or session, read this repo first. Do not bypass the gatewa
 
 ## Files
 - `ARCHITECTURE.md` — system articulation and rules.
+- `BOOK_OF_LAW.md` — laws of the empire.
 - `TOOL_REGISTRY.md` — tool discovery rules.
 - `ENFORCEMENT.md` — compliance requirements.
 - `L7_SCHEMA.json` — finite L7 schema.
+- `ENTITY_REGISTRY.md` — required entity metadata and lifecycle.
+- `REGISTRY_SCHEMA.json` — registry schema.
+- `ENTITY_TEMPLATE.md` — entity declaration template.
+- `PROJECT_LIFECYCLE.md` — life and decommission protocol.
+- `HERO_JOURNEY.md` — narrative doctrine.
+- `APPRENTICE_PROTOCOL.md` — onboarding doctrine.
+- `L7_CLI_SPEC.md` — CLI spec for legions.
 - `daemon/` — enforcement script and install instructions.
