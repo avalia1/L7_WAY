@@ -20,8 +20,16 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 const AUDIT_LOG = process.env.AVLI_AUDIT_LOG || path.join(process.env.HOME || '', '.l7', 'audit.log');
 const TRANSITION_LOG = process.env.AVLI_TRANSITION_LOG || path.join(process.env.HOME || '', '.l7', 'transitions.log');
 
+// CORS headers for dashboard integration
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
 function sendJson(res, status, data) {
   const body = JSON.stringify(data, null, 2);
+  setCorsHeaders(res);
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Content-Length': Buffer.byteLength(body),
@@ -146,6 +154,14 @@ function listFlowFiles() {
 
 const server = http.createServer((req, res) => {
   const parsed = url.parse(req.url, true);
+
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    setCorsHeaders(res);
+    res.writeHead(204);
+    res.end();
+    return;
+  }
 
   if (parsed.pathname === '/api/citizens') {
     fs.readdir(L7_DIR, (err, files) => {
