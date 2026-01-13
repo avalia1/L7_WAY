@@ -696,3 +696,211 @@ async function refreshAudit() {
 
 refreshAudit();
 setInterval(refreshAudit, 5000);
+
+// ============================================
+// CAMPAIGNS (L7 Flow System)
+// ============================================
+
+const campaignsEl = document.getElementById('campaigns');
+const campaignRunner = document.getElementById('campaign-runner');
+const campaignTitle = document.getElementById('campaign-title');
+const campaignStatusBadge = document.getElementById('campaign-status-badge');
+const campaignSteps = document.getElementById('campaign-steps');
+const campaignCheckpoint = document.getElementById('campaign-checkpoint');
+const campaignLedger = document.getElementById('campaign-ledger');
+const campaignMarchBtn = document.getElementById('campaign-march');
+const campaignApproveBtn = document.getElementById('campaign-approve');
+const campaignHaltBtn = document.getElementById('campaign-halt');
+
+let activeCampaign = null;
+let activeExecution = null;
+
+async function loadCampaigns() {
+  const res = await fetch('/api/flows');
+  const data = await res.json();
+  if (!campaignsEl) return;
+  campaignsEl.textContent = '';
+  (data.flows || []).forEach((flow) => {
+    const btn = document.createElement('button');
+    btn.className = 'citizen';
+    btn.textContent = flow.name;
+    btn.addEventListener('click', () => selectCampaign(flow));
+    campaignsEl.appendChild(btn);
+  });
+}
+
+async function selectCampaign(flow) {
+  document.querySelectorAll('#campaigns .citizen').forEach((b) => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  const res = await fetch(`/api/flow?name=${encodeURIComponent(flow.name)}`);
+  const data = await res.json();
+  activeCampaign = data.flow || flow;
+  activeExecution = null;
+
+  if (campaignRunner) campaignRunner.style.display = 'block';
+  renderCampaign();
+}
+
+function renderCampaign() {
+  if (!activeCampaign) return;
+
+  campaignTitle.textContent = activeCampaign.name || 'Campaign';
+  campaignStatusBadge.textContent = activeExecution?.status || 'idle';
+  campaignStatusBadge.className = `status-badge ${activeExecution?.status || 'idle'}`;
+
+  const steps = activeCampaign.steps || [];
+  campaignSteps.textContent = '';
+  steps.forEach((step, idx) => {
+    const stepEl = document.createElement('div');
+    stepEl.className = 'flow-step';
+    const currentStep = activeExecution?.step || 0;
+    if (activeExecution) {
+      if (idx < currentStep) stepEl.classList.add('done');
+      else if (idx === currentStep) {
+        stepEl.classList.add('active');
+        if (activeExecution.status === 'waiting') stepEl.classList.add('waiting');
+      }
+    }
+
+    const isWait = step.wait !== undefined;
+    const iconEl = document.createElement('div');
+    iconEl.className = 'flow-step-icon';
+    iconEl.textContent = isWait ? '🚧' : '⚔️';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'flow-step-name';
+    nameEl.textContent = isWait ? 'Checkpoint' : (step.do || 'Unknown');
+
+    stepEl.appendChild(iconEl);
+    stepEl.appendChild(nameEl);
+
+    if (idx < steps.length - 1) {
+      const connector = document.createElement('div');
+      connector.className = 'flow-step-connector';
+      stepEl.appendChild(connector);
+    }
+    campaignSteps.appendChild(stepEl);
+  });
+
+  if (activeExecution?.status === 'waiting') {
+    campaignMarchBtn.style.display = 'none';
+    campaignApproveBtn.style.display = 'inline-block';
+    campaignHaltBtn.style.display = 'inline-block';
+    const checkpoint = activeExecution.checkpoints?.find(c => !c.resolved);
+    if (checkpoint?.message) {
+      campaignCheckpoint.textContent = checkpoint.message;
+      campaignCheckpoint.style.display = 'block';
+    }
+  } else {
+    campaignMarchBtn.style.display = 'inline-block';
+    campaignMarchBtn.textContent = activeExecution?.status === 'running' ? 'Continue March' : 'March';
+    campaignApproveBtn.style.display = 'none';
+    campaignHaltBtn.style.display = 'none';
+    campaignCheckpoint.style.display = 'none';
+  }
+
+  renderCampaignLedger();
+}
+
+function renderCampaignLedger() {
+  if (!campaignLedger) return;
+  campaignLedger.textContent = '';
+
+  if (!activeExecution?.results) {
+    const msg = document.createElement('div');
+    msg.className = 'keyline';
+    msg.textContent = 'No results yet. March to begin.';
+    campaignLedger.appendChild(msg);
+    return;
+  }
+
+  for (const [key, value] of Object.entries(activeExecution.results)) {
+    const item = document.createElement('div');
+    item.className = 'flow-result-item';
+    const label = document.createElement('strong');
+    label.className = 'keyline';
+    label.textContent = `${key}: `;
+    const preview = typeof value === 'object'
+      ? (value.count !== undefined ? `${value.count} records` : JSON.stringify(value).slice(0, 100))
+      : String(value);
+    item.appendChild(label);
+    item.appendChild(document.createTextNode(preview));
+    campaignLedger.appendChild(item);
+  }
+}
+
+async function marchCampaign() {
+  if (!activeCampaign) return;
+  campaignMarchBtn.disabled = true;
+  campaignMarchBtn.textContent = 'Marching...';
+
+  try {
+    let res;
+    if (activeExecution?.status === 'running') {
+      res = await fetch('/api/resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flow: activeCampaign.name, id: activeExecution.id })
+      });
+    } else {
+      res = await fetch('/api/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flow: activeCampaign.name, inputs: {} })
+      });
+    }
+    const data = await res.json();
+    if (data.error) alert(`Campaign error: ${data.error}`);
+    else activeExecution = data;
+  } catch (err) {
+    alert(`March failed: ${err.message}`);
+  }
+
+  campaignMarchBtn.disabled = false;
+  renderCampaign();
+  refreshAudit();
+}
+
+async function approveCampaign() {
+  if (!activeCampaign || !activeExecution) return;
+  try {
+    await fetch('/api/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flow: activeCampaign.name, id: activeExecution.id })
+    });
+    const res = await fetch('/api/resume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flow: activeCampaign.name, id: activeExecution.id })
+    });
+    activeExecution = await res.json();
+  } catch (err) {
+    alert(`Approval failed: ${err.message}`);
+  }
+  renderCampaign();
+  refreshAudit();
+}
+
+async function haltCampaign() {
+  if (!activeCampaign || !activeExecution) return;
+  try {
+    await fetch('/api/reject', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flow: activeCampaign.name, id: activeExecution.id })
+    });
+    activeExecution = { ...activeExecution, status: 'rejected' };
+  } catch (err) {
+    alert(`Halt failed: ${err.message}`);
+  }
+  renderCampaign();
+  refreshAudit();
+}
+
+if (campaignMarchBtn) campaignMarchBtn.addEventListener('click', marchCampaign);
+if (campaignApproveBtn) campaignApproveBtn.addEventListener('click', approveCampaign);
+if (campaignHaltBtn) campaignHaltBtn.addEventListener('click', haltCampaign);
+
+loadCampaigns();

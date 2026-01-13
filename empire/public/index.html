@@ -28,6 +28,10 @@
           <h3>Launchers</h3>
           <div id="launchers" class="citizens"></div>
         </div>
+        <div class="section">
+          <h3>Campaigns</h3>
+          <div id="campaigns" class="citizens"></div>
+        </div>
       </aside>
       <main class="content">
         <div class="panel">
@@ -39,6 +43,22 @@
             <h3>Sidecar</h3>
             <div id="sidecar-list" class="sidecar-list"></div>
             <pre id="sidecar-content" class="sidecar-content"></pre>
+          </div>
+          <div class="campaign-runner" id="campaign-runner" style="display: none;">
+            <div class="flow-header">
+              <h3 id="campaign-title">Campaign Orders</h3>
+              <div class="flow-status">
+                <span id="campaign-status-badge" class="status-badge">idle</span>
+              </div>
+            </div>
+            <div id="campaign-steps" class="flow-steps"></div>
+            <div class="flow-controls">
+              <button id="campaign-march" class="flow-btn">March</button>
+              <button id="campaign-approve" class="flow-btn" style="display: none;">Approve Gate</button>
+              <button id="campaign-halt" class="flow-btn flow-btn-danger" style="display: none;">Halt</button>
+            </div>
+            <div id="campaign-checkpoint" class="flow-checkpoint" style="display: none;"></div>
+            <div id="campaign-ledger" class="flow-results"></div>
           </div>
           <div class="audit">
             <div class="audit-header">
