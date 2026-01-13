@@ -14,6 +14,8 @@ Tool ecosystems grow fast and fracture faster. L7_WAY stops divergence by requir
 ## Required Reading (for every new project)
 - `ARCHITECTURE.md`
 - `BOOK_OF_LAW.md`
+- `RAG_INTELLIGENCE.md`
+- `L7_CONTRACTS.md`
 - `TOOL_REGISTRY.md`
 - `ENFORCEMENT.md`
 - `L7_SCHEMA.json`
@@ -24,6 +26,8 @@ For every new project or session, read this repo first. Do not bypass the gatewa
 ## Files
 - `ARCHITECTURE.md` — system articulation and rules.
 - `BOOK_OF_LAW.md` — laws of the empire.
+- `RAG_INTELLIGENCE.md` — gateway intelligence layer.
+- `L7_CONTRACTS.md` — enforcement contracts.
 - `TOOL_REGISTRY.md` — tool discovery rules.
 - `ENFORCEMENT.md` — compliance requirements.
 - `L7_SCHEMA.json` — finite L7 schema.
