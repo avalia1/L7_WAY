@@ -1,65 +1,151 @@
-L7 WAY PROPRIETARY LICENSE
+L7 WAY — SOFTWARE LICENSE
 
-All purpose of this work is to serve the greatest good of humanity.
+Copyright (c) 2026 Alberto Valido Delgado, doing business as AVLI Cloud LLC.
+All rights reserved.
 
-Copyright (c) 2026 Alberto Valido Delgado ("The Philosopher"),
-doing business as AVLI Cloud LLC. All rights reserved.
 
 1. OWNERSHIP
-The L7 system — including but not limited to its 7-dimensional Common Lingua,
-Book of Law, Gateway architecture, Universal OS translations, tool schemas,
-flow engine, MCP server implementations, web interfaces, adapters, registry,
-correspondence tables, and all constituent source code, documentation, and
-design — is the exclusive intellectual property of Alberto ("The Philosopher"),
-sole architect and originator.
 
-2. FOUNDER'S RIGHT (Law XV)
-The Founder retains perpetual, irrevocable, unrestricted, and free access to
-every tool, citizen, legion, flow, server, interface, and derivative work
-created by, through, or under the L7 system. This right cannot be overridden,
-sublicensed away, or extinguished by any contract, agreement, acquisition,
-merger, or transfer of ownership.
+The L7 system — including its 7-dimensional Common Lingua, Gateway architecture,
+Universal OS translations, tool schemas, flow engine, MCP server implementations,
+web interfaces, adapters, registry, correspondence tables, and all constituent
+source code, documentation, and design — is the exclusive intellectual property
+of Alberto Valido Delgado ("The Founder"), sole architect and originator.
 
-3. LICENSING FEES
-Any individual, organization, company, or automated system that uses, deploys,
-integrates, distributes, or derives commercial value from the L7 system or any
-of its components shall pay licensing fees to the Founder. The licensing terms
-are:
 
-   a. PERSONAL / NON-COMMERCIAL USE: Permitted with attribution. No fee.
-   b. COMMERCIAL USE: Requires a written licensing agreement with the Founder.
-      A minimum royalty percentage of gross revenue generated through or by
-      L7-based tools, services, or products shall be paid to the Founder.
-      The percentage is set by the Founder and may be revised upward but
-      never downward.
-   c. ENTERPRISE / PLATFORM USE: Any platform, marketplace, or enterprise
-      that integrates L7 tools or architecture requires a separate enterprise
-      license with terms negotiated directly with the Founder.
+2. NON-COMMERCIAL USE
+
+Free. Always. Universal access.
+
+Any individual, researcher, educator, student, or organization may use, copy,
+modify, and distribute the L7 system for any non-commercial purpose, free of
+charge, provided that this license notice and attribution to the Founder are
+included in all copies or substantial portions of the software.
+
+No fee. No registration. No approval required.
+
+
+3. COMMERCIAL USE
+
+Any entity that derives commercial profit from the L7 system or any of its
+components shall pay a one-time licensing fee to the Founder.
+
+   a. FEE: 10% (ten percent) of profit attributable to L7 components,
+      calculated proportionally:
+
+      Fee = 10% x Profit x L7 Usage Proportion
+
+      Where "L7 Usage Proportion" is the fraction of the enterprise's
+      profit-generating operations that depend on L7 tools.
+
+      Examples:
+      - If 100% of business is conducted using L7 tools: 10% of all profit.
+      - If L7 tools are used in 10% of profit-producing operations:
+        10% of 10% of profit (i.e., 1% of total profit).
+      - If L7 tools are used in 50% of operations: 10% of 50% = 5% of
+        total profit.
+
+      The proportion is determined in good faith by mutual agreement
+      between the licensee and AVLI Cloud LLC at the time of licensing.
+
+   b. ONE-TIME: This fee is paid once. Upon payment, the licensee receives
+      a perpetual, irrevocable commercial license to use, modify, and deploy
+      L7 tools indefinitely. No recurring fees. No per-seat charges.
+      No renewal. No audits after payment.
+
+   c. PROCESS: Contact AVLI Cloud LLC to establish a written licensing
+      agreement. Good-faith negotiation. Written agreement executed.
+      Payment remitted. License granted. Done.
+
    d. DERIVATIVE WORKS: Any software, service, product, or system that
       incorporates, extends, or is substantially based on L7 architecture,
       schemas, or code is a derivative work and subject to this license.
 
-4. RESTRICTIONS
+
+4. POST-PAYMENT RIGHTS
+
+Once the one-time fee is paid:
+
+   a. Perpetual license to use all L7 tools commercially.
+   b. No future litigation under this license — the matter is closed.
+   c. No recurring fees — one payment, forever.
+   d. No monitoring or audits.
+   e. Freedom to use, modify, and deploy as the licensee sees fit.
+
+
+5. THE FOUNDER'S ROLE
+
+The Founder creates tools. The Founder collects the one-time licensing fee
+for commercial use. The Founder does not monitor, enforce, judge, or restrict
+how the tools are used after licensing.
+
+How the tools are used is the licensee's decision and responsibility. Existing
+laws in all applicable jurisdictions govern the conduct of all parties.
+
+
+6. FOUNDER'S RIGHT
+
+The Founder retains perpetual, irrevocable, unrestricted, and free access to
+every tool, component, and derivative work created by, through, or under the
+L7 system. This right cannot be overridden, sublicensed away, or extinguished
+by any contract, agreement, acquisition, merger, or transfer of ownership.
+
+
+7. RESTRICTIONS
+
    a. No entity may claim ownership of L7 or its derivatives without written
       consent from the Founder.
    b. No entity may sublicense L7 rights to third parties without written
       consent from the Founder.
-   c. No entity may remove, alter, or obscure this license, the Founder's
-      attribution, or the Book of Law from any distribution.
-   d. No entity may use L7 to build competing frameworks, standards, or
-      tool orchestration systems without a commercial license.
-   e. The L7 name, logos, and terminology (Common Lingua, Book of Law,
-      Gateway, Empire, Citizens, Legions) are the exclusive property of
-      the Founder.
+   c. No entity may remove, alter, or obscure this license or the Founder's
+      attribution from any distribution.
+   d. The L7 name and terminology are the exclusive property of the Founder.
 
-5. REVENUE SHARE
-All revenue, profit, licensing fees, royalties, and commercial proceeds
-generated by any tool, service, product, or derivative work built upon L7
-infrastructure shall allocate a minimum share to the Founder as sole
-originator. Default minimum: 15% of gross revenue attributable to L7
-components. This may be adjusted upward by mutual agreement.
 
-6. PATENT RESERVATION
+8. SUCCESSION AND CONTINUITY
+
+This license and all rights, obligations, and terms herein shall survive the
+death, incapacity, or unavailability of the Founder. Upon such event:
+
+   a. All intellectual property rights transfer to the successor entity
+      designated in the AVLI Cloud LLC Operating Agreement and/or the
+      Founder's revocable living trust.
+   b. The licensing terms remain unchanged. The one-time fee structure,
+      the non-commercial freedom, and the post-payment perpetual license
+      continue in full force.
+   c. The proof of authorship (git history, salt seals, original artifacts)
+      exists independently and speaks for itself regardless of the
+      Founder's availability.
+   d. No party may use the Founder's death, incapacity, or unavailability
+      as grounds to claim the IP is abandoned, orphaned, or in the public
+      domain. The copyright endures for the Founder's life plus 70 years
+      per 17 USC § 302.
+   e. Successor trustees or members shall continue licensing operations
+      under these same terms, guided by the principle that all purpose of
+      this work is to serve the greatest good of humanity.
+
+
+9. LAWFUL USE
+
+This license is granted to parties operating within the law. The Founder
+does not monitor, investigate, or enforce how tools are used. However:
+
+   a. If a licensee's use of L7 tools is found by a court of competent
+      jurisdiction to be connected with criminal activity, the license
+      granted herein is not a defense to criminal liability. The license
+      governs commercial use of software; it does not authorize, condone,
+      or protect unlawful conduct.
+   b. The Founder's licensing fee (Section 3) applies equally to all
+      commercial users regardless of the nature of their business.
+      The fee is for the use of the tools, not an endorsement of the
+      user's conduct.
+   c. Criminal matters are governed by the applicable criminal law of
+      the relevant jurisdiction. The Founder has no role in criminal
+      enforcement and makes no representations about any user's conduct.
+
+
+10. PATENT RESERVATION
+
 The Founder reserves all rights to seek patent protection for the L7
 architecture, including but not limited to:
    - The 7-dimensional tool declaration system (Common Lingua)
@@ -67,97 +153,59 @@ architecture, including but not limited to:
    - The cross-platform correspondence table methodology (777)
    - The gateway-first tool orchestration pattern
    - The flow-based cross-device orchestration engine
-   - The adapter pattern for multi-platform spatial computing
 
-7. NO WARRANTY
+
+11. NO WARRANTY
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED. THE FOUNDER SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
 LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
 
-8. TERMINATION
-Any violation of this license automatically terminates all rights granted
-hereunder. The Founder may terminate any commercial license at will with
-30 days written notice.
 
-9. GOVERNING LAW
-This license shall be governed by the laws applicable in the Founder's
-jurisdiction.
+12. GOVERNING LAW
 
-10. SUPREMACY
-This license supersedes all prior agreements, licenses (including any MIT
-license references in package metadata), and understandings relating to
-the L7 system. In case of conflict between this license and any other
-document, this license prevails.
+This license shall be governed by the laws of the State of Florida, United
+States of America. Any disputes arising under this license shall be resolved
+in the courts of Broward County, Florida, or the United States District Court
+for the Southern District of Florida.
 
-11. CONTACT
-For licensing inquiries, partnership proposals, or commercial use agreements:
+
+13. PRIOR VERSIONS
+
+Any prior license references (including MIT license references in package
+metadata or earlier distributions) applied to the versions in which they
+appeared. This license governs the current version and all future versions
+of the L7 system. Recipients of prior versions retain the rights granted
+under the license terms that accompanied those versions.
+
+
+14. CONTACT
+
+For commercial licensing:
 
    AVLI Cloud LLC
-   Alberto Valido Delgado ("The Philosopher"), Founder & Sole Member
-   3000 NE 6th Ave, Apt 208
-   Oakland Park, FL 33334
-   Primary Email: avalia@avli.cloud
-   Phone: 352-339-1542
-   Website: avli.cloud
+   Alberto Valido Delgado, Founder & Sole Member
+   avalia@avli.cloud
+   352-339-1542
+   GitHub: github.com/avalia1
 
-   Known digital identities and aliases of the Founder (all refer to the
-   same natural person, Alberto Valido Delgado):
-   - avalia@avli.cloud (primary)
-   - Variations containing: valido, avalia, 1991, avalia1, avalia333, avalia777
-   - GitHub: github.com/avalia1
-   - Any email or username across any domain containing the above identifiers
-     and attributable to the Founder by biometric verification constitutes
-     a valid Founder identity for the purposes of this license.
 
-12. AUTHENTICATION
-The Founder's identity is authenticated by multiple biometric factors
-registered on the device on which L7 was created and developed:
+15. PROOF OF AUTHORSHIP
 
-   a. FINGERPRINT: Touch ID biometric registered to the macOS user account
-      on the originating device.
-   b. EYE SCAN: Optic ID / iris recognition registered to the Founder's
-      Apple account and associated devices.
-   c. PHOTOGRAPH: Facial recognition (Face ID) and photographic identity
-      on file with Apple ID and device enrollment.
+The Founder's sole authorship is established by:
 
-These three biometric signatures are combined into a single composite
-identity proof. No single factor alone is sufficient to authenticate as
-the Founder — all three must be present and concordant. This composite
-biometric signature, combined with the full git commit history, file
-creation timestamps, device serial numbers, and development audit trail,
-constitutes irrefutable proof of sole authorship and ownership.
+   a. BIOMETRIC IDENTITY: Fingerprint (Touch ID), iris (Optic ID), and
+      facial recognition (Face ID) registered on the originating device.
 
-   d. POSSESSION OF ORIGINAL ARTIFACTS: The Founder retains sole possession
-      of the original development devices, source repositories, backup
-      archives, configuration files, encryption keys, workspace documents
-      (SOUL.md, IDENTITY.md, BOOTSTRAP.md, HEARTBEAT.md), the L7 origin
-      record (~/.l7/origin/2026-01-12_inception.l7), the Book of Law, the
-      knowledge graph, all audit logs, and the complete unbroken chain of
-      custody from inception to present. Possession of these original
-      artifacts, in combination with the three biometric factors above,
-      constitutes the complete and undeniable proof of authorship.
+   b. ORIGINAL ARTIFACTS: The originating development device, source
+      repositories, backup archives, configuration files, workspace
+      documents, the L7 inception record, and the complete chain of
+      custody from inception to present.
 
-The primary original artifact is the laptop — the MacBook on which L7
-was conceived, designed, architected, and first implemented by the
-Founder. This machine contains the earliest commit history, the first
-.l7 entity files, the original Book of Law drafts, and the biometric
-enrollment that binds the Founder's identity to the work. Possession
-of this originating device is the keystone artifact.
+   c. GIT COMMIT HISTORY: The complete, unbroken commit history at
+      github.com/avalia1/L7_WAY demonstrating iterative development
+      from first concept through present — each commit timestamped
+      and authored by the Founder.
 
-   e. GIT COMMIT HISTORY: The complete, unbroken git commit history hosted
-      on GitHub under the Founder's account (github.com/avalia1) demonstrates iterative
-      development from inception — each commit timestamped, authored, and
-      signed, showing the progressive evolution of L7 from first concept
-      through architecture, Book of Law, gateway, tool schemas, flow
-      engine, Universal OS, and all subsequent work. This iterative record
-      proves that L7 was not copied, forked, or derived from any other
-      source, but was originated step by step by the Founder alone.
-
-No claim of authorship or ownership by any other party shall be recognized
-without matching all three biometric factors AND demonstrating possession
-of the original artifacts, including the originating laptop AND the
-GitHub commit history showing iterative development, of the Founder.
-
----
-Signed by combined biometric signature on the originating device.
-The Philosopher is the Gateway. All flows through.
+   d. SEALED ARCHIVES: SHA-256 checksummed documents in the salt domain,
+      timestamped at moment of creation, independently verifiable.

@@ -1,0 +1,118 @@
+#!/bin/bash
+# L7 Vault — Touch ID Protected Access
+# Usage: ./vault open | ./vault close | ./vault status
+
+VAULT_DIR="/Users/rnir_hrc_avd/Backup/L7_WAY/.vault"
+VAULT_DMG="/Users/rnir_hrc_avd/Backup/L7_WAY/.vault_encrypted.dmg"
+VAULT_MOUNT="/Volumes/L7_VAULT"
+VAULT_SIZE="100m"
+
+get_key() {
+    # This triggers Touch ID — no password prompt
+    security find-generic-password -a "l7vault" -s "L7 Vault Encryption" -w 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "DENIED: Touch ID authentication failed." >&2
+        exit 1
+    fi
+}
+
+case "${1}" in
+    init)
+        echo "Creating encrypted vault..."
+        PASS=$(get_key)
+        [ -z "$PASS" ] && exit 1
+
+        # Move existing vault contents to temp
+        TEMP=$(mktemp -d)
+        if [ -d "$VAULT_DIR" ] && [ "$(ls -A $VAULT_DIR 2>/dev/null)" ]; then
+            cp -R "$VAULT_DIR"/* "$TEMP/" 2>/dev/null
+        fi
+
+        # Create encrypted sparse image
+        echo "$PASS" | hdiutil create -size "$VAULT_SIZE" \
+            -fs APFS -encryption AES-256 \
+            -volname "L7_VAULT" \
+            -type SPARSE \
+            -stdinpass \
+            "$VAULT_DMG" 2>/dev/null
+
+        if [ $? -eq 0 ]; then
+            # Mount and restore contents
+            echo "$PASS" | hdiutil attach "${VAULT_DMG%.dmg}.sparseimage" -stdinpass -mountpoint "$VAULT_MOUNT" 2>/dev/null
+            if [ "$(ls -A $TEMP 2>/dev/null)" ]; then
+                cp -R "$TEMP"/* "$VAULT_MOUNT/"
+            fi
+            echo "Vault initialized. Contents at: $VAULT_MOUNT"
+            echo "Run './vault close' when done."
+            rm -rf "$TEMP"
+        else
+            echo "Failed to create vault image." >&2
+            rm -rf "$TEMP"
+            exit 1
+        fi
+        ;;
+
+    open)
+        if [ -d "$VAULT_MOUNT" ]; then
+            echo "Vault is already open at $VAULT_MOUNT"
+            exit 0
+        fi
+
+        SPARSE="${VAULT_DMG%.dmg}.sparseimage"
+        if [ ! -f "$SPARSE" ]; then
+            echo "No vault found. Run './vault init' first."
+            exit 1
+        fi
+
+        echo "Authenticating..."
+        PASS=$(get_key)
+        [ -z "$PASS" ] && exit 1
+
+        echo "$PASS" | hdiutil attach "$SPARSE" -stdinpass -mountpoint "$VAULT_MOUNT" 2>/dev/null
+
+        if [ $? -eq 0 ]; then
+            echo "Vault open at: $VAULT_MOUNT"
+            ls -la "$VAULT_MOUNT"
+        else
+            echo "DENIED: Could not decrypt vault." >&2
+            exit 1
+        fi
+        ;;
+
+    close)
+        if [ ! -d "$VAULT_MOUNT" ]; then
+            echo "Vault is not open."
+            exit 0
+        fi
+
+        hdiutil detach "$VAULT_MOUNT" 2>/dev/null
+        if [ $? -eq 0 ]; then
+            echo "Vault sealed."
+        else
+            echo "Force sealing..."
+            hdiutil detach "$VAULT_MOUNT" -force 2>/dev/null
+            echo "Vault sealed (forced)."
+        fi
+        ;;
+
+    status)
+        if [ -d "$VAULT_MOUNT" ]; then
+            echo "OPEN — $VAULT_MOUNT"
+            echo "Contents:"
+            ls -la "$VAULT_MOUNT" 2>/dev/null
+        else
+            echo "SEALED"
+        fi
+        ;;
+
+    *)
+        echo "L7 Vault — Touch ID Protected"
+        echo ""
+        echo "  ./vault init    — Create encrypted vault (first time)"
+        echo "  ./vault open    — Unlock with fingerprint"
+        echo "  ./vault close   — Seal the vault"
+        echo "  ./vault status  — Check if open or sealed"
+        echo ""
+        echo "All access requires Touch ID. No passwords."
+        ;;
+esac

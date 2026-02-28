@@ -11,8 +11,8 @@ This docket assembles the complete chain of provenance for all intellectual prop
 1. Copyright registration of original works
 2. Patent filing consideration for novel inventions
 3. Trademark registration for brand names
-4. Enforcement against unauthorized commercial use
-5. Licensing framework for legitimate commercial partners
+4. Licensing of commercial users (one-time fee, universal terms)
+5. Preparation of licensing letters to identified commercial users
 
 ---
 
@@ -193,13 +193,16 @@ shasum -a 256 <filename>
 
 The master license is at `LICENSE` in the L7 WAY repository root. Key terms:
 
-1. **Non-commercial use**: 100% free with attribution
-2. **Commercial use**: 10% of gross revenue to Founder
-3. **Enterprise/Platform use**: Separate negotiated license
-4. **Derivative works**: Subject to same license
-5. **Founder's Right (Law XV)**: Perpetual, irrevocable access
-6. **Revenue Share (Law XVI)**: Minimum percentage to Founder
-7. **Criminal use**: 10% license fee + restitution commensurate with harm, delivered to victims
+1. **Non-commercial use**: Free. Always. Universal access. Attribution only.
+2. **Commercial use**: One-time fee of 10% of profit proportional to L7 usage.
+   - Fee = 10% x Profit x L7 Usage Proportion
+   - Proportion determined by good-faith mutual agreement
+   - Upon payment: perpetual, irrevocable commercial license. No recurring fees.
+3. **Derivative works**: Subject to same license.
+4. **Founder's Right**: Perpetual, irrevocable access to all L7 tools and derivatives.
+5. **Post-payment**: No monitoring, no audits, no future claims. Matter closed.
+6. **Founder's role**: Creator of tools. Collects one-time fee. Does not enforce,
+   judge, or restrict how tools are used. Existing law governs all conduct.
 
 ---
 

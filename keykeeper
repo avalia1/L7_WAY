@@ -1,0 +1,302 @@
+#!/bin/bash
+# ============================================================
+# L7 Keykeeper — Gateway-Mediated Credential Management
+#
+# The true password is you — fingerprint, face, voice, iris.
+# These do not rotate. These do not change.
+#
+# Everything else is a disposable delegate: temporary passwords
+# sent to foreign services on your behalf. The gateway creates
+# them, sends them, retires them. You never know their names.
+#
+# Law XXXII: The delegates change. The sovereign does not.
+# ============================================================
+
+KEYCHAIN_PREFIX="l7key"
+KEYCHAIN_RETIRED="l7key.retired"
+AUDIT_DIR="${HOME}/.l7/audit/keykeeper"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# Ensure audit directory exists
+mkdir -p "${AUDIT_DIR}" 2>/dev/null
+
+# ---- Core Functions ----
+
+# Generate a disposable delegate (cryptographically strong, 48 chars)
+generate_delegate() {
+    LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*()_+-=[]{}|;:,.<>?' < /dev/urandom | head -c 48
+}
+
+# Authenticate the sovereign — Touch ID biometric
+# The true password: your finger on this machine
+authenticate_sovereign() {
+    security find-generic-password -a "l7vault" -s "L7 Vault Encryption" -w > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        audit "AUTH_DENIED" "Biometric authentication failed"
+        echo "DENIED: I don't recognize you." >&2
+        exit 1
+    fi
+    audit "AUTH_OK" "Sovereign authenticated via Touch ID"
+}
+
+# Verify hardware signature — is this the trusted machine?
+verify_hardware() {
+    HW_UUID=$(ioreg -d2 -c IOPlatformExpertDevice 2>/dev/null | grep IOPlatformUUID | sed 's/.*= "//' | sed 's/".*//')
+    if [ -f "${HOME}/.l7/.hardware_id" ]; then
+        STORED_UUID=$(cat "${HOME}/.l7/.hardware_id" 2>/dev/null)
+        if [ "${HW_UUID}" != "${STORED_UUID}" ]; then
+            audit "HARDWARE_MISMATCH" "Expected ${STORED_UUID}, got ${HW_UUID}"
+            echo "DENIED: This is not your machine." >&2
+            exit 1
+        fi
+    else
+        # First run — register this machine
+        mkdir -p "${HOME}/.l7" 2>/dev/null
+        echo "${HW_UUID}" > "${HOME}/.l7/.hardware_id"
+        audit "HARDWARE_REGISTERED" "Trusted machine: ${HW_UUID}"
+        echo "Trusted machine registered."
+    fi
+}
+
+# Audit trail — every action logged
+audit() {
+    local ACTION="$1"
+    local DETAIL="$2"
+    echo "${TIMESTAMP} | ${ACTION} | ${DETAIL}" >> "${AUDIT_DIR}/keykeeper.log"
+}
+
+# ---- Gateway-Mediated Rotation ----
+# The window: old delegate stays alive until new one is confirmed
+
+rotate_with_window() {
+    local SERVICE="$1"
+
+    # Step 1: Retrieve current (old) delegate
+    OLD_PASS=$(security find-generic-password -a "${KEYCHAIN_PREFIX}" -s "L7 Delegate: ${SERVICE}" -w 2>/dev/null)
+    if [ $? -ne 0 ]; then
+        echo "No delegate found for: ${SERVICE}. Use 'enroll' first." >&2
+        return 1
+    fi
+
+    # Step 2: Generate new delegate
+    NEW_PASS=$(generate_delegate)
+
+    # Step 3: Store old delegate in retired holding (the window)
+    security delete-generic-password -a "${KEYCHAIN_RETIRED}" -s "L7 Retired: ${SERVICE}" > /dev/null 2>&1
+    security add-generic-password \
+        -a "${KEYCHAIN_RETIRED}" \
+        -s "L7 Retired: ${SERVICE}" \
+        -w "${OLD_PASS}" \
+        -T "" \
+        -U 2>/dev/null
+
+    # Step 4: Store new delegate as active
+    security delete-generic-password -a "${KEYCHAIN_PREFIX}" -s "L7 Delegate: ${SERVICE}" > /dev/null 2>&1
+    security add-generic-password \
+        -a "${KEYCHAIN_PREFIX}" \
+        -s "L7 Delegate: ${SERVICE}" \
+        -w "${NEW_PASS}" \
+        -T "" \
+        -U 2>/dev/null
+
+    if [ $? -eq 0 ]; then
+        audit "ROTATE_WINDOW_OPEN" "${SERVICE} — old delegate preserved, new delegate active"
+        echo "New delegate created for: ${SERVICE}"
+        echo "Old delegate preserved in window — both are valid."
+        echo "Run './keykeeper confirm ${SERVICE}' after updating the external service."
+        echo "Run './keykeeper rollback ${SERVICE}' if the new delegate fails."
+    else
+        echo "Failed to rotate delegate." >&2
+        return 1
+    fi
+}
+
+# ---- Commands ----
+
+case "${1}" in
+    enroll)
+        # Enroll a new external service — create its first delegate
+        [ -z "$2" ] && echo "Usage: ./keykeeper enroll <service>" && exit 1
+        SERVICE="$2"
+
+        echo "Verifying sovereign identity..."
+        verify_hardware
+        authenticate_sovereign
+
+        PASS=$(generate_delegate)
+
+        security delete-generic-password -a "${KEYCHAIN_PREFIX}" -s "L7 Delegate: ${SERVICE}" > /dev/null 2>&1
+        security add-generic-password \
+            -a "${KEYCHAIN_PREFIX}" \
+            -s "L7 Delegate: ${SERVICE}" \
+            -w "${PASS}" \
+            -T "" \
+            -U 2>/dev/null
+
+        if [ $? -eq 0 ]; then
+            audit "ENROLL" "${SERVICE} — delegate created (${#PASS} chars)"
+            echo ""
+            echo "Delegate created for: ${SERVICE}"
+            echo "Strength: ${#PASS} characters, cryptographic random"
+            echo ""
+            echo "The delegate has been copied to your clipboard."
+            echo "Paste it into ${SERVICE}'s password field. You will never see it again."
+            echo "Clipboard clears in 45 seconds."
+            echo ""
+            echo -n "${PASS}" | pbcopy
+            (sleep 45 && echo -n "" | pbcopy) &
+        else
+            echo "Failed to create delegate." >&2
+            exit 1
+        fi
+        ;;
+
+    send)
+        # Retrieve a delegate to clipboard — for pasting into a service login
+        [ -z "$2" ] && echo "Usage: ./keykeeper send <service>" && exit 1
+        SERVICE="$2"
+
+        echo "Verifying sovereign identity..."
+        verify_hardware
+        authenticate_sovereign
+
+        PASS=$(security find-generic-password -a "${KEYCHAIN_PREFIX}" -s "L7 Delegate: ${SERVICE}" -w 2>/dev/null)
+        if [ $? -eq 0 ]; then
+            echo -n "${PASS}" | pbcopy
+            audit "SEND" "${SERVICE} — delegate dispatched to clipboard"
+            echo "Delegate for ${SERVICE} dispatched to clipboard."
+            echo "Clipboard clears in 45 seconds."
+            (sleep 45 && echo -n "" | pbcopy) &
+        else
+            echo "No delegate found for: ${SERVICE}" >&2
+            echo "Use './keykeeper enroll ${SERVICE}' first."
+            exit 1
+        fi
+        ;;
+
+    rotate)
+        # Rotate a delegate with safety window
+        [ -z "$2" ] && echo "Usage: ./keykeeper rotate <service>" && exit 1
+        SERVICE="$2"
+
+        echo "Verifying sovereign identity..."
+        verify_hardware
+        authenticate_sovereign
+
+        rotate_with_window "${SERVICE}"
+
+        # Copy new delegate to clipboard for updating the service
+        NEW_PASS=$(security find-generic-password -a "${KEYCHAIN_PREFIX}" -s "L7 Delegate: ${SERVICE}" -w 2>/dev/null)
+        echo -n "${NEW_PASS}" | pbcopy
+        echo ""
+        echo "New delegate copied to clipboard. Paste into ${SERVICE}."
+        echo "Clipboard clears in 45 seconds."
+        (sleep 45 && echo -n "" | pbcopy) &
+        ;;
+
+    confirm)
+        # Confirm rotation succeeded — retire old delegate permanently
+        [ -z "$2" ] && echo "Usage: ./keykeeper confirm <service>" && exit 1
+        SERVICE="$2"
+
+        echo "Verifying sovereign identity..."
+        verify_hardware
+        authenticate_sovereign
+
+        security delete-generic-password -a "${KEYCHAIN_RETIRED}" -s "L7 Retired: ${SERVICE}" > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            audit "ROTATE_CONFIRMED" "${SERVICE} — old delegate destroyed, window closed"
+            echo "Rotation confirmed for: ${SERVICE}"
+            echo "Old delegate destroyed. Window closed."
+        else
+            echo "No pending rotation for: ${SERVICE}" >&2
+        fi
+        ;;
+
+    rollback)
+        # Rotation failed — restore old delegate
+        [ -z "$2" ] && echo "Usage: ./keykeeper rollback <service>" && exit 1
+        SERVICE="$2"
+
+        echo "Verifying sovereign identity..."
+        verify_hardware
+        authenticate_sovereign
+
+        OLD_PASS=$(security find-generic-password -a "${KEYCHAIN_RETIRED}" -s "L7 Retired: ${SERVICE}" -w 2>/dev/null)
+        if [ $? -ne 0 ]; then
+            echo "No retired delegate to restore for: ${SERVICE}" >&2
+            exit 1
+        fi
+
+        # Restore old delegate as active
+        security delete-generic-password -a "${KEYCHAIN_PREFIX}" -s "L7 Delegate: ${SERVICE}" > /dev/null 2>&1
+        security add-generic-password \
+            -a "${KEYCHAIN_PREFIX}" \
+            -s "L7 Delegate: ${SERVICE}" \
+            -w "${OLD_PASS}" \
+            -T "" \
+            -U 2>/dev/null
+
+        # Clean up retired entry
+        security delete-generic-password -a "${KEYCHAIN_RETIRED}" -s "L7 Retired: ${SERVICE}" > /dev/null 2>&1
+
+        audit "ROTATE_ROLLBACK" "${SERVICE} — old delegate restored, new delegate discarded"
+        echo "Rolled back: ${SERVICE}"
+        echo "Old delegate restored. You were never locked out."
+        ;;
+
+    list)
+        echo "Verifying sovereign identity..."
+        verify_hardware
+        authenticate_sovereign
+
+        echo ""
+        echo "L7 Managed Services (delegates only — the sovereign is you):"
+        echo "---"
+        security dump-keychain 2>/dev/null | grep "\"svce\"" | grep "L7 Delegate:" | sed 's/.*"L7 Delegate: //' | sed 's/".*//' | while read SERVICE; do
+            # Check if rotation is pending
+            security find-generic-password -a "${KEYCHAIN_RETIRED}" -s "L7 Retired: ${SERVICE}" > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "  ${SERVICE}  [rotation pending — confirm or rollback]"
+            else
+                echo "  ${SERVICE}"
+            fi
+        done
+        echo "---"
+        echo "Delegates are disposable. They rotate. They expire."
+        echo "The true password is your fingerprint. It does not change."
+        ;;
+
+    audit)
+        echo "Verifying sovereign identity..."
+        verify_hardware
+        authenticate_sovereign
+
+        if [ -f "${AUDIT_DIR}/keykeeper.log" ]; then
+            echo ""
+            echo "L7 Keykeeper Audit Trail:"
+            echo "---"
+            tail -20 "${AUDIT_DIR}/keykeeper.log"
+            echo "---"
+            echo "Full log: ${AUDIT_DIR}/keykeeper.log"
+        else
+            echo "No audit entries yet."
+        fi
+        ;;
+
+    *)
+        echo "L7 Keykeeper — Gateway-Mediated Credential Management"
+        echo ""
+        echo "The true password is you. Everything else is a delegate."
+        echo ""
+        echo "  ./keykeeper enroll <service>   — Create a delegate for a new service"
+        echo "  ./keykeeper send <service>     — Dispatch delegate to clipboard (45s)"
+        echo "  ./keykeeper rotate <service>   — Rotate with safety window"
+        echo "  ./keykeeper confirm <service>  — Close window after successful rotation"
+        echo "  ./keykeeper rollback <service> — Restore old delegate if rotation fails"
+        echo "  ./keykeeper list               — Show managed services"
+        echo "  ./keykeeper audit              — View recent activity"
+        echo ""
+        echo "The delegates change. The sovereign does not."
+        ;;
+esac

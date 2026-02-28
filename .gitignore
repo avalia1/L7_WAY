@@ -1,1 +1,4 @@
 node_modules/
+.vault/
+.DS_Store
+empire/empire.log
