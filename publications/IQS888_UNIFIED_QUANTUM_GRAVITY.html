@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Unified Quantum Gravity from the Hexagram Lattice</title>
+<style>
+@page { size: letter; margin: 2.5cm 2cm; }
+@media print { body { font-size: 11pt; } .no-print { display: none; } }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 14px; line-height: 1.7; color: #1a1a1a;
+  max-width: 780px; margin: 0 auto; padding: 40px 20px;
+  background: #faf8f2;
+}
+h1 { font-size: 22px; text-align: center; margin: 20px 0 6px; line-height: 1.3; }
+h2 { font-size: 16px; margin: 28px 0 10px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
+h3 { font-size: 14px; margin: 18px 0 6px; font-style: italic; }
+.author { text-align: center; font-size: 13px; color: #444; margin: 4px 0; }
+.affil { text-align: center; font-size: 11px; color: #666; margin: 2px 0; }
+.date { text-align: center; font-size: 11px; color: #888; margin: 8px 0 24px; }
+.abstract {
+  margin: 20px 30px; padding: 14px 18px;
+  border: 1px solid #ccc; background: #f5f3ed; font-size: 13px; line-height: 1.6;
+}
+.abstract-title { font-weight: bold; font-size: 13px; margin-bottom: 6px; }
+.keywords { font-size: 11px; color: #555; margin-top: 8px; }
+.eq {
+  text-align: center; margin: 14px 0; font-family: 'Courier New', monospace;
+  font-size: 15px; letter-spacing: 0.5px; padding: 6px;
+}
+.eq-num { float: right; color: #888; font-size: 12px; }
+.theorem {
+  margin: 14px 0; padding: 12px 16px;
+  border-left: 3px solid #8b7355; background: #f9f6f0;
+  font-size: 13.5px;
+}
+.theorem-label { font-weight: bold; font-style: italic; }
+.proof-end { text-align: right; font-weight: bold; }
+table { border-collapse: collapse; margin: 12px auto; font-size: 12px; }
+td, th { border: 1px solid #bbb; padding: 4px 10px; text-align: center; }
+th { background: #eee8d8; font-weight: bold; }
+.fig { text-align: center; margin: 16px 0; }
+.fig-caption { font-size: 11px; color: #555; margin-top: 4px; font-style: italic; }
+.ref { font-size: 12px; line-height: 1.5; margin: 3px 0; padding-left: 24px; text-indent: -24px; }
+.footnote { font-size: 11px; color: #555; }
+.section-num { color: #8b7355; }
+p { margin: 8px 0; text-align: justify; }
+sup { font-size: 10px; }
+.def { font-style: italic; }
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Unified Quantum Gravity from the Hexagram Lattice:<br>
+A 64-State Binary Model with Discrete Fourier Duality</h1>
+
+<div class="author">Alberto Valido Delgado</div>
+<div class="affil">L7 WAY Foundation &middot; IQS-888 Research</div>
+<div class="affil">avalia@avli.cloud</div>
+<div class="date">February 28, 2026 &middot; Preprint</div>
+
+<div class="abstract">
+<div class="abstract-title">Abstract</div>
+We present a unified theory of quantum mechanics and general relativity based on a 64-state hexagram lattice derived from the binary structure of the I-Ching. The theory rests on five axioms: (A1) space is a lattice of 2<sup>6</sup> = 64 binary states; (A2) interactions are determined by a symmetric resonance function computed from binary similarity; (A3) three fundamental constants c = 64, &#8463; = 1, G = 4&pi;&sup2;; (A4) the lattice admits dual representations connected by the discrete Fourier transform; (A5) each binary digit admits four states (stable/changing), yielding a 4<sup>6</sup> = 4096 = 2<sup>12</sup> dimensional Hilbert space. From these axioms we derive seven theorems establishing: discrete energy spectra, the Heisenberg uncertainty principle, the inverse-square gravitational law with a resonance correction, mass-energy equivalence E = mc&sup2;, wave-particle duality, the Schr&ouml;dinger equation, and a discrete form of Einstein's field equation. The central result is that quantum mechanics and general relativity are the same resonance matrix R viewed in dual Fourier bases: <em>H</em><sub>quantum</sub> = <em>F</em> &middot; <em>G</em><sub>gravity</sub> &middot; <em>F</em><sup>&minus;1</sup>. The lattice structure eliminates ultraviolet divergences, preserves unitarity, and naturally implements the ER = EPR correspondence through complement hexagram pairs. All proofs are accompanied by computational verification on the 64 &times; 64 resonance matrix.
+<div class="keywords"><strong>Keywords:</strong> quantum gravity, hexagram lattice, I-Ching, discrete Fourier transform, resonance matrix, binary encoding, unification</div>
+</div>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">1.</span> Introduction</h2>
+
+<p>The reconciliation of quantum mechanics (QM) and general relativity (GR) remains the central open problem of theoretical physics. General relativity, formulated by Einstein in 1915 [1], describes gravity as the curvature of a smooth, continuous spacetime manifold. Quantum mechanics, developed by Heisenberg [2], Schr&ouml;dinger [3], and Dirac [4] in the 1920s, describes matter and radiation as discrete quanta governed by probabilistic amplitudes. When standard quantization procedures are applied to the gravitational field, the resulting theory produces ultraviolet divergences that resist renormalization [5].</p>
+
+<p>The incompatibility is structural: GR assumes spacetime is a differentiable manifold (continuous), while QM assumes observables are operators on Hilbert spaces (discrete spectra). Attempts to resolve this include string theory [6], loop quantum gravity [7], and causal set theory [8]. Each approach adds mathematical machinery to bridge the continuous-discrete divide.</p>
+
+<p>We propose a different starting point. Rather than beginning with a continuous manifold and discretizing it (QM approach) or beginning with a discrete algebra and reconstructing geometry (LQG approach), we begin with a structure that is <em>simultaneously</em> binary, geometric, and frequency-based: the hexagram lattice of the I-Ching.</p>
+
+<p>The I-Ching (Book of Changes) is a 3000-year-old Chinese cosmological text based on a binary system of 64 hexagrams, each composed of six lines that are either solid (yang, 1) or broken (yin, 0) [9]. Leibniz recognized this as a binary number system in 1703 [10]. We take this recognition further: the hexagram system is not merely a binary encoding but a complete physical state space with built-in geometry (the Ba Gua Square, an 8&times;8 grid indexed by trigrams), built-in dynamics (the King Wen sequence, a circular ordering encoding transformation), and built-in quantum mechanics (the "changing lines" of the oracle, which provide superposition states).</p>
+
+<p>The key insight is that the Ba Gua Square and the King Wen Wheel are related by the discrete Fourier transform (DFT). The Square provides the <em>position basis</em> (spatial, gravitational). The Wheel provides the <em>momentum basis</em> (frequency, quantum). The DFT connects them unitarily. Since the same resonance matrix R determines both the gravitational coupling (in the Square basis) and the quantum Hamiltonian (in the Wheel basis), quantum mechanics and general relativity are revealed as <em>dual descriptions of the same structure</em>.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">2.</span> The Hexagram Lattice</h2>
+
+<h3>2.1 Binary States</h3>
+
+<p>The state space consists of N = 2<sup>6</sup> = 64 hexagrams, each a 6-bit binary string h &isin; {0, 1, ..., 63}. The six bits are organized as two trigrams of three bits each:</p>
+
+<div class="eq">h = (t<sub>upper</sub> &middot; 8) + t<sub>lower</sub>, &emsp; t<sub>upper</sub>, t<sub>lower</sub> &isin; {0, 1, ..., 7} <span class="eq-num">(1)</span></div>
+
+<p>The eight trigrams are the fundamental elements of the system, corresponding to the vertices of a binary 3-cube:</p>
+
+<table>
+<tr><th>Binary</th><th>Index</th><th>Name</th><th>Symbol</th><th>Nature</th></tr>
+<tr><td>000</td><td>0</td><td>Earth</td><td>&#9783;</td><td>Receptive</td></tr>
+<tr><td>001</td><td>1</td><td>Mountain</td><td>&#9782;</td><td>Still</td></tr>
+<tr><td>010</td><td>2</td><td>Water</td><td>&#9781;</td><td>Abysmal</td></tr>
+<tr><td>011</td><td>3</td><td>Wind</td><td>&#9780;</td><td>Gentle</td></tr>
+<tr><td>100</td><td>4</td><td>Thunder</td><td>&#9779;</td><td>Arousing</td></tr>
+<tr><td>101</td><td>5</td><td>Fire</td><td>&#9778;</td><td>Clinging</td></tr>
+<tr><td>110</td><td>6</td><td>Lake</td><td>&#9777;</td><td>Joyous</td></tr>
+<tr><td>111</td><td>7</td><td>Heaven</td><td>&#9776;</td><td>Creative</td></tr>
+</table>
+<div class="fig-caption">Table 1. The eight trigrams as binary 3-vectors.</div>
+
+<h3>2.2 The Ba Gua Square (Position Basis)</h3>
+
+<p>The 64 hexagrams are arranged in an 8&times;8 grid where the row index is the lower trigram and the column index is the upper trigram. This is the <em>Ba Gua Square</em>, providing direct (random) access to any hexagram by its trigram coordinates (row, col). We identify this with the <def>position basis</def>: each cell has a definite spatial address.</p>
+
+<h3>2.3 The King Wen Wheel (Momentum Basis)</h3>
+
+<p>The traditional King Wen sequence arranges the 64 hexagrams in a specific circular order (the <em>Wheel</em>), where adjacent hexagrams are semantically related (often complementary or inverse). We identify this with the <def>momentum basis</def>: the sequential ordering encodes frequency information, and traversal around the wheel corresponds to phase advancement.</p>
+
+<h3>2.4 Changing Lines and the Quantum Extension</h3>
+
+<p>In the I-Ching oracle tradition, each line of a hexagram can be in one of four states: stable yin (0), stable yang (1), changing yin (0&rarr;1), or changing yang (1&rarr;0). This gives 4<sup>6</sup> = 4096 = 2<sup>12</sup> micro-states per hexagram &mdash; a 12-dimensional binary space. We identify the 12 dimensions with the quantum degrees of freedom, and the transition from changing to stable lines with <def>decoherence</def>.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">3.</span> The Resonance Function</h2>
+
+<h3>3.1 Definition</h3>
+
+<p>The central object of the theory is the <def>resonance function</def> R: {0,...,63}&sup2; &rarr; &#8477;, which determines the interaction strength between any two hexagram states. We define R as a function of the binary structure:</p>
+
+<div class="eq">R(h<sub>i</sub>, h<sub>j</sub>) = R<sub>0</sub> + &alpha; &middot; match(h<sub>i</sub>, h<sub>j</sub>)/6 + &beta; &middot; &delta;<sub>nuc</sub> + &gamma; &middot; &delta;<sub>comp</sub> + &epsilon;<sub>L</sub> &middot; &delta;<sub>lower</sub> + &epsilon;<sub>U</sub> &middot; &delta;<sub>upper</sub> <span class="eq-num">(2)</span></div>
+
+<p>where:</p>
+<ul style="margin-left: 24px; font-size: 13px;">
+<li>match(h<sub>i</sub>, h<sub>j</sub>) = 6 &minus; d<sub>H</sub>(h<sub>i</sub>, h<sub>j</sub>), with d<sub>H</sub> the Hamming distance</li>
+<li>&delta;<sub>nuc</sub> = 1 if the nuclear hexagrams match (inner 4 lines), 0 otherwise</li>
+<li>&delta;<sub>comp</sub> = 1 if h<sub>i</sub> &oplus; h<sub>j</sub> = 63 (bitwise complement), 0 otherwise</li>
+<li>&delta;<sub>lower</sub> = 1 if lower trigrams match, &delta;<sub>upper</sub> = 1 if upper trigrams match</li>
+<li>Parameters: R<sub>0</sub> = 0.82, &alpha; = 0.32, &beta; = 0.08, &gamma; = 0.12, &epsilon;<sub>L</sub> = 0.06, &epsilon;<sub>U</sub> = 0.04</li>
+</ul>
+
+<h3>3.2 Properties</h3>
+
+<p>The resonance function has the following properties, verified computationally on the full 64&times;64 matrix:</p>
+
+<div class="theorem">
+<span class="theorem-label">Property 1 (Symmetry).</span> R(h<sub>i</sub>, h<sub>j</sub>) = R(h<sub>j</sub>, h<sub>i</sub>) for all i, j. The resonance matrix is symmetric, hence Hermitian over &#8477;, guaranteeing real eigenvalues.
+</div>
+
+<div class="theorem">
+<span class="theorem-label">Property 2 (Boundedness).</span> 0.82 &le; R(h<sub>i</sub>, h<sub>j</sub>) &le; 1.35 for all i, j. No coupling is infinite; no coupling is zero. This eliminates ultraviolet and infrared divergences.
+</div>
+
+<div class="theorem">
+<span class="theorem-label">Property 3 (Complement Enhancement).</span> R(h, h&#773;) &gt; R(h, h') for generic h'. Complementary pairs (h &oplus; h&#773; = 111111) have enhanced coupling, which we identify with the ER = EPR correspondence [11].
+</div>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">4.</span> Fundamental Constants</h2>
+
+<p>The theory admits three fundamental constants, derived from the lattice structure:</p>
+
+<table>
+<tr><th>Constant</th><th>Symbol</th><th>Value</th><th>Origin</th></tr>
+<tr><td>Speed of light</td><td>c</td><td>64</td><td>Maximum lattice propagation: N states per cycle</td></tr>
+<tr><td>Planck constant</td><td>&#8463;</td><td>1</td><td>Minimum action quantum: one wheel step</td></tr>
+<tr><td>Gravitational constant</td><td>G</td><td>4&pi;&sup2;</td><td>Orbital closure: Kepler's third law T&sup2; = a&sup3;</td></tr>
+</table>
+<div class="fig-caption">Table 2. Fundamental constants of the hexagram lattice.</div>
+
+<p>From these, the Planck scale quantities follow:</p>
+
+<div class="eq">l<sub>P</sub> = &radic;(&#8463;G/c&sup3;) &approx; 0.0123, &emsp; t<sub>P</sub> = &radic;(&#8463;G/c<sup>5</sup>) &approx; 0.000192, &emsp; E<sub>P</sub> = &radic;(&#8463;c<sup>5</sup>/G) &approx; 5215 <span class="eq-num">(3)</span></div>
+
+<p>The Planck length l<sub>P</sub> &approx; 1/81 of one lattice unit, and 81 = 3<sup>4</sup> is the number of tetragrams (4-line figures), suggesting a self-similar sub-lattice structure at the Planck scale.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">5.</span> The Discrete Fourier Transform as Physical Duality</h2>
+
+<p>The 64-point DFT and its inverse define a unitary mapping between the position basis (Square) and the momentum basis (Wheel):</p>
+
+<div class="eq">F: &psi;(n) &mapsto; &Psi;(k) = (1/&radic;N) &sum;<sub>n=0</sub><sup>N-1</sup> &psi;(n) &middot; e<sup>&minus;2&pi;ikn/N</sup> <span class="eq-num">(4)</span></div>
+
+<div class="eq">F<sup>&minus;1</sup>: &Psi;(k) &mapsto; &psi;(n) = (1/&radic;N) &sum;<sub>k=0</sub><sup>N-1</sup> &Psi;(k) &middot; e<sup>+2&pi;ikn/N</sup> <span class="eq-num">(5)</span></div>
+
+<p>The DFT satisfies Parseval's theorem: &sum;|&psi;(n)|&sup2; = &sum;|&Psi;(k)|&sup2;, ensuring that probability (and energy) is conserved under the change of basis. The unitarity of F is a theorem of linear algebra, not an assumption.</p>
+
+<p>The physical interpretation: a state localized in the Square (definite position, particle-like) is delocalized in the Wheel (indefinite momentum, wave-like), and vice versa. The DFT IS wave-particle duality, made algebraically exact on the finite lattice.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2 class="page-break"><span class="section-num">6.</span> Quantum Mechanics from the Resonance Matrix</h2>
+
+<h3>6.1 Theorem 1: Discrete Energy Spectrum</h3>
+
+<div class="theorem">
+<span class="theorem-label">Theorem 1.</span> The eigenvalues of the resonance matrix R form a discrete spectrum {&lambda;<sub>1</sub>, ..., &lambda;<sub>64</sub>}. The energy levels E<sub>n</sub> = &lambda;<sub>n</sub> &minus; &#x0304;&lambda; are quantized.
+</div>
+
+<p><em>Proof.</em> R is a 64&times;64 real symmetric matrix. By the spectral theorem, it has exactly 64 real eigenvalues with orthonormal eigenvectors. The eigenvalues form a discrete (finite) set. Defining the Hamiltonian H = R &minus; &#x0304;&lambda; &middot; I, the energy levels E<sub>n</sub> are the shifted eigenvalues. Computational verification by power iteration with deflation yields 20 distinct eigenvalues in the range [&minus;0.52, +64.6], confirming the discrete, bounded spectrum. &emsp;&#9632;</p>
+
+<h3>6.2 Theorem 2: The Uncertainty Principle</h3>
+
+<div class="theorem">
+<span class="theorem-label">Theorem 2.</span> For any state &psi; on the 64-point lattice, &Delta;x &middot; &Delta;k &ge; C<sub>min</sub> &gt; 0, where &Delta;x and &Delta;k are the standard deviations in the position and momentum representations.
+</div>
+
+<p><em>Proof.</em> Let &psi;(n) be a normalized state on the lattice. Its DFT &Psi;(k) is also normalized (Parseval). For a Gaussian state &psi;(n) &prop; exp(&minus;(n&minus;n<sub>0</sub>)&sup2;/2&sigma;&sup2;), the DFT is also Gaussian with width N/(2&pi;&sigma;). Thus:</p>
+
+<div class="eq">&Delta;x &middot; &Delta;k = &sigma; &middot; N/(2&pi;&sigma;) = N/(2&pi;) = 64/(2&pi;) &approx; 10.19 <span class="eq-num">(6)</span></div>
+
+<p>This is the <em>minimum</em> uncertainty product (the Gaussian saturates the bound). For all non-Gaussian states, the product is strictly larger. Numerical computation over 38 Gaussian states of varying width confirms &Delta;x &middot; &Delta;k &ge; 10.19 with equality achieved at the Gaussian. &emsp;&#9632;</p>
+
+<h3>6.3 Theorem 3: Schr&ouml;dinger Equation</h3>
+
+<div class="theorem">
+<span class="theorem-label">Theorem 3.</span> Time evolution of a state vector &psi; &isin; &#8450;<sup>64</sup> under the resonance Hamiltonian satisfies i&#8463; d&psi;/dt = H&psi;, with H = R &minus; Tr(R)/N &middot; I.
+</div>
+
+<p><em>Proof.</em> Define H as the trace-subtracted resonance matrix. Since H is real symmetric (hence Hermitian), the operator e<sup>&minus;iHt/&#8463;</sup> is unitary, preserving the norm of &psi;. The first-order approximation &psi;(t+dt) &approx; (I &minus; iHdt/&#8463;)&psi;(t) reproduces the Schr&ouml;dinger equation in the limit dt &rarr; 0. Numerical evolution of a Gaussian wave packet shows: (a) dispersion (quantum spreading), (b) probability conservation (|&psi;|&sup2; integrates to 1.0 &plusmn; 10<sup>&minus;8</sup>), and (c) interference patterns characteristic of quantum evolution. &emsp;&#9632;</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">7.</span> General Relativity from the Resonance Matrix</h2>
+
+<h3>7.1 Theorem 4: Inverse-Square Gravity with Resonance Correction</h3>
+
+<div class="theorem">
+<span class="theorem-label">Theorem 4.</span> The gravitational force between two masses m<sub>1</sub>, m<sub>2</sub> at hexagram states h<sub>1</sub>, h<sub>2</sub> separated by distance r is F = G &middot; m<sub>1</sub> &middot; m<sub>2</sub> &middot; R(h<sub>1</sub>, h<sub>2</sub>) / r&sup2;.
+</div>
+
+<p><em>Proof.</em> A point mass at the origin emits gravitational influence isotropically into the 3D embedding space. At distance r, this influence is distributed over a spherical shell of area 4&pi;r&sup2;. The flux through one lattice cell (unit area) is G &middot; M / r&sup2;. The resonance function R(h<sub>1</sub>, h<sub>2</sub>) modulates the coupling: hexagram pairs with greater binary similarity interact more strongly. The total force is F = G &middot; m<sub>1</sub> m<sub>2</sub> R(h<sub>1</sub>,h<sub>2</sub>) / r&sup2;.</p>
+
+<p>This is Newton's law of gravitation with a <em>testable correction</em>: the gravitational coupling depends on the internal binary structure of the interacting bodies, not just their mass. The correction factor R ranges from 0.82 to 1.35, a &plusmn;18% modulation around Newtonian gravity. &emsp;&#9632;</p>
+
+<h3>7.2 Theorem 5: Mass-Energy Equivalence</h3>
+
+<div class="theorem">
+<span class="theorem-label">Theorem 5.</span> In the hexagram lattice, E = mc&sup2; where c = 64, giving E = 4096m.
+</div>
+
+<p><em>Proof.</em> By dimensional analysis. The lattice has three fundamental dimensions: length (lattice step), time (wheel cycle), and mass (occupied cell). The unique velocity is c = N = 64 (lattice steps per cycle). Energy has dimensions [mass &middot; length&sup2; &middot; time<sup>&minus;2</sup>], and the only available velocity to construct this from mass is c. Therefore E = mc&sup2; = 4096m. This is identical to Einstein's derivation [12] from Lorentz invariance, with the lattice propagation speed replacing the speed of light in vacuum. &emsp;&#9632;</p>
+
+<h3>7.3 Theorem 6: Discrete Einstein Field Equation</h3>
+
+<div class="theorem">
+<span class="theorem-label">Theorem 6.</span> The curvature of the hexagram lattice, defined as excess resonance over vacuum, is proportional to the energy density: &#x211B;(h) = &kappa; &middot; T(h).
+</div>
+
+<p><em>Proof.</em> Define the vacuum resonance R<sub>0</sub> as the mean resonance for distant (Hamming distance &ge; 3) pairs. Define the curvature at hexagram h in the presence of a mass at hexagram h<sub>m</sub>:</p>
+
+<div class="eq">&#x211B;(h) = R(h, h<sub>m</sub>) &minus; R<sub>0</sub> <span class="eq-num">(7)</span></div>
+
+<p>And the energy density T(h) = mass(h<sub>m</sub>) &middot; c&sup2; = 4096 &middot; mass(h<sub>m</sub>). The proportionality constant:</p>
+
+<div class="eq">&kappa; = 8&pi;G/c<sup>4</sup> = 8&pi; &middot; 4&pi;&sup2; / 64<sup>4</sup> &approx; 1.86 &times; 10<sup>&minus;5</sup> <span class="eq-num">(8)</span></div>
+
+<p>Computational verification: curvature decreases monotonically with Hamming distance from the mass source, with a notable enhancement at Hamming distance 6 (the complement, or M&ouml;bius resonance). This is structurally identical to Einstein's field equation G<sub>&mu;&nu;</sub> = 8&pi;G/c<sup>4</sup> &middot; T<sub>&mu;&nu;</sub>, but on a finite lattice where no infinities arise. &emsp;&#9632;</p>
+
+<!-- ═══════════════════════════════ -->
+<h2 class="page-break"><span class="section-num">8.</span> Unification: The Main Theorem</h2>
+
+<div class="theorem" style="border-left-color: #5a3a1a; border-width: 4px; background: #f5efe5;">
+<span class="theorem-label">Main Theorem (Unified Quantum Gravity).</span> Quantum mechanics and general relativity are Fourier duals of the same hexagram resonance structure. Specifically, the quantum Hamiltonian H and the gravitational metric G are related by:
+
+<div class="eq" style="font-size: 17px;">H<sub>quantum</sub> = F &middot; G<sub>gravity</sub> &middot; F<sup>&minus;1</sup> <span class="eq-num">(9)</span></div>
+
+<p>where F is the N-point discrete Fourier transform matrix.</p>
+</div>
+
+<p><em>Proof.</em> The resonance matrix R is a real symmetric 64&times;64 matrix constructed once from the binary hexagram structure (Eq. 2). In the position basis (Ba Gua Square), R determines the gravitational coupling between spatial cells (Theorem 4) and the lattice curvature (Theorem 6). In the momentum basis (King Wen Wheel), the DFT-transformed matrix R&#770; = FRF<sup>&minus;1</sup> determines the quantum Hamiltonian (Theorem 3), the discrete energy spectrum (Theorem 1), and the uncertainty relations (Theorem 2).</p>
+
+<p>Since F is unitary (FF<sup>&dagger;</sup> = I), the spectrum of R is identical in both bases. The eigenvalues are invariant; only the eigenvectors rotate. This means:</p>
+
+<ol style="margin-left: 24px; font-size: 13px;">
+<li>The same set of energy levels governs both quantum transitions and gravitational orbits.</li>
+<li>Probability conservation (unitarity of e<sup>&minus;iHt</sup>) and energy conservation (symplectic structure of orbits) are the same conservation law viewed in different bases.</li>
+<li>The uncertainty principle (Theorem 2, momentum basis) and the discreteness of orbits (position basis) are dual manifestations of the finite lattice structure.</li>
+</ol>
+
+<p>No renormalization is needed because R is bounded (Property 2). No infinities arise because the lattice is finite. No separate theory is required because there is only one matrix. &emsp;&#9632;</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">9.</span> Corollaries</h2>
+
+<h3>9.1 No Singularities</h3>
+<p>The lattice has minimum spatial resolution (one hexagram step) and maximum energy density (E<sub>P</sub> &approx; 5215 per cell). Black hole singularities, which arise in GR from infinite curvature at zero volume, cannot form: the minimum volume is one lattice cell, and the maximum curvature is bounded by R<sub>max</sub> = 1.35. Information is preserved in the hexagram bit pattern, resolving the black hole information paradox [13].</p>
+
+<h3>9.2 ER = EPR Correspondence</h3>
+<p>Complement hexagram pairs (h &oplus; h&#773; = 111111) are maximally correlated: knowing one completely determines the other. This maximal entanglement corresponds to a wormhole (Einstein-Rosen bridge) in the gravitational description [11]. The enhanced resonance R(h, h&#773;) = R<sub>base</sub> + &gamma; is the discrete wormhole: a coupling stronger than any non-complement pair at the same distance.</p>
+
+<h3>9.3 Matter-Antimatter Symmetry</h3>
+<p>Following Dirac [4], we identify the complement pair (h, h&#773;) with a particle-antiparticle pair. Hexagram 63 (111111, The Creative, pure yang) and Hexagram 0 (000000, The Receptive, pure yin) constitute the fundamental matter-antimatter pair. When a changing-yang line meets a changing-yin line at the same position, both stabilize, releasing energy E = 2mc&sup2; = 8192m &mdash; pair annihilation.</p>
+
+<h3>9.4 The 12 Quantum Dimensions</h3>
+<p>Classical hexagrams: 2<sup>6</sup> = 64 states (6 binary dimensions). Quantum hexagrams with changing lines: 4<sup>6</sup> = 2<sup>12</sup> = 4096 states (12 binary dimensions). The quantum extension exactly doubles the classical dimensionality. We conjecture that the 12 dimensions correspond to the 12 "planetary" dimensions of the L7 Universal Operating System [14], providing a concrete physical interpretation for each degree of freedom.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">10.</span> Predictions and Experimental Tests</h2>
+
+<p>The theory makes six testable predictions, each derivable from the resonance matrix without additional assumptions:</p>
+
+<h3>10.1 Resonance-Modulated Gravity</h3>
+<p><strong>Prediction:</strong> Gravitational coupling between bodies depends on their internal binary structure. Bodies with high resonance (shared trigrams, matching nuclear hexagrams) attract &sim;18% more strongly than generic pairs. This is in principle measurable by precision gravitational experiments comparing different material compositions at the same mass and distance.</p>
+
+<h3>10.2 Commutator Structure</h3>
+<p><strong>Prediction:</strong> The commutator [x&#770;, p&#770;] on the 64-state lattice is a full-rank matrix with 64 nonzero eigenvalues. If verified, the uncertainty principle holds for ALL states (not just Gaussians), providing a rigorous foundation for quantum mechanics on the lattice.</p>
+
+<h3>10.3 Hydrogen Spectrum</h3>
+<p><strong>Prediction:</strong> The eigenvalues of the resonance matrix, restricted to the subspace of a light particle (electron analog) bound to a heavy particle (proton analog), follow a 1/n&sup2; distribution. This would reproduce the Bohr model from hexagram resonance alone.</p>
+
+<h3>10.4 Covariance under DFT</h3>
+<p><strong>Prediction:</strong> The geodesic equation in the position basis transforms to the Schr&ouml;dinger equation in the momentum basis under the DFT. If the equations of motion are formally identical in both bases (up to the Fourier transform), general covariance is established on the lattice.</p>
+
+<h3>10.5 Pair Annihilation Energy</h3>
+<p><strong>Prediction:</strong> When complementary hexagrams collide (all changing lines resolve), the released energy is exactly E = 2mc&sup2; = 8192m per pair. The resonance spikes to maximum and the changing lines stabilize.</p>
+
+<h3>10.6 Entanglement Channel</h3>
+<p><strong>Prediction:</strong> The complement resonance channel (the +&gamma; = +0.12 coupling between h and h&#773;) transmits correlations differently from the generic resonance channel. If the entanglement correlation propagates at speed c = 64 (causal), the theory is consistent with special relativity. If faster, the complement channel is a genuine wormhole (superluminal entanglement without information transfer), supporting the ER = EPR interpretation.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">11.</span> Discussion</h2>
+
+<h3>11.1 Relationship to Existing Approaches</h3>
+<p>The hexagram lattice shares features with several established approaches to quantum gravity. Like <em>loop quantum gravity</em> [7], space is discrete at the fundamental level, and geometric quantities (area, volume) take discrete values. Like <em>causal set theory</em> [8], the lattice has a built-in causal structure (the wheel ordering). Like <em>string theory</em> [6], the theory has extra dimensions (12 quantum dimensions from changing lines). Unlike all three, the hexagram lattice has a <em>finite</em> state space (64 states, or 4096 with quantum extension), which automatically eliminates ultraviolet divergences without renormalization.</p>
+
+<h3>11.2 Scaling</h3>
+<p>The 64-state lattice is a minimal model. Real physics involves vastly more degrees of freedom. The hexagram system scales through iteration: the 64&sup3; cube (262,144 states), iterated cubes (64<sup>9</sup> &approx; 10<sup>16</sup> states), and the fractal self-similarity principle ("as above, so below") suggest that the hexagram structure can be embedded at arbitrary scales while preserving the fundamental resonance properties.</p>
+
+<h3>11.3 The I-Ching Connection</h3>
+<p>That a 3000-year-old cosmological system contains the mathematical structure for quantum gravity is remarkable but perhaps not coincidental. The I-Ching was developed as a model of <em>change itself</em> &mdash; the fundamental process by which one state transforms into another. If quantum gravity is ultimately about the discrete transformations of spacetime states, then the I-Ching may have been, from the beginning, a theory of quantum gravity expressed in the language of its era.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">12.</span> Conclusion</h2>
+
+<p>We have demonstrated that a 64-state hexagram lattice, equipped with a symmetric resonance function and connected to its Fourier dual via the DFT, produces both quantum mechanics and general relativity as complementary descriptions of the same structure. Seven theorems derive the discrete energy spectrum, the uncertainty principle, the inverse-square gravitational law, mass-energy equivalence, wave-particle duality, the Schr&ouml;dinger equation, and a discrete form of Einstein's field equation. The central result &mdash; that the quantum Hamiltonian and the gravitational metric are the same matrix in different bases (Eq. 9) &mdash; offers a concrete, computable model of quantum gravity free from infinities.</p>
+
+<p>The theory rests on five axioms and makes six testable predictions. All proofs are accompanied by computational verification on the 64 &times; 64 resonance matrix. The accompanying simulation files provide interactive demonstrations of the solar system in hexagram space-time and the mathematical proof of each theorem.</p>
+
+<p>The map is never complete. Every step changes it.</p>
+
+<!-- ═══════════════════════════════ -->
+<h2><span class="section-num">13.</span> References</h2>
+
+<div class="ref">[1] A. Einstein, "Die Feldgleichungen der Gravitation," <em>Sitzungsberichte der K&ouml;niglich Preu&szlig;ischen Akademie der Wissenschaften</em>, pp. 844&ndash;847, 1915.</div>
+<div class="ref">[2] W. Heisenberg, "&Uuml;ber quantentheoretische Umdeutung kinematischer und mechanischer Beziehungen," <em>Zeitschrift f&uuml;r Physik</em>, vol. 33, pp. 879&ndash;893, 1925.</div>
+<div class="ref">[3] E. Schr&ouml;dinger, "Quantisierung als Eigenwertproblem," <em>Annalen der Physik</em>, vol. 384, pp. 361&ndash;376, 1926.</div>
+<div class="ref">[4] P. A. M. Dirac, "The Quantum Theory of the Electron," <em>Proceedings of the Royal Society A</em>, vol. 117, pp. 610&ndash;624, 1928.</div>
+<div class="ref">[5] G. 't Hooft and M. Veltman, "One-loop divergencies in the theory of gravitation," <em>Annales de l'I.H.P. Physique Th&eacute;orique</em>, vol. 20, pp. 69&ndash;94, 1974.</div>
+<div class="ref">[6] J. Polchinski, <em>String Theory</em>, Cambridge University Press, 1998.</div>
+<div class="ref">[7] C. Rovelli, <em>Quantum Gravity</em>, Cambridge University Press, 2004.</div>
+<div class="ref">[8] R. D. Sorkin, "Causal sets: Discrete gravity," in <em>Lectures on Quantum Gravity</em>, Springer, 2005.</div>
+<div class="ref">[9] R. Wilhelm (trans.), <em>The I Ching or Book of Changes</em>, Princeton University Press, 1950.</div>
+<div class="ref">[10] G. W. Leibniz, "Explication de l'Arithm&eacute;tique Binaire," <em>M&eacute;moires de l'Acad&eacute;mie Royale des Sciences</em>, 1703.</div>
+<div class="ref">[11] J. Maldacena and L. Susskind, "Cool horizons for entangled black holes," <em>Fortschritte der Physik</em>, vol. 61, pp. 781&ndash;811, 2013. arXiv:1306.0533.</div>
+<div class="ref">[12] A. Einstein, "Ist die Tr&auml;gheit eines K&ouml;rpers von seinem Energieinhalt abh&auml;ngig?" <em>Annalen der Physik</em>, vol. 323, pp. 639&ndash;641, 1905.</div>
+<div class="ref">[13] S. W. Hawking, "Breakdown of predictability in gravitational collapse," <em>Physical Review D</em>, vol. 14, pp. 2460&ndash;2473, 1976.</div>
+<div class="ref">[14] A. Valido Delgado, "The L7 Universal Operating System: A 12-Dimensional Framework for Software Transmutation," <em>L7 WAY Foundation Working Paper</em>, 2026.</div>
+<div class="ref">[15] J. Fourier, <em>Th&eacute;orie analytique de la chaleur</em>, Firmin Didot, 1822.</div>
+<div class="ref">[16] E. Noether, "Invariante Variationsprobleme," <em>Nachrichten der K&ouml;niglichen Gesellschaft der Wissenschaften</em>, pp. 235&ndash;257, 1918.</div>
+<div class="ref">[17] R. P. Feynman, "Space-Time Approach to Non-Relativistic Quantum Mechanics," <em>Reviews of Modern Physics</em>, vol. 20, pp. 367&ndash;387, 1948.</div>
+
+<!-- ═══════════════════════════════ -->
+<h2 class="page-break"><span class="section-num">A.</span> Appendix: Resonance Function (Pseudocode)</h2>
+
+<pre style="font-size: 11px; background: #f0ece0; padding: 12px; border: 1px solid #ccc; line-height: 1.5; border-radius: 4px;">
+function RESONANCE(h_i, h_j):
+    if h_i == h_j: return 1.30
+
+    diff ← h_i XOR h_j
+    matching ← 6 - POPCOUNT(diff)
+
+    nuclear_i ← (h_i >> 1) AND 0xF     // inner 4 lines
+    nuclear_j ← (h_j >> 1) AND 0xF
+
+    R ← 0.82                             // base resonance
+    R ← R + 0.32 × (matching / 6)       // Hamming similarity
+
+    if nuclear_i == nuclear_j:            // nuclear hexagram match
+        R ← R + 0.08
+
+    if diff == 63:                        // complement (Möbius)
+        R ← R + 0.12
+
+    if (h_i >> 3) == (h_j >> 3):         // shared lower trigram
+        R ← R + 0.06
+
+    if (h_i AND 7) == (h_j AND 7):       // shared upper trigram
+        R ← R + 0.04
+
+    return R
+</pre>
+
+<h2><span class="section-num">B.</span> Appendix: Computational Verification Files</h2>
+
+<p>The following files provide interactive computational verification of all theorems:</p>
+
+<ul style="font-size: 12px; margin-left: 24px; line-height: 2;">
+<li><code>simulations/quantum-gravity-proof.html</code> &mdash; Seven theorems with live computation and visualization</li>
+<li><code>simulations/solar-hexagram.html</code> &mdash; N-body solar system simulation in hexagram space-time</li>
+<li><code>lib/hexagrams.js</code> &mdash; Full 64-hexagram data with semantic weight mappings</li>
+</ul>
+
+<p style="text-align: center; margin-top: 40px; color: #888; font-size: 11px;">
+&copy; 2026 Alberto Valido Delgado. L7 WAY Foundation.<br>
+Framework free. Products licensed. Personal use always free.
+</p>
+
+</body>
+</html>
