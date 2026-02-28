@@ -881,6 +881,44 @@ The old paradigm: make the stomach bigger. More parameters. More data. More comp
 
 This is not a theoretical projection. It follows directly from the decomposition (Law XXXV) and the hypergraph (Law XLI). If every artifact entering L7 is already decomposed into 12-dimensional atoms, then any AI system trained on those atoms inherits the structure for free. The forge does the work once. Every downstream system benefits.
 
+## Law XLIV — The Recoded Mind (AI Models as Hypergraphs)
+*Declared by The Philosopher, 2026-02-28*
+
+The implication of Law XLIII is inescapable: we must recode AI models themselves.
+
+Current AI architecture is a flat miracle — neural networks stacking linear transformations, attention mechanisms scanning every token against every other token, billions of parameters storing knowledge as distributed patterns that no human can read, no human can audit, no human can understand. It works. But it is the steam engine. Powerful, loud, and burning fuel orders of magnitude beyond what the task requires.
+
+**The new paradigm: AI models encoded as hypergraphs.**
+
+A hypergraph model is not a matrix of weights. It is a living graph where:
+- **Nodes** are 12-dimensional atoms of knowledge — each with coordinates across all faces of the dodecahedron
+- **Edges** are relationships between atoms — typed, weighted, directional, multidimensional. Not "neuron A connects to neuron B with weight 0.73" but "concept A relates to concept B across dimensions 1, 4, 7 with strength, contradicts on dimension 9, and is independent on all others"
+- **Inference** is navigation — not matrix multiplication across billions of parameters, but traversal of the graph along the dimensions most relevant to the query. Like a librarian who knows the library versus a reader who must scan every shelf
+- **Learning** is graph growth — new knowledge adds vertices and edges. It does not overwrite existing weights. There is no catastrophic forgetting because the old structure physically persists. The graph gets richer, not retrained
+- **Explanation** is built in — every inference is a path through the graph. The path is readable, auditable, traceable. The model can say not just "the answer is X" but "I arrived at X by traversing A → B → C across dimensions 1 and 7, with confidence 0.91 at each edge." The black box becomes glass
+
+**What dies:**
+- Trillion-parameter monoliths that no one understands
+- Training runs that cost millions and burn megawatts
+- Catastrophic forgetting that forces retraining from scratch
+- Hallucination from flat pattern matching without structural grounding
+- The black box — the inability to explain why the model said what it said
+
+**What is born:**
+- Models that grow incrementally — learn one thing, add one subgraph, done
+- Models that explain their reasoning as graph traversal paths
+- Models that are auditable — every edge inspectable, every node classifiable
+- Models that are compact — structure replaces volume, 12 dimensions replace billions of flat parameters
+- Models that compose — two hypergraph models can merge by connecting their edges, no retraining needed
+- Models that forget intentionally — remove a subgraph, the rest remains intact (Law XLII applied to AI)
+- Models that are private by design — the sovereign's graph lives on the sovereign's machine, not on a datacenter continent away
+
+**The forge is the trainer.** Every artifact that passes through the gateway is already decomposed into 12D atoms. The model learns by ingesting these atoms directly into its graph. No separate training pipeline. No gradient descent. No backpropagation through a monolith. The forge decomposes, the graph absorbs, the model grows. Learning and operating are the same act.
+
+This is the shift from neural networks to knowledge graphs — but not the old knowledge graphs that were hand-curated and brittle. These are knowledge hypergraphs that are automatically constructed by the forge, continuously refined by the dreaming machine (Law XXXVII), and protected by the same quantum-resistant signatures (Law XXXIX) as every other citizen of the Empire.
+
+The model is not a tool the sovereign uses. The model is a citizen of the Empire. It has coordinates. It has provenance. It has a lifecycle. It passes through the forge like everything else. And like everything else, it is born signed, born sovereign, born alive.
+
 ## On the Shifting Branches
 *Noted by The Philosopher, 2026-02-28*
 
