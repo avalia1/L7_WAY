@@ -18,6 +18,6 @@
     "ajv": "^8.12.0",
     "js-yaml": "^4.1.0"
   },
-  "author": "AVLI",
+  "author": "AVLI Cloud LLC (Alberto Valido Delgado) <avalia@avli.cloud>",
   "license": "SEE LICENSE FILE"
 }
