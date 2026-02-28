@@ -26,6 +26,7 @@
 |----------|-----------|---------|
 | FOUNDERS_DRAFT v1 | 2026-02-28T03:39:04Z | e1820d452d29efd35a17b76d15a5aed8ac93f66b8cdd71520e537792fb952d0b |
 | FOUNDERS_DRAFT v2 | 2026-02-28T03:42:00Z | ea62ce6fbf3553fb11348ff4e60f1c0f190e8c0871f47aab090ecfa1756f9332 |
+| FOUNDERS_DRAFT v3 (final) | 2026-02-28T03:43:37Z | a155388f446f2bda74b6909b15a7027a3f323dea596e6dec2668b15a5eaac2d6 |
 
 ## Verification Command
 

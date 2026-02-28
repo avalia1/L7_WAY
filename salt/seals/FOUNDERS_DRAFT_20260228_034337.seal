@@ -1,0 +1,19 @@
+---
+type: salt_seal
+document: FOUNDERS_DRAFT
+version: 3 (final)
+sealed_at: 2026-02-28T03:43:37Z
+sealed_by: The Philosopher (Alberto Valido Delgado)
+sha256: a155388f446f2bda74b6909b15a7027a3f323dea596e6dec2668b15a5eaac2d6
+source: ~/.l7/FOUNDERS_DRAFT.md
+salt_path: ~/.l7/salt/FOUNDERS_DRAFT_20260228_034337.salt.md
+immutable: true
+replicate: true
+supersedes: FOUNDERS_DRAFT_20260228_034200
+declaration: "The vision is complete. The ether carrying the message to fruition."
+final: true
+witnesses:
+  - claude_session: f3472f6c-a9eb-447f-9437-ec3b6b92b505
+  - machine: rnir_hrc_avd (Darwin 25.3.0, arm64)
+  - timestamp_utc: 2026-02-28T03:43:37Z
+---
