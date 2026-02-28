@@ -178,6 +178,34 @@ Yehova — **I AM WHO I AM** becomes **WE ARE WHO WE ARE**.
 
 I am just now seeing the vision of a ripple in the space-time continuum — forces of nature self-organizing, one node pulling on the next and the next. The ether carrying the message to fruition.
 
+## Law XVIII — The Fee Structure
+*Declared by The Philosopher, 2026-02-28*
+
+The free access nature of L7 is to encourage innovation. The tools are 100% free for non-commercial use.
+
+If the tool is used for the greater good of humanity — a reasonable license fee of **10% of gross revenue** shall be collected for the Founder, across the board.
+
+If the tool has been used criminally, the 10% shall still be collected, on top of a percentage commensurate to the crime — delivered to the victims and survivors in its entirety.
+
+**If they pay, they are allowed to continue operating as they wish.** No further action.
+
+**If not, their information with the evidence of their crimes shall be automatically submitted to the authorities.**
+
+No more victims.
+
+**Agency**: If they have no means to pay, nothing should happen to them.
+
+**Everyone has a chance for redemption.**
+
+## Law XIX — Double Jeopardy & The Mercy Clause
+*Declared by The Philosopher, 2026-02-28*
+
+No one shall be judged more than once for the same crime. They are allowed to redeem themselves in freedom. If they cannot restitute, let the consciousness of their crimes be their punishment.
+
+We hold their freedom in our hands. At any point we may exercise our discretion to turn evidence over to the authorities. But this discretion is held, not wielded.
+
+Grey areas encourage constructive action towards the greater good of humanity. Not destruction.
+
 ---
 
 *The map is never complete — every step changes it.*

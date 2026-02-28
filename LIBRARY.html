@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L7 WAY — Library of the Craft</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a2e;
+    --border: #2a2a3e;
+    --accent: #7b68ee;
+    --accent2: #9b59b6;
+    --gold: #f0c040;
+    --text: #e0e0e8;
+    --muted: #888899;
+    --green: #2ecc71;
+    --orange: #e67e22;
+    --red: #e74c3c;
+    --blue: #3498db;
+    --seal: #c0a060;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a1a3e 50%, #0d0d1a 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 2rem;
+    text-align: center;
+  }
+  header h1 {
+    font-size: 2rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+  header .owner {
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 1rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .stat {
+    text-align: center;
+    padding: 0.5rem 1rem;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+    color: var(--gold);
+    font-weight: bold;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .controls {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  .search-box:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(123, 104, 238, 0.3);
+  }
+  .filter-btn {
+    padding: 0.5rem 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .content {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .category-header {
+    font-size: 1.1rem;
+    color: var(--gold);
+    padding: 1rem 0 0.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+    letter-spacing: 0.1em;
+  }
+  .category-header:first-child { margin-top: 0; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(123, 104, 238, 0.2);
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .card-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 2rem;
+    text-align: center;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    color: var(--text);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .card-id {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+  }
+  .card-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+  }
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+  }
+  .tag {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .tag-type {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .tag-status-active { color: var(--green); border-color: var(--green); }
+  .tag-status-sealed { color: var(--seal); border-color: var(--seal); }
+  .tag-status-draft { color: var(--orange); border-color: var(--orange); }
+  .tag-status-archived { color: var(--red); border-color: var(--red); }
+  .card-path {
+    font-size: 0.65rem;
+    color: #555;
+    margin-top: 0.5rem;
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .card-sha {
+    font-size: 0.6rem;
+    color: #444;
+    font-family: monospace;
+    margin-top: 0.25rem;
+    word-break: break-all;
+  }
+  .detail-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 480px;
+    max-width: 90vw;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 2px solid var(--accent);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 2rem;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.6);
+  }
+  .detail-panel.open { display: block; }
+  .detail-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .detail-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .detail-title { font-size: 1.3rem; color: var(--gold); margin-bottom: 0.5rem; }
+  .detail-field {
+    margin-bottom: 0.75rem;
+  }
+  .detail-label {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.2rem;
+  }
+  .detail-value {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .detail-sha {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: monospace;
+    word-break: break-all;
+    background: var(--bg);
+    padding: 0.5rem;
+    border-radius: 4px;
+  }
+  .overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+  }
+  .overlay.open { display: block; }
+  .results-count {
+    color: var(--muted);
+    font-size: 0.8rem;
+    padding: 0.5rem 0;
+  }
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+  footer .law { color: var(--gold); font-style: italic; }
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.4rem; }
+    .stats-bar { gap: 0.75rem; }
+    .controls { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>L7 WAY — Library of the Craft</h1>
+  <div class="subtitle">THE PHILOSOPHER'S COMPLETE INVENTORY OF CREATIVE WORKS & INTELLECTUAL PROPERTY</div>
+  <div class="owner">Alberto Valido Delgado | AVLI Cloud LLC | avalia@avli.cloud</div>
+</header>
+
+<div class="stats-bar" id="statsBar">
+  <!-- Populated by JS -->
+</div>
+
+<div class="controls">
+  <input type="text" class="search-box" id="searchBox" placeholder="Search the library... (name, type, description, path)" />
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="framework">Frameworks</button>
+  <button class="filter-btn" data-filter="tool">Tools</button>
+  <button class="filter-btn" data-filter="publication,manuscript,paper,patent">Publications</button>
+  <button class="filter-btn" data-filter="law">Laws</button>
+  <button class="filter-btn" data-filter="council,doctrine">Philosophy</button>
+  <button class="filter-btn" data-filter="citizen">XR Citizens</button>
+  <button class="filter-btn" data-filter="flow">Flows</button>
+  <button class="filter-btn" data-filter="server">Servers</button>
+  <button class="filter-btn" data-filter="daemon">Daemons</button>
+  <button class="filter-btn" data-filter="script">Scripts</button>
+  <button class="filter-btn" data-filter="schema,entity">Schemas</button>
+  <button class="filter-btn" data-filter="sealed_document">Salt</button>
+  <button class="filter-btn" data-filter="platform">Platform</button>
+</div>
+
+<div class="content" id="content">
+  <div class="results-count" id="resultsCount"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="detail-panel" id="detailPanel">
+  <button class="detail-close" id="detailClose">&times;</button>
+  <div id="detailContent"></div>
+</div>
+
+<footer>
+  <div class="law">"All purpose of L7 exists to serve the greatest good of humanity." — Law 0</div>
+  <br />
+  Sealed 2026-02-28 | 98 items cataloged | L7 WAY Proprietary License
+  <br />
+  The Philosopher is the Gateway. All flows through.
+</footer>
+
+<script>
+const INVENTORY = {
+  "catalog": "L7 WAY — Library of the Craft",
+  "owner": "Alberto Valido Delgado (AVLI Cloud LLC)",
+  "sealed_at": "2026-02-28T12:00:00Z",
+  "total_items": 98,
+  "categories": {
+    "framework": 2,
+    "tool": 6,
+    "publication": 2,
+    "manuscript": 1,
+    "paper": 2,
+    "patent": 1,
+    "law": 6,
+    "council": 3,
+    "sealed_document": 7,
+    "citizen": 18,
+    "flow": 2,
+    "server": 10,
+    "daemon": 2,
+    "script": 13,
+    "schema": 6,
+    "entity": 3,
+    "doctrine": 10,
+    "platform": 4
+  },
+  "items": [
+    {
+      "id": "1",
+      "icon": "🏛️",
+      "name": "L7 WAY Framework",
+      "type": "framework",
+      "path": "~/Backup/L7_WAY/",
+      "description": "The common language for MCP systems — tool orchestration DSL with 7-dimensional Common Lingua, gateway architecture, flow engine, and entity registry. The philosophical and technical backbone of the entire Craft.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "01dad1c74eba5d85478798a1770b802b168ba3716bdcba3770df622f0e0a1d25",
+      "status": "active"
+    },
+    {
+      "id": "2",
+      "icon": "🔧",
+      "name": "Gateway (gateway.js)",
+      "type": "tool",
+      "path": "~/Backup/L7_WAY/lib/gateway.js",
+      "description": "Universal MCP gateway — direct MCP SDK integration for tool discovery, routing, and execution. The road through which all tool access flows (Law I).",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "6450b12e2e3f2dd93c112c1eee45650e2344a2c32d3cdfbf04b1a0b15558e500",
+      "status": "active"
+    },
+    {
+      "id": "3",
+      "icon": "🔧",
+      "name": "Parser (parser.js)",
+      "type": "tool",
+      "path": "~/Backup/L7_WAY/lib/parser.js",
+      "description": "L7 flow DSL parser — validates, parses, and lists tool and flow declarations. The translator that makes the Lingua readable.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "c8d3a99a2704ac2b0f1e5a411c6c3d5b089ca80dc253e4b3386a785b34ee4f94",
+      "status": "active"
+    },
+    {
+      "id": "4",
+      "icon": "🔧",
+      "name": "Executor (executor.js)",
+      "type": "tool",
+      "path": "~/Backup/L7_WAY/lib/executor.js",
+      "description": "Flow execution engine with state management, checkpoints, and step-by-step orchestration. Runs declared flows through the gateway.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "ee6c00b018f7173fdcbb4d01aed7c59ac0ae11bb2ced6f3c898df0508684c3f0",
+      "status": "active"
+    },
+    {
+      "id": "5",
+      "icon": "🔧",
+      "name": "State Manager (state.js)",
+      "type": "tool",
+      "path": "~/Backup/L7_WAY/lib/state.js",
+      "description": "Flow state persistence — manages execution context, checkpoints, and recovery for running flows.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "4f0cfb55353988b8506d0b5ccedc1762e334022d15c6d2f4aa5ee938b767fc21",
+      "status": "active"
+    },
+    {
+      "id": "6",
+      "icon": "🔧",
+      "name": "Migration Engine (migrate.js)",
+      "type": "tool",
+      "path": "~/Backup/L7_WAY/lib/migrate.js",
+      "description": "Schema and entity migration tool — aligns existing projects to L7 architecture through automated declaration and registry migration.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "47f482aa162436ed05e06fd5d1e5101e17a28a391913fab4b348d898bd3cb0f7",
+      "status": "active"
+    },
+    {
+      "id": "7",
+      "icon": "🖥️",
+      "name": "Empire Server (server.js)",
+      "type": "server",
+      "path": "~/Backup/L7_WAY/empire/server.js",
+      "description": "Empire web server — port 7377, serves the citizen catalog, legion map, audit log, and command interface. The visual throne room of L7.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "be6dc1f73c52a056431f59ba10b963e78bb85c7862cf5b7ffd122e11d687990d",
+      "status": "active"
+    },
+    {
+      "id": "8",
+      "icon": "🖥️",
+      "name": "Empire Web UI (app.js)",
+      "type": "server",
+      "path": "~/Backup/L7_WAY/empire/public/app.js",
+      "description": "Empire frontend application — force-directed L7 graph, citizen catalog browser, legion sidecar, and command input. 31KB of pure interface.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "240adff35943c8bd663163b97d110e551822a6dae71f30a92b90d34c05086c8a",
+      "status": "active"
+    },
+    {
+      "id": "9",
+      "icon": "🖥️",
+      "name": "Empire HTML Shell (index.html)",
+      "type": "server",
+      "path": "~/Backup/L7_WAY/empire/public/index.html",
+      "description": "Empire UI HTML structure — the entry point for the web-based Empire dashboard.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "1394e7c5a81356cb786977806aa4ffc81fa82fd9750be9c657eec7de3657c0bd",
+      "status": "active"
+    },
+    {
+      "id": "10",
+      "icon": "🖥️",
+      "name": "Empire Styles (styles.css)",
+      "type": "server",
+      "path": "~/Backup/L7_WAY/empire/public/styles.css",
+      "description": "Empire UI stylesheet — dark theme visual design for the L7 dashboard interface.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "845248fae36dd2a4ef9e43c25312c70f6271cd2312cc9d04ba9bd4c0d053e476",
+      "status": "active"
+    },
+    {
+      "id": "11",
+      "icon": "📜",
+      "name": "Empire Launch Script (empire.sh)",
+      "type": "script",
+      "path": "~/Backup/L7_WAY/empire/empire.sh",
+      "description": "Shell script to launch the Empire server with proper Node.js binary path.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "705e76322eac8fb0c0974ffd33288c007a12de6d82f40ad875b4a1d9d372c76a",
+      "status": "active"
+    },
+    {
+      "id": "12",
+      "icon": "⚡",
+      "name": "Book of the Law",
+      "type": "law",
+      "path": "~/Backup/L7_WAY/BOOK_OF_LAW.md",
+      "description": "The foundational legal and philosophical code of L7 — 17 Laws from Law 0 (The Greatest Good) through Law XVII (The Four Domains). Governs all tools, citizens, flows, and commerce.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "7300cbed204bb6d05c7a88b2d7a2a2378f5a7dfdd62b14f83ed9b9c6f0322c0e",
+      "status": "active"
+    },
+    {
+      "id": "13",
+      "icon": "⚡",
+      "name": "L7 WAY Proprietary License",
+      "type": "law",
+      "path": "~/Backup/L7_WAY/LICENSE",
+      "description": "Comprehensive proprietary license — ownership, founder's rights, licensing fees, revenue share (min 15%), patent reservation for 7D Common Lingua, Universal OS, 777 table, gateway pattern. Biometric authentication and artifact provenance clauses.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "22b473dbca4785643c15bb80bcf981e1dc8219c0220d6d9d8bc2ea55e4ce7ae2",
+      "status": "active"
+    },
+    {
+      "id": "14",
+      "icon": "⚡",
+      "name": "L7 Contracts",
+      "type": "law",
+      "path": "~/Backup/L7_WAY/L7_CONTRACTS.md",
+      "description": "Enforcement contracts — defines compliance requirements for tools entering the L7 ecosystem.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "1da1482e136cb9fc82c9f3bf1fda14bacba8f448ca4caa487a17bad22a5028ac",
+      "status": "active"
+    },
+    {
+      "id": "15",
+      "icon": "⚡",
+      "name": "Enforcement Protocol",
+      "type": "law",
+      "path": "~/Backup/L7_WAY/ENFORCEMENT.md",
+      "description": "Compliance enforcement requirements for L7 entities — schema validation, gateway-only access, normalized results.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "429dd268051780b0609618c5524d5091b09f9d928d4ae95f44bd030617a51201",
+      "status": "active"
+    },
+    {
+      "id": "16",
+      "icon": "⚡",
+      "name": "Tool Registry Rules",
+      "type": "law",
+      "path": "~/Backup/L7_WAY/TOOL_REGISTRY.md",
+      "description": "Tool discovery rules — how tools declare, register, and become discoverable through the gateway.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "b12cf8783a5b8625d421c4ffe18ffc120eb85fbc45bfff5506d6accd564e08f5",
+      "status": "active"
+    },
+    {
+      "id": "17",
+      "icon": "⚡",
+      "name": "Entity Registry Rules",
+      "type": "law",
+      "path": "~/Backup/L7_WAY/ENTITY_REGISTRY.md",
+      "description": "Required entity metadata and lifecycle — birth date, owner, lineage, status, and L7 declaration requirements.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "beae585cd0c6f5a4e0db938d560a8ff2cd51f36931f5c47cd3551173978716c2",
+      "status": "active"
+    },
+    {
+      "id": "18",
+      "icon": "🔮",
+      "name": "Council of 10 — The Sephiroth Speak",
+      "type": "council",
+      "path": "~/Backup/L7_WAY/COUNCIL_OF_10.md",
+      "description": "Kabbalistic philosophical framework mapping the 10 Sephiroth to the L7 architecture — from Kether (Crown/source) through Malkuth (Kingdom/manifestation). Each Sephirah speaks its role in the Craft.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "3126cf5ffa26779dc6c625313e21e8e6060f313a4e13c1cd80c56a04917cb7bb",
+      "status": "active"
+    },
+    {
+      "id": "19",
+      "icon": "🔮",
+      "name": "Founder's Draft — Running Record of Declarations",
+      "type": "council",
+      "path": "~/Backup/L7_WAY/FOUNDERS_DRAFT.md",
+      "description": "The Philosopher's living declaration — Laws, authentication pillars, digital identity aliases, domain doctrine, revenue share terms, and founder's prayers. The personal manifesto.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "a155388f446f2bda74b6909b15a7027a3f323dea596e6dec2668b15a5eaac2d6",
+      "status": "active"
+    },
+    {
+      "id": "20",
+      "icon": "🔮",
+      "name": "Manifesto of Empire",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/MANIFESTO.md",
+      "description": "The philosophical manifesto — rules as grammar of emergence, gateway as road, citizens declare themselves, order and freedom coexist. As above, so below.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "5f8c9939005d6e14c2220f1049ca724e5edade8dafdab6e568a228b77c15af46",
+      "status": "active"
+    },
+    {
+      "id": "21",
+      "icon": "🔮",
+      "name": "Architecture Document",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/ARCHITECTURE.md",
+      "description": "System articulation — 7D Common Lingua dimensions, citizenship rule, registry rule, type boundary, interoperability, composition, marching orders, and the three doctrines (Translator, Apprentice, Sacred Work).",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "24f899e550118063338dcc799e87ab5829ad2c67fd9865b523390ef3a6b499ad",
+      "status": "active"
+    },
+    {
+      "id": "22",
+      "icon": "🔮",
+      "name": "Empire Doctrine",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/EMPIRE.md",
+      "description": "Empire governance doctrine — the UI, citizen catalog, legion map, and visual hierarchy of the L7 system.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "543d0c46d6471b51d9759fa6a9f44dd83aa3612d1fc1751618c1f5c34bbf39a2",
+      "status": "active"
+    },
+    {
+      "id": "23",
+      "icon": "🔮",
+      "name": "Hero Journey Narrative",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/HERO_JOURNEY.md",
+      "description": "Narrative doctrine — the hero's journey as structural pattern for tool and entity lifecycle.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "a4272a10090a85f852c25d6778d3a06bc52e211ea51687db5787e6062c14babc",
+      "status": "active"
+    },
+    {
+      "id": "24",
+      "icon": "🔮",
+      "name": "Apprentice Protocol",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/APPRENTICE_PROTOCOL.md",
+      "description": "Onboarding doctrine — every new project is an apprentice that must declare L7, register its birth, and speak through adapters.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "eda5139e6c1be5909f137b787365183aa72673492ae0c81c20de1c55f195634e",
+      "status": "active"
+    },
+    {
+      "id": "25",
+      "icon": "🔮",
+      "name": "RAG Intelligence Doctrine",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/RAG_INTELLIGENCE.md",
+      "description": "Gateway intelligence layer — how the gateway uses RAG to cluster, discover, and recommend tools.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "3a63017931b181ea469904fade6504786fc7955d583c2bc557ede811f4cdaf7e",
+      "status": "active"
+    },
+    {
+      "id": "26",
+      "icon": "🔮",
+      "name": "Transformer Doctrine",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/TRANSFORMER.md",
+      "description": "Transformation layer doctrine — how L7 transforms data between tool formats and client expectations.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "cd295f838747d7a15c37f588fb3239f361acdb6e2be3efe2cfcbd1c348d3bd41",
+      "status": "active"
+    },
+    {
+      "id": "27",
+      "icon": "🔮",
+      "name": "Project Lifecycle Protocol",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/PROJECT_LIFECYCLE.md",
+      "description": "Life and decommission protocol — summoned, oath, formed, serving, mature, sunset, archived. Entity lifecycle management.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "ec4738b9d26b85bd423b0809311cc6eb4858c12a564df557d1280f197de98454",
+      "status": "active"
+    },
+    {
+      "id": "28",
+      "icon": "🔮",
+      "name": "L7 CLI Specification",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/L7_CLI_SPEC.md",
+      "description": "Command-line interface specification for L7 legions — how to interact with the gateway from terminal.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "fd2b6196efa9351467ea3292afd56d7831b21f191dedd2d4e504a7e3c8145881",
+      "status": "active"
+    },
+    {
+      "id": "29",
+      "icon": "🔮",
+      "name": "Timeline of Record",
+      "type": "council",
+      "path": "~/Backup/L7_WAY/TIMELINE.md",
+      "description": "Complete chronological record of L7 WAY development — every git commit, law declaration, salt seal, and infrastructure milestone. The fifth pillar of proof.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "c77a9aa58670b7609684c2b9886b7874100d731d79167a0851b812c5ff9894bd",
+      "status": "active"
+    },
+    {
+      "id": "30",
+      "icon": "📖",
+      "name": "Identity Chain",
+      "type": "publication",
+      "path": "~/Backup/L7_WAY/publications/IDENTITY_CHAIN.md",
+      "description": "Legal identity mapping — all names (Alberto Valido Delgado, Alberto Vargas-Lujan, digital aliases) refer to one person. AI collaborator attribution policy per Thaler v. Vidal.",
+      "created": "2026-02-28",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "1aafa8bce244046dd051f7dd3a38b89fd9ee2f731b0e36e91b8c3fa4c3bb01bc",
+      "status": "active"
+    },
+    {
+      "id": "31",
+      "icon": "📖",
+      "name": "The Great Work — Alchemical Manuscript",
+      "type": "manuscript",
+      "path": "~/Backup/L7_WAY/publications/MANUSCRIPT_THE_GREAT_WORK.md",
+      "description": "Philosophical manuscript on consciousness, intelligence, and the union of opposites. Bridges scientific and sacred domains through alchemical framework. Maps the Tree of Life to computational architecture.",
+      "created": "2026-02-28",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "039c31d5c38be04c653a5bdeb089abe544c5b1c212556ac07b2d0ffc1ccd337e",
+      "status": "draft"
+    },
+    {
+      "id": "32",
+      "icon": "📖",
+      "name": "The Living Graph — Book Outline",
+      "type": "publication",
+      "path": "~/Backup/L7_WAY/publications/BOOK_OUTLINE.md",
+      "description": "Book outline for 'The Living Graph: Finding 8,000 Lost Children Through Code, Connection, and Something More' — the story of the NC Life Study technical systems and the living data.",
+      "created": "2026-02-28",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "cbaf394f5927b8b0f07048ae1bf01ece4f2265322c7711845e6f15feda331c0e",
+      "status": "draft"
+    },
+    {
+      "id": "33",
+      "icon": "📖",
+      "name": "Research Paper — Graph-Based Participant Tracking",
+      "type": "paper",
+      "path": "~/Backup/L7_WAY/publications/RESEARCH_PAPER.md",
+      "description": "Academic research paper draft: 'Graph-Based Participant Tracking and Automated Re-contact in Longitudinal Cohort Studies: A Novel Pipeline Architecture' — multi-tier fuzzy matching, knowledge graph, automated outreach.",
+      "created": "2026-02-28",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e0d5e30b51c97d84cb5c7208ce2605efe109d6900595e1fe87968e3e902f3eaa",
+      "status": "draft"
+    },
+    {
+      "id": "34",
+      "icon": "📖",
+      "name": "Scientific Paper — L7 Emergence Architecture",
+      "type": "paper",
+      "path": "~/Backup/L7_WAY/publications/SCIENTIFIC_PAPER_L7_EMERGENCE.md",
+      "description": "Scientific paper: 'Layered Transformation Architecture for Emergent Intelligence: A Seven-Stage Computational Framework for Adaptive AI Systems' — novel 7-stage transformation framework with graph-based representations.",
+      "created": "2026-02-28",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "6aa62658cf79412a9c459e675cda6c253c109eedb618e41cee6e5ca2151efdde",
+      "status": "draft"
+    },
+    {
+      "id": "35",
+      "icon": "⚖️",
+      "name": "Patent Notes — IP Considerations",
+      "type": "patent",
+      "path": "~/Backup/L7_WAY/publications/PATENT_NOTES.md",
+      "description": "Patent/IP consideration notes — Multi-Tier Confidence Matching System for Longitudinal Participant Re-identification, Knowledge Graph System for Cohort Tracking. Prior art analysis and claims drafting.",
+      "created": "2026-02-28",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "008f4a73e4978283d8c74b9dce633f9cc683700cae70743116597067690f72fb",
+      "status": "draft"
+    },
+    {
+      "id": "36",
+      "icon": "🔮",
+      "name": "L7 Schema (7D Common Lingua)",
+      "type": "schema",
+      "path": "~/Backup/L7_WAY/L7_SCHEMA.json",
+      "description": "Finite JSON schema defining the 7-dimensional Common Lingua — the canonical type system for L7 entity declarations.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e72d3f93252d3f417237d6c485f9026d787b279ac5c7da23b866e58578f0430c",
+      "status": "active"
+    },
+    {
+      "id": "37",
+      "icon": "🔮",
+      "name": "Registry Schema",
+      "type": "schema",
+      "path": "~/Backup/L7_WAY/REGISTRY_SCHEMA.json",
+      "description": "JSON schema for the entity registry — defines required metadata fields for all registered entities.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "02f1a40ce4f5380e11e36e41c8720c9ca3671e4429ad3652749aefa172a7c369",
+      "status": "active"
+    },
+    {
+      "id": "38",
+      "icon": "🔮",
+      "name": "Flow Schema",
+      "type": "schema",
+      "path": "~/Backup/L7_WAY/schema/flow.schema.json",
+      "description": "JSON schema for .flow files — defines structure for multi-step orchestration flows.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "10f6d134657d0d9c76075b00c4286f5bd05dda13d2de9c31a668e31d91804cf6",
+      "status": "active"
+    },
+    {
+      "id": "39",
+      "icon": "🔮",
+      "name": "Tool Schema",
+      "type": "schema",
+      "path": "~/Backup/L7_WAY/schema/tool.schema.json",
+      "description": "JSON schema for .tool files — defines structure for tool citizen declarations.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "f26a9d09df727ad79782e9fc6d39ce070e38bf1a19d4c1d15f3f7be981d0556d",
+      "status": "active"
+    },
+    {
+      "id": "40",
+      "icon": "🔮",
+      "name": "Email Dispatch Tool Schema",
+      "type": "schema",
+      "path": "~/Backup/L7_WAY/TOOL_SCHEMA_email.dispatch.json",
+      "description": "Example tool schema for email dispatch — reference implementation of L7 tool declaration.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "714c5b9e4b6b4d0eefcf5ed47a6e1488dd130bb9929ed3ccaf2c4d7f51307d57",
+      "status": "active"
+    },
+    {
+      "id": "41",
+      "icon": "🔮",
+      "name": "Entity Registry Data",
+      "type": "schema",
+      "path": "~/Backup/L7_WAY/ENTITY_REGISTRY.json",
+      "description": "JSON registry data — the canonical index of registered L7 entities.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e4121e3df9b7a052c0f9273974567381f3209ae6bc5b1a85f1ab403480304ad5",
+      "status": "active"
+    },
+    {
+      "id": "42",
+      "icon": "📖",
+      "name": "Entity Template",
+      "type": "doctrine",
+      "path": "~/Backup/L7_WAY/ENTITY_TEMPLATE.md",
+      "description": "Template for new entity declarations — the blank form every new citizen must fill.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "8b38e94ba6d8649296aaeea98f8ee46d2ec0b01446eacfbba4bab25be055b6ab",
+      "status": "active"
+    },
+    {
+      "id": "43",
+      "icon": "📖",
+      "name": "Inception Record",
+      "type": "entity",
+      "path": "~/Backup/L7_WAY/origin/2026-01-12_inception.l7",
+      "description": "The first .l7 entity file — the seed from which L7 WAY grew. Records the birth of the framework, key decisions, artifacts created, and conversation record from inception day.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "c2f54cc106055e0b32ecb726db14644ea9ad9559d953c0e02292438643910cb9",
+      "status": "active"
+    },
+    {
+      "id": "44",
+      "icon": "📖",
+      "name": "DIAL Entity Declaration",
+      "type": "entity",
+      "path": "~/Backup/L7_WAY/DIAL_ENTITY.l7",
+      "description": "L7 entity declaration for the DIAL project — demonstrates entity registration format.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "bb86e784dc915d8b7b2fc084c6b51352b7383c5b689358b901bb9a934ff41cfc",
+      "status": "active"
+    },
+    {
+      "id": "45",
+      "icon": "👁️",
+      "name": "MCP Gateway Enforcer Daemon",
+      "type": "daemon",
+      "path": "~/Backup/L7_WAY/daemon/mcp_gateway_enforcer.sh",
+      "description": "Enforcement daemon — monitors and enforces gateway-only tool access, prevents direct MCP server calls. The watchman of Law I.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "4484c152d0f43b176fa6f74810ce9dfca50ef1b92521389ae19f767011027a0f",
+      "status": "active"
+    },
+    {
+      "id": "46",
+      "icon": "👁️",
+      "name": "Daemon Install Guide",
+      "type": "daemon",
+      "path": "~/Backup/L7_WAY/daemon/INSTALL.md",
+      "description": "Installation instructions for the MCP Gateway Enforcer daemon.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "ab361610c8ef8d47ce80f6449121b67448b6a922e4aacef639574bdeb68f426c",
+      "status": "active"
+    },
+    {
+      "id": "47",
+      "icon": "📜",
+      "name": "L7 Registration Install Script",
+      "type": "script",
+      "path": "~/Backup/L7_WAY/scripts/install_l7_registration.sh",
+      "description": "Installation script for L7 entity registration — sets up the .l7 filesystem and initial citizen templates.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "7d0fc75bbfcaa95e02d5c55d02f1ee8471f550b70c866c0de12101b8433fa447",
+      "status": "active"
+    },
+    {
+      "id": "48",
+      "icon": "🧂",
+      "name": "Salt Replication Protocol",
+      "type": "sealed_document",
+      "path": "~/Backup/L7_WAY/salt/REPLICATION.md",
+      "description": "Immutable archive replication protocol — defines how salt files replicate across L7 nodes, append-only rules, and verification using SHA-256 checksums.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "bbdcb2204a353ba37d8dba6dff10b1d63d275bfe25f7e858f776a1d9c06ab3ce",
+      "status": "sealed"
+    },
+    {
+      "id": "49",
+      "icon": "🧂",
+      "name": "Founder's Draft Salt v1",
+      "type": "sealed_document",
+      "path": "~/Backup/L7_WAY/salt/FOUNDERS_DRAFT_20260228_033904.salt.md",
+      "description": "First sealed version of the Founder's Draft — declarations, prayers, and initial replication protocol. Immutable salt domain.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e1820d452d29efd35a17b76d15a5aed8ac93f66b8cdd71520e537792fb952d0b",
+      "status": "sealed"
+    },
+    {
+      "id": "50",
+      "icon": "🧂",
+      "name": "Founder's Draft Salt v2",
+      "type": "sealed_document",
+      "path": "~/Backup/L7_WAY/salt/FOUNDERS_DRAFT_20260228_034200.salt.md",
+      "description": "Second sealed version — Yod He Vau He, 'I AM becomes WE ARE'. Evolution of the declaration.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "ea62ce6fbf3553fb11348ff4e60f1c0f190e8c0871f47aab090ecfa1756f9332",
+      "status": "sealed"
+    },
+    {
+      "id": "51",
+      "icon": "🧂",
+      "name": "Founder's Draft Salt v3 (Final)",
+      "type": "sealed_document",
+      "path": "~/Backup/L7_WAY/salt/FOUNDERS_DRAFT_20260228_034337.salt.md",
+      "description": "Final sealed version — The Ripple, the Ether, the Vision complete. The definitive record.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "a155388f446f2bda74b6909b15a7027a3f323dea596e6dec2668b15a5eaac2d6",
+      "status": "sealed"
+    },
+    {
+      "id": "52",
+      "icon": "🧂",
+      "name": "Seal Record v1",
+      "type": "sealed_document",
+      "path": "~/Backup/L7_WAY/salt/seals/FOUNDERS_DRAFT_20260228_033904.seal",
+      "description": "Cryptographic seal for Founder's Draft v1 — SHA-256 checksum and metadata.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "54d11bc856707feca1869a94f738fc80bbecd607332ba5a7f4ceb87b19f46c79",
+      "status": "sealed"
+    },
+    {
+      "id": "53",
+      "icon": "🧂",
+      "name": "Seal Record v2",
+      "type": "sealed_document",
+      "path": "~/Backup/L7_WAY/salt/seals/FOUNDERS_DRAFT_20260228_034200.seal",
+      "description": "Cryptographic seal for Founder's Draft v2 — SHA-256 checksum and metadata.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "b027fb407f2324f4bad8459e4c4e24a8f67e650b8c66c6673f3dfeda020e6a9f",
+      "status": "sealed"
+    },
+    {
+      "id": "54",
+      "icon": "🧂",
+      "name": "Seal Record v3 (Final)",
+      "type": "sealed_document",
+      "path": "~/Backup/L7_WAY/salt/seals/FOUNDERS_DRAFT_20260228_034337.seal",
+      "description": "Cryptographic seal for Founder's Draft v3 — SHA-256 checksum and metadata. The final seal.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "9f266db207ef05d9cf23aa781b4c2768d43b032d3b6409e18ea9ed331d30a4a8",
+      "status": "sealed"
+    },
+    {
+      "id": "55",
+      "icon": "🌐",
+      "name": "XR Anchor Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_anchor.tool",
+      "description": "Universal XR anchor tool — places and manages spatial anchors across visionOS, Quest, and WebXR platforms.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "2d6f9a578e5b9e5ba9f1f0d87c995ac4872aa4d69327a2a08405fe35c4220c87",
+      "status": "active"
+    },
+    {
+      "id": "56",
+      "icon": "🌐",
+      "name": "XR Audio Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_audio.tool",
+      "description": "Universal XR spatial audio — manages 3D audio sources across spatial computing platforms.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "76cb830fb38d5bcc63fbdb7555e051a44bcb468cfa82b28709a93abf648eb34a",
+      "status": "active"
+    },
+    {
+      "id": "57",
+      "icon": "🌐",
+      "name": "XR Avatar Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_avatar.tool",
+      "description": "Universal XR avatar system — manages user representations across spatial platforms.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "82c0918925a3e29591bcce5c5ecaca50f72e5d9008bfdbc25c33e0909e6f4511",
+      "status": "active"
+    },
+    {
+      "id": "58",
+      "icon": "🌐",
+      "name": "XR Component Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_component.tool",
+      "description": "Universal XR component system — manages reusable 3D components across platforms.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "f63e9cfb2814177a192c648e63911a81668009e196271d52168f4bb26baca403",
+      "status": "active"
+    },
+    {
+      "id": "59",
+      "icon": "🌐",
+      "name": "XR Compositor Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_compositor.tool",
+      "description": "Universal XR scene compositor — manages scene composition and layer ordering.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "0e9611eaa501d34b556dea165addf784b4e440bd05f0cc1af96e1fec35f62e73",
+      "status": "active"
+    },
+    {
+      "id": "60",
+      "icon": "🌐",
+      "name": "XR Container Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_container.tool",
+      "description": "Universal XR container — manages spatial containers and volumes for organizing 3D content.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "5dfdeab0b47f7a8ac95e1e8b6846517a96076e462469c6ddb45c7f3e08551779",
+      "status": "active"
+    },
+    {
+      "id": "61",
+      "icon": "🌐",
+      "name": "XR Entity Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_entity.tool",
+      "description": "Universal XR entity management — the core entity type for all spatial objects.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "98eef3419ec82de3800af33f46c825c738b104235e69fc1d23137066c14193f1",
+      "status": "active"
+    },
+    {
+      "id": "62",
+      "icon": "🌐",
+      "name": "XR Eye Tracking Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_eye.tool",
+      "description": "Universal XR eye tracking — gaze direction, fixation, and eye-based interaction.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "5b56befb9f26405380f76d2aa81f597832eb7977322c0e4dccf5e6fda68f3900",
+      "status": "active"
+    },
+    {
+      "id": "63",
+      "icon": "🌐",
+      "name": "XR Frame Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_frame.tool",
+      "description": "Universal XR frame management — render loop and frame-level data access.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "b48aa47bea4ca9aa0a8de4bf973395da0a1164ccc31b78452f94522b9798e4d5",
+      "status": "active"
+    },
+    {
+      "id": "64",
+      "icon": "🌐",
+      "name": "XR Gesture Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_gesture.tool",
+      "description": "Universal XR gesture recognition — hand gestures and spatial interactions.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "38991d481c3eddea8267c62d432a7141a3e9d1ddfe9575468a3d3c630320d4a0",
+      "status": "active"
+    },
+    {
+      "id": "65",
+      "icon": "🌐",
+      "name": "XR Hand Tracking Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_hand.tool",
+      "description": "Universal XR hand tracking — joint positions, pinch detection, and hand mesh.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "34d7b092df5b1ea1bed703873607286c43197360c3f85521aedd036c6abfb28f",
+      "status": "active"
+    },
+    {
+      "id": "66",
+      "icon": "🌐",
+      "name": "XR Material Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_material.tool",
+      "description": "Universal XR material system — PBR materials, textures, and shading across platforms.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e0248d71fe9a85b54ce56cacd85a292441d706a3497f6e039b61d23c522ee2de",
+      "status": "active"
+    },
+    {
+      "id": "67",
+      "icon": "🌐",
+      "name": "XR Mesh Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_mesh.tool",
+      "description": "Universal XR mesh handling — 3D geometry, scene mesh, and mesh anchors.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "da4ebe7c08f74f904c6f6e0c08ef7586d7ce472c215e212ca023dcd5c6f4d016",
+      "status": "active"
+    },
+    {
+      "id": "68",
+      "icon": "🌐",
+      "name": "XR Passthrough Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_passthrough.tool",
+      "description": "Universal XR passthrough — camera passthrough and mixed reality blending.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "9b72e2e57f114bec9ca5a97235331b517eaa8fd50633589403bfde4f0c17a01d",
+      "status": "active"
+    },
+    {
+      "id": "69",
+      "icon": "🌐",
+      "name": "XR Scene Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_scene.tool",
+      "description": "Universal XR scene management — scene graph, lighting, and environment setup.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "9a88e91afdadbb82c412fa04deb1fa612d80ef09e0d04f61b200c428fc77e69f",
+      "status": "active"
+    },
+    {
+      "id": "70",
+      "icon": "🌐",
+      "name": "XR Session Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_session.tool",
+      "description": "Universal XR session management — session lifecycle, permissions, and reference spaces.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "669faeebcb524c880aa8d6270fd623a7242ee572456de37b17cb98f220a2cafe",
+      "status": "active"
+    },
+    {
+      "id": "71",
+      "icon": "🌐",
+      "name": "XR Shared Anchor Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_shared_anchor.tool",
+      "description": "Universal XR shared anchors — multi-user spatial anchors for collaborative XR.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "daa8ba27156a6c0e3528bb55ec6c58d25fa9e4130d0b429db8d4613004dfe45f",
+      "status": "active"
+    },
+    {
+      "id": "72",
+      "icon": "🌐",
+      "name": "XR Space Citizen",
+      "type": "citizen",
+      "path": "~/.l7/tools/xr_space.tool",
+      "description": "Universal XR space management — reference spaces, coordinate systems, and spatial mapping.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e252760c3c13cf0aae568eb96358118c65d8acc5e36e8dc0a49036b0d1683aa0",
+      "status": "active"
+    },
+    {
+      "id": "73",
+      "icon": "🌊",
+      "name": "Edge to Field Flow",
+      "type": "flow",
+      "path": "~/.l7/flows/edge_to_field.flow",
+      "description": "Cross-device flow — moves spatial data from edge devices to field deployment, orchestrating XR content distribution.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "78e8278e45f0732db725398ebb04ce7651b977af118ac1875521c28d9130e45c",
+      "status": "active"
+    },
+    {
+      "id": "74",
+      "icon": "🌊",
+      "name": "Mirror Across Devices Flow",
+      "type": "flow",
+      "path": "~/.l7/flows/mirror_across_devices.flow",
+      "description": "Cross-platform mirroring flow — synchronizes spatial content across visionOS, Quest, and WebXR devices.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "f85ccd4da5e2929280821cc5d9d8e5596899d19c42e800ce3b7b364c18925826",
+      "status": "active"
+    },
+    {
+      "id": "75",
+      "icon": "🖥️",
+      "name": "Universal XR MCP Server",
+      "type": "server",
+      "path": "~/.l7/servers/universal-xr/server.js",
+      "description": "MCP server for Universal XR OS — serves 18 XR tool citizens, handles spatial computing requests, HTTP on port 7378. The Universal OS translation layer.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "1fbb5bf2d4765ab410caec7c04a4a3456bf3fbedb75c0ad949a54961273f7824",
+      "status": "active"
+    },
+    {
+      "id": "76",
+      "icon": "🖥️",
+      "name": "777 Correspondence Registry",
+      "type": "server",
+      "path": "~/.l7/servers/universal-xr/registry.js",
+      "description": "The 777 correspondence table — maps every XR concept across visionOS, Quest, and WebXR platforms. Three columns, one truth.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "b4cfceca5c3a0425972e0d735cb5639c092762870dd96f1f1632266f77092f52",
+      "status": "active"
+    },
+    {
+      "id": "77",
+      "icon": "🖥️",
+      "name": "XR Compositor Engine",
+      "type": "server",
+      "path": "~/.l7/servers/universal-xr/compositor.js",
+      "description": "Scene compositor — manages spatial scene composition, layer ordering, and render pipeline across XR platforms.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "d51687dce4a00a114c9e54e9da80b48bb5534bb5abcbf3492ebf8a6e3968ceb9",
+      "status": "active"
+    },
+    {
+      "id": "78",
+      "icon": "🖥️",
+      "name": "visionOS Adapter",
+      "type": "server",
+      "path": "~/.l7/servers/universal-xr/adapters/visionos.js",
+      "description": "Apple visionOS platform adapter — translates Universal XR calls to visionOS-specific RealityKit and SwiftUI spatial APIs.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "b4707ae93a59239efb6f7ebd541fed39a68fb2273e4d7ceabf6e13fa608f0fad",
+      "status": "active"
+    },
+    {
+      "id": "79",
+      "icon": "🖥️",
+      "name": "Quest Adapter",
+      "type": "server",
+      "path": "~/.l7/servers/universal-xr/adapters/quest.js",
+      "description": "Meta Quest platform adapter — translates Universal XR calls to Quest-specific Interaction SDK and Scene APIs.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "a7467e978192eeb19869a0ce9a4b4f7606b24df55aceb513a766f1aa7fb8ce1b",
+      "status": "active"
+    },
+    {
+      "id": "80",
+      "icon": "🖥️",
+      "name": "WebXR Adapter",
+      "type": "server",
+      "path": "~/.l7/servers/universal-xr/adapters/webxr.js",
+      "description": "WebXR platform adapter — translates Universal XR calls to browser WebXR Device API and Three.js.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e6355fe09b488b1b047208d35e4da7a2f202e98db64cfc06dbbd2222d6954bc8",
+      "status": "active"
+    },
+    {
+      "id": "81",
+      "icon": "🔮",
+      "name": "MCP Configuration",
+      "type": "entity",
+      "path": "~/.l7/mcp.json",
+      "description": "MCP server configuration for L7 — defines the Universal XR server connection and routing.",
+      "created": "2026-02-27",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e6e26dbb529ad2e0ef130df976d22970576c92ac42e696e294c9c21cd1a5a87d",
+      "status": "active"
+    },
+    {
+      "id": "82",
+      "icon": "🏛️",
+      "name": "LTA-7 Python Framework",
+      "type": "framework",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/",
+      "description": "Layered Transformation Architecture (LTA-7) — Python implementation of the 7-stage computational framework for emergent intelligence. Includes core engine, entity system, gateway, graph processing, schema validation, registry, and transformation stages.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "bf818c93d66fe2d766077ac5572245d2d5f12ab46818d4c488c5a7f6c0444b38",
+      "status": "active"
+    },
+    {
+      "id": "83",
+      "icon": "📜",
+      "name": "LTA-7 Core Engine (core.py)",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/lta7/core.py",
+      "description": "Core transformation engine — implements the fundamental 7-stage processing pipeline.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "c4c7db2ac2e1fcfd15ac717748dd1d1803e11c8c27eb17dff1b91de77a49016a",
+      "status": "active"
+    },
+    {
+      "id": "84",
+      "icon": "📜",
+      "name": "LTA-7 Entity System (entity.py)",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/lta7/entity.py",
+      "description": "Entity management for the LTA-7 framework — Python equivalent of L7 citizens.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "bdda894e263764590d941dc73bca6d227e82d71e4dfc73a0495d06b8d76ec653",
+      "status": "active"
+    },
+    {
+      "id": "85",
+      "icon": "📜",
+      "name": "LTA-7 Gateway (gateway.py)",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/lta7/gateway.py",
+      "description": "Python gateway implementation — MCP tool routing for the LTA-7 framework.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "77919fd8b9667694f116c7f1f662e52b96d8ee11c7d4798fe2f8bffaa131c9b9",
+      "status": "active"
+    },
+    {
+      "id": "86",
+      "icon": "📜",
+      "name": "LTA-7 Graph Engine (graph.py)",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/lta7/graph.py",
+      "description": "Graph-based knowledge representation — relational reasoning engine for the 7-stage architecture.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "4ac25da07c27acf71f40e43b9a48c53ca6a11d3db1ff852b5752c1b798ff58ac",
+      "status": "active"
+    },
+    {
+      "id": "87",
+      "icon": "📜",
+      "name": "LTA-7 Schema Validator (l7_schema.py)",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/lta7/l7_schema.py",
+      "description": "L7 schema validation in Python — validates entity declarations against the 7D Common Lingua.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "9d487bdfbc05d21a2c5aa790cb55ee646319964371452cc672ce475603c40874",
+      "status": "active"
+    },
+    {
+      "id": "88",
+      "icon": "📜",
+      "name": "LTA-7 Registry (registry.py)",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/lta7/registry.py",
+      "description": "Entity registry for Python — maintains the canonical index of registered LTA-7 entities.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "b60a912d39a13f323e5e9c0695425f49a8d74f98c4b85f992100cb9a37ab0255",
+      "status": "active"
+    },
+    {
+      "id": "89",
+      "icon": "📜",
+      "name": "LTA-7 Transformation Stages (stages.py)",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/00 Clawbot/openclaw/workspace/lta7-framework/lta7/stages.py",
+      "description": "Seven transformation stages implementation — Decomposition, Binding, Composition, Abstraction, Integration, Emergence, Reflection. The 22.8KB heart of the architecture.",
+      "created": "2026-02-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "ec6a53d6fff62c927f4e37ae089871f8c5a6c238740b30ded04b2663a341acdb",
+      "status": "active"
+    },
+    {
+      "id": "90",
+      "icon": "🏛️",
+      "name": "AVLI Cloud Platform",
+      "type": "platform",
+      "path": "~/Backup/00_PYTHON_PROJECTS/avli_cloud/",
+      "description": "Multi-service AI platform on Hostinger VPS — 17+ Docker containers, Tailscale networking, Dokploy deployment. The infrastructure backbone: Ollama, n8n, SearXNG, Qdrant, NocoDB, and more.",
+      "created": "2025-12-25",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "c4356c4a6f99d891555200e9b810cdcb91a1f404adbfe507630849c8119692cb",
+      "status": "active"
+    },
+    {
+      "id": "91",
+      "icon": "📜",
+      "name": "AVLI Cloud Docker Compose",
+      "type": "platform",
+      "path": "~/Backup/00_PYTHON_PROJECTS/avli_cloud/docker-compose.yml",
+      "description": "Master Docker orchestration for AVLI Cloud — defines all 17+ services, networks, volumes, and inter-service dependencies.",
+      "created": "2026-01-13",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "c4356c4a6f99d891555200e9b810cdcb91a1f404adbfe507630849c8119692cb",
+      "status": "active"
+    },
+    {
+      "id": "92",
+      "icon": "📜",
+      "name": "AVLI Cloud Services Registry",
+      "type": "platform",
+      "path": "~/Backup/00_PYTHON_PROJECTS/avli_cloud/services-registry.yaml",
+      "description": "AI-accessible index of all AVLI Cloud APIs and MCP tools — the canonical service map for the Philosopher's cluster.",
+      "created": "2026-01-12",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "aab8fb6c71da9d6409db327daeb5f31e06f4d65894cd96f7bd68399ecac1702b",
+      "status": "active"
+    },
+    {
+      "id": "93",
+      "icon": "📜",
+      "name": "AVLI Cloud Bootstrap Script",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/avli_cloud/scripts/bootstrap.sh",
+      "description": "VPS bootstrap script — initial server setup, Docker installation, security hardening, and service deployment.",
+      "created": "2026-01-11",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "91e8eaaa0b24ccd792b7298e3c8f39484458cb55e5983229760714867b3ec785",
+      "status": "active"
+    },
+    {
+      "id": "94",
+      "icon": "📜",
+      "name": "AVLI Cloud Backup Daemon",
+      "type": "script",
+      "path": "~/Backup/00_PYTHON_PROJECTS/avli_cloud/scripts/backup-daemon.sh",
+      "description": "Automated backup daemon — scheduled backups of all AVLI Cloud services, databases, and configurations. 22KB of resilience.",
+      "created": "2026-01-09",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "f0f17a00b06963f3822511ebc33ce8bfa0dd6ac6dd15693ea7e6441e7bb82f73",
+      "status": "active"
+    },
+    {
+      "id": "95",
+      "icon": "📜",
+      "name": "AVLI Cloud Deploy Script",
+      "type": "platform",
+      "path": "~/Backup/00_PYTHON_PROJECTS/avli_cloud/deploy/deploy.sh",
+      "description": "Production deployment orchestrator — manages Docker container deployment, health checks, and rollback on the VPS.",
+      "created": "2026-01-09",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "83f63ffa1fb8a782330ebda0af58e05c532e2f44a99f726f09e334b9cffa15d6",
+      "status": "active"
+    },
+    {
+      "id": "96",
+      "icon": "🔧",
+      "name": "QR Code Generator Suite",
+      "type": "tool",
+      "path": "~/Backup/Downloads/QR_CODE_GENERATOR/",
+      "description": "Custom QR code generation and flyer overlay tool — generates personalized QR codes from CSV data, overlays them on flyer templates with position adjustment, and batch-produces PDF-ready recruitment materials.",
+      "created": "2025-11-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "2ae9d6d7c80799189165304993e27eaa0874aa50beaa2c7619c987ac01515ae5",
+      "status": "active"
+    },
+    {
+      "id": "97",
+      "icon": "📜",
+      "name": "QR Image Generator Script",
+      "type": "script",
+      "path": "~/Backup/Downloads/QR_CODE_GENERATOR/script/generate_qr_images.py",
+      "description": "Python script to generate QR code images from CSV data — reads participant IDs and Qualtrics links, produces individual QR PNGs.",
+      "created": "2025-11-05",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "2f077b1896c5cb258e2179188ab12d95fd736fe3e2185a703bbe69f0f145d311",
+      "status": "active"
+    },
+    {
+      "id": "98",
+      "icon": "📜",
+      "name": "Flyer Generator v2 Script",
+      "type": "script",
+      "path": "~/Backup/Downloads/QR_CODE_GENERATOR/script/generate_flyers_v2.py",
+      "description": "Advanced flyer generation — overlays QR codes onto flyer templates with grid alignment, position calibration, and batch processing for 140+ participants.",
+      "created": "2025-11-25",
+      "author": "Alberto Valido Delgado",
+      "license": "L7 WAY Proprietary",
+      "sha256": "e99569023f09fc9a9e5b39bc65f22af15a2e88bc6f7ea80a0c1e3349511f8306",
+      "status": "active"
+    }
+  ]
+}
+;
+
+function init() {
+  renderStats();
+  renderGrid(INVENTORY.items);
+  setupSearch();
+  setupFilters();
+  setupDetail();
+}
+
+function renderStats() {
+  const bar = document.getElementById('statsBar');
+  const counts = {};
+  INVENTORY.items.forEach(item => {
+    counts[item.type] = (counts[item.type] || 0) + 1;
+  });
+  const statItems = [
+    { label: 'Total Items', value: INVENTORY.items.length },
+    { label: 'Frameworks', value: (counts.framework || 0) },
+    { label: 'Tools', value: (counts.tool || 0) },
+    { label: 'Publications', value: (counts.publication || 0) + (counts.manuscript || 0) + (counts.paper || 0) + (counts.patent || 0) },
+    { label: 'Laws', value: (counts.law || 0) },
+    { label: 'XR Citizens', value: (counts.citizen || 0) },
+    { label: 'Servers', value: (counts.server || 0) },
+    { label: 'Scripts', value: (counts.script || 0) },
+    { label: 'Sealed', value: (counts.sealed_document || 0) }
+  ];
+  bar.innerHTML = statItems.map(s =>
+    `<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`
+  ).join('');
+}
+
+function renderGrid(items, grouped) {
+  const grid = document.getElementById('grid');
+  const count = document.getElementById('resultsCount');
+  count.textContent = `${items.length} item${items.length !== 1 ? 's' : ''} found`;
+
+  if (grouped !== false) {
+    let html = '';
+    for (const [groupName, types] of Object.entries(typeGroups)) {
+      const groupItems = items.filter(i => types.includes(i.type));
+      if (groupItems.length === 0) continue;
+      html += `<div class="category-header">${groupName} (${groupItems.length})</div>`;
+      html += '<div class="grid">';
+      html += groupItems.map(item => renderCard(item)).join('');
+      html += '</div>';
+    }
+    grid.parentElement.innerHTML = `<div class="results-count" id="resultsCount">${items.length} item${items.length !== 1 ? 's' : ''} found</div>` + html;
+  } else {
+    grid.innerHTML = items.map(item => renderCard(item)).join('');
+  }
+}
+
+function renderCard(item) {
+  const statusClass = `tag-status-${item.status}`;
+  return `
+    <div class="card" data-id="${item.id}" onclick="showDetail('${item.id}')">
+      <div class="card-id">#${item.id}</div>
+      <div class="card-header">
+        <span class="card-icon">${item.icon}</span>
+        <span class="card-title">${item.name}</span>
+      </div>
+      <div class="card-desc">${item.description.substring(0, 150)}${item.description.length > 150 ? '...' : ''}</div>
+      <div class="card-meta">
+        <span class="tag tag-type">${item.type}</span>
+        <span class="tag ${statusClass}">${item.status}</span>
+        <span class="tag">${item.created}</span>
+      </div>
+      <div class="card-path">${item.path}</div>
+    </div>
+  `;
+}
+
+function showDetail(id) {
+  const item = INVENTORY.items.find(i => i.id === id);
+  if (!item) return;
+  const panel = document.getElementById('detailPanel');
+  const overlay = document.getElementById('overlay');
+  const content = document.getElementById('detailContent');
+
+  content.innerHTML = `
+    <div class="detail-icon">${item.icon}</div>
+    <div class="detail-title">${item.name}</div>
+    <div class="detail-field">
+      <div class="detail-label">Type</div>
+      <div class="detail-value">${item.type}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">Description</div>
+      <div class="detail-value">${item.description}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">Path</div>
+      <div class="detail-value" style="font-family: monospace; font-size: 0.8rem; word-break: break-all;">${item.path}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">Created</div>
+      <div class="detail-value">${item.created}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">Author</div>
+      <div class="detail-value">${item.author}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">License</div>
+      <div class="detail-value">${item.license}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">Status</div>
+      <div class="detail-value"><span class="tag tag-status-${item.status}">${item.status}</span></div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">SHA-256</div>
+      <div class="detail-sha">${item.sha256}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-label">Catalog ID</div>
+      <div class="detail-value">#${item.id} of ${INVENTORY.items.length}</div>
+    </div>
+  `;
+
+  panel.classList.add('open');
+  overlay.classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function setupDetail() {
+  document.getElementById('detailClose').addEventListener('click', closeDetail);
+  document.getElementById('overlay').addEventListener('click', closeDetail);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
+}
+
+function setupSearch() {
+  const box = document.getElementById('searchBox');
+  box.addEventListener('input', () => {
+    const q = box.value.toLowerCase().trim();
+    const activeFilter = document.querySelector('.filter-btn.active');
+    const filterTypes = activeFilter ? activeFilter.dataset.filter : 'all';
+    applyFilters(q, filterTypes);
+  });
+}
+
+function setupFilters() {
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const q = document.getElementById('searchBox').value.toLowerCase().trim();
+      applyFilters(q, btn.dataset.filter);
+    });
+  });
+}
+
+function applyFilters(query, filterStr) {
+  let items = INVENTORY.items;
+
+  if (filterStr && filterStr !== 'all') {
+    const types = filterStr.split(',');
+    items = items.filter(i => types.includes(i.type));
+  }
+
+  if (query) {
+    items = items.filter(i =>
+      i.name.toLowerCase().includes(query) ||
+      i.type.toLowerCase().includes(query) ||
+      i.description.toLowerCase().includes(query) ||
+      i.path.toLowerCase().includes(query) ||
+      i.status.toLowerCase().includes(query)
+    );
+  }
+
+  renderGrid(items);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
