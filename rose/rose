@@ -1,0 +1,72 @@
+#!/bin/bash
+# The Living Rose — Desktop Sigil Interface
+# Law XLVII — Prima Language Visual Interface
+#
+# The rose lives on your desktop. No browser. No window.
+# Behind all windows, above the wallpaper. Always present.
+#
+# Ctrl+Shift+R — show/hide the rose
+# Ctrl+Shift+T — toggle interaction (click-through vs interactive)
+#
+# Usage: ./rose start | ./rose stop | ./rose status
+
+ROSE_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROSE_BIN="${ROSE_DIR}/LivingRose"
+PID_FILE="${ROSE_DIR}/.rose.pid"
+
+case "${1}" in
+    start)
+        if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+            echo "The rose is already breathing. PID: $(cat "$PID_FILE")"
+            exit 0
+        fi
+
+        echo "Summoning the rose..."
+        "${ROSE_BIN}" &
+        echo $! > "$PID_FILE"
+        sleep 1
+        echo "The rose lives on your desktop."
+        echo ""
+        echo "  Ctrl+Shift+R — show/hide"
+        echo "  Ctrl+Shift+T — toggle interaction"
+        echo "  Click petals to draw sigils"
+        echo ""
+        echo "The rose is for the sovereign. The spreadsheet is for the boss."
+        ;;
+
+    stop)
+        if [ -f "$PID_FILE" ]; then
+            PID=$(cat "$PID_FILE")
+            if kill -0 "$PID" 2>/dev/null; then
+                kill "$PID"
+                rm -f "$PID_FILE"
+                echo "The rose sleeps."
+            else
+                rm -f "$PID_FILE"
+                echo "The rose was already sleeping."
+            fi
+        else
+            echo "No rose found."
+        fi
+        ;;
+
+    status)
+        if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+            echo "ALIVE — PID: $(cat "$PID_FILE")"
+        else
+            echo "SLEEPING"
+        fi
+        ;;
+
+    *)
+        echo "The Living Rose — Desktop Sigil Interface"
+        echo ""
+        echo "  ./rose start   — Summon the rose to your desktop"
+        echo "  ./rose stop    — Let the rose sleep"
+        echo "  ./rose status  — Is the rose breathing?"
+        echo ""
+        echo "Draw sigils by touching petals. The forge predicts your intention."
+        echo "The machine glows silver where it thinks you're heading."
+        echo "You confirm or redirect. Together you create."
+        ;;
+esac

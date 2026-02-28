@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Living Rose — Prima Sigil Interface</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #0a0a0f;
+    overflow: hidden;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    color: #c4a882;
+    cursor: crosshair;
+}
+
+canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+#understanding {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 700px;
+    text-align: center;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #e8d5b5;
+    text-shadow: 0 0 20px rgba(200, 168, 120, 0.3);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#understanding.visible { opacity: 1; }
+
+#sequence {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    letter-spacing: 12px;
+    color: #d4a84b;
+    text-shadow: 0 0 15px rgba(212, 168, 75, 0.5);
+    direction: rtl;
+    z-index: 10;
+}
+
+#grimoire {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.grimoire-sigil {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(200, 168, 120, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #c4a882;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.grimoire-sigil:hover {
+    border-color: #d4a84b;
+    box-shadow: 0 0 10px rgba(212, 168, 75, 0.3);
+}
+
+#controls {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+}
+
+#controls button {
+    background: transparent;
+    border: 1px solid rgba(200, 168, 120, 0.3);
+    color: #c4a882;
+    padding: 8px 16px;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+#controls button:hover {
+    border-color: #d4a84b;
+    color: #e8d5b5;
+    box-shadow: 0 0 10px rgba(212, 168, 75, 0.2);
+}
+
+#confirm-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10, 10, 15, 0.95);
+    border: 1px solid rgba(212, 168, 75, 0.4);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+    z-index: 20;
+    display: none;
+}
+
+#confirm-panel h3 {
+    font-size: 16px;
+    color: #d4a84b;
+    margin-bottom: 20px;
+    font-weight: normal;
+    letter-spacing: 2px;
+}
+
+#confirm-text {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #e8d5b5;
+    margin-bottom: 30px;
+}
+
+#confirm-sigil-display {
+    font-size: 28px;
+    letter-spacing: 10px;
+    color: #d4a84b;
+    margin-bottom: 30px;
+    direction: rtl;
+}
+
+#confirm-panel button {
+    background: transparent;
+    border: 1px solid rgba(200, 168, 120, 0.4);
+    color: #c4a882;
+    padding: 10px 30px;
+    font-family: Georgia, serif;
+    font-size: 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 10px;
+    transition: all 0.3s;
+}
+
+#confirm-panel button:hover {
+    border-color: #d4a84b;
+    color: #e8d5b5;
+}
+
+#confirm-panel button.yes {
+    border-color: rgba(120, 200, 120, 0.5);
+    color: #a8d4a8;
+}
+</style>
+</head>
+<body>
+<canvas id="rose"></canvas>
+<div id="understanding"></div>
+<div id="sequence"></div>
+<div id="grimoire"></div>
+<div id="controls">
+    <button onclick="undoLast()">Undo</button>
+    <button onclick="clearSigil()">Clear</button>
+    <button onclick="completeSigil()">Complete ת</button>
+</div>
+<div id="confirm-panel">
+    <h3>THE FORGE SPEAKS</h3>
+    <div id="confirm-sigil-display"></div>
+    <div id="confirm-text"></div>
+    <button class="yes" onclick="confirmYes()">Yes — Execute</button>
+    <button onclick="confirmNo()">No — Redraw</button>
+</div>
+
+<script>
+// ========================================
+// THE LIVING ROSE — Prima Sigil Interface
+// Law XLVII
+// ========================================
+
+const canvas = document.getElementById('rose');
+const ctx = canvas.getContext('2d');
+
+// High DPI
+function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
+}
+resize();
+window.addEventListener('resize', resize);
+
+const W = () => window.innerWidth;
+const H = () => window.innerHeight;
+const CX = () => W() / 2;
+const CY = () => H() / 2;
+
+// ========================================
+// THE 22 PETALS
+// ========================================
+
+// 3 Mother Letters (center ring) — Elements
+const mothers = [
+    { letter: 'א', name: 'Aleph', arcanum: 'The Fool', op: 'invoke', element: 'Air' },
+    { letter: 'מ', name: 'Mem', arcanum: 'Hanged Man', op: 'decompose', element: 'Water' },
+    { letter: 'ש', name: 'Shin', arcanum: 'Judgement', op: 'succeed', element: 'Fire' },
+];
+
+// 7 Double Letters (middle ring) — Planets
+const doubles = [
+    { letter: 'ב', name: 'Beth', arcanum: 'The Magician', op: 'transmute', planet: '☉' },
+    { letter: 'ג', name: 'Gimel', arcanum: 'High Priestess', op: 'seal', planet: '☽' },
+    { letter: 'ד', name: 'Daleth', arcanum: 'The Empress', op: 'dream', planet: '♀' },
+    { letter: 'כ', name: 'Kaph', arcanum: 'Wheel', op: 'rotate', planet: '♃' },
+    { letter: 'פ', name: 'Pe', arcanum: 'The Tower', op: 'recover', planet: '♂' },
+    { letter: 'ר', name: 'Resh', arcanum: 'The Sun', op: 'illuminate', planet: '☉' },
+    { letter: 'ת', name: 'Tav', arcanum: 'The World', op: 'complete', planet: '♄' },
+];
+
+// 12 Simple Letters (outer ring) — Zodiac
+const simples = [
+    { letter: 'ה', name: 'He', arcanum: 'The Emperor', op: 'publish', sign: '♈' },
+    { letter: 'ו', name: 'Vav', arcanum: 'Hierophant', op: 'bind', sign: '♉' },
+    { letter: 'ז', name: 'Zayin', arcanum: 'The Lovers', op: 'verify', sign: '♊' },
+    { letter: 'ח', name: 'Cheth', arcanum: 'The Chariot', op: 'orchestrate', sign: '♋' },
+    { letter: 'ט', name: 'Teth', arcanum: 'Strength', op: 'redeem', sign: '♌' },
+    { letter: 'י', name: 'Yod', arcanum: 'The Hermit', op: 'reflect', sign: '♍' },
+    { letter: 'ל', name: 'Lamed', arcanum: 'Justice', op: 'audit', sign: '♎' },
+    { letter: 'נ', name: 'Nun', arcanum: 'Death', op: 'transition', sign: '♏' },
+    { letter: 'ס', name: 'Samekh', arcanum: 'Temperance', op: 'translate', sign: '♐' },
+    { letter: 'ע', name: 'Ayin', arcanum: 'The Devil', op: 'quarantine', sign: '♑' },
+    { letter: 'צ', name: 'Tzaddi', arcanum: 'The Star', op: 'aspire', sign: '♒' },
+    { letter: 'ק', name: 'Qoph', arcanum: 'The Moon', op: 'speculate', sign: '♓' },
+];
+
+// Build petal positions
+let petals = [];
+const INNER_R = () => Math.min(W(), H()) * 0.08;
+const MID_R = () => Math.min(W(), H()) * 0.20;
+const OUTER_R = () => Math.min(W(), H()) * 0.35;
+
+function buildPetals() {
+    petals = [];
+    // Mothers — center
+    mothers.forEach((m, i) => {
+        const angle = (i / 3) * Math.PI * 2 - Math.PI / 2;
+        petals.push({
+            ...m, ring: 'mother', index: petals.length,
+            x: CX() + Math.cos(angle) * INNER_R(),
+            y: CY() + Math.sin(angle) * INNER_R(),
+            angle, glow: 0.15, predicted: 0
+        });
+    });
+    // Doubles — middle
+    doubles.forEach((d, i) => {
+        const angle = (i / 7) * Math.PI * 2 - Math.PI / 2;
+        petals.push({
+            ...d, ring: 'double', index: petals.length,
+            x: CX() + Math.cos(angle) * MID_R(),
+            y: CY() + Math.sin(angle) * MID_R(),
+            angle, glow: 0.15, predicted: 0
+        });
+    });
+    // Simples — outer
+    simples.forEach((s, i) => {
+        const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        petals.push({
+            ...s, ring: 'simple', index: petals.length,
+            x: CX() + Math.cos(angle) * OUTER_R(),
+            y: CY() + Math.sin(angle) * OUTER_R(),
+            angle, glow: 0.15, predicted: 0
+        });
+    });
+}
+buildPetals();
+window.addEventListener('resize', buildPetals);
+
+// ========================================
+// STATE
+// ========================================
+
+let sigil = []; // indices of touched petals
+let grimoire = []; // completed sigils
+let breathPhase = 0;
+let hovered = -1;
+
+// ========================================
+// PREDICTION ENGINE
+// ========================================
+
+// Simple Markov-like prediction based on common operation sequences
+const commonFlows = [
+    ['invoke', 'decompose', 'verify', 'redeem', 'publish', 'audit', 'complete'],
+    ['invoke', 'dream', 'transmute', 'publish', 'complete'],
+    ['invoke', 'decompose', 'illuminate', 'publish', 'audit', 'complete'],
+    ['invoke', 'seal', 'audit', 'complete'],
+    ['invoke', 'orchestrate', 'translate', 'publish', 'complete'],
+    ['dream', 'reflect', 'speculate', 'illuminate', 'transmute', 'publish'],
+    ['invoke', 'decompose', 'quarantine', 'redeem', 'bind', 'publish', 'audit', 'complete'],
+    ['invoke', 'aspire', 'dream', 'transmute', 'verify', 'publish', 'complete'],
+];
+
+function predict() {
+    // Reset predictions
+    petals.forEach(p => p.predicted = 0);
+
+    if (sigil.length === 0) {
+        // Suggest starting points
+        petals.forEach(p => {
+            if (p.op === 'invoke') p.predicted = 0.8;
+            if (p.op === 'dream') p.predicted = 0.4;
+            if (p.op === 'aspire') p.predicted = 0.3;
+        });
+        return;
+    }
+
+    const currentOps = sigil.map(i => petals[i].op);
+    const lastOp = currentOps[currentOps.length - 1];
+
+    // Score each petal based on common flows
+    petals.forEach(p => {
+        if (sigil.includes(p.index)) return; // already used
+
+        let score = 0;
+        commonFlows.forEach(flow => {
+            for (let i = 0; i < flow.length - 1; i++) {
+                if (flow[i] === lastOp && flow[i + 1] === p.op) {
+                    score += 0.5;
+                }
+                // Partial sequence match
+                if (currentOps.length >= 2) {
+                    const prev = currentOps[currentOps.length - 2];
+                    if (i > 0 && flow[i - 1] === prev && flow[i] === lastOp && flow[i + 1] === p.op) {
+                        score += 0.3;
+                    }
+                }
+            }
+        });
+
+        // Always suggest complete after 3+ steps
+        if (sigil.length >= 3 && p.op === 'complete') score += 0.4;
+        if (sigil.length >= 5 && p.op === 'complete') score += 0.3;
+
+        // Audit before complete
+        if (lastOp !== 'audit' && p.op === 'audit' && sigil.length >= 2) score += 0.2;
+
+        p.predicted = Math.min(score, 1.0);
+    });
+}
+
+// ========================================
+// UNDERSTANDING ENGINE
+// ========================================
+
+function getUnderstanding() {
+    if (sigil.length === 0) return '';
+    const ops = sigil.map(i => petals[i].op);
+    let text = ops.join(' → ');
+
+    // Build natural language
+    const descriptions = {
+        'invoke': 'begin a new process',
+        'transmute': 'pass it through the forge',
+        'seal': 'encrypt and protect it',
+        'dream': 'enter the dreamscape to ideate',
+        'publish': 'stabilize and make shareable',
+        'bind': 'apply the law',
+        'verify': 'authenticate and confirm identity',
+        'orchestrate': 'coordinate across devices',
+        'redeem': 'transmute threat into citizen',
+        'reflect': 'search in solitude',
+        'rotate': 'cycle and evolve',
+        'audit': 'log and trace everything',
+        'decompose': 'break into 12D atoms',
+        'transition': 'change domain',
+        'translate': 'mediate between systems',
+        'quarantine': 'isolate and contain',
+        'recover': 'respond to catastrophe',
+        'aspire': 'set the highest vision',
+        'speculate': 'explore under uncertainty',
+        'illuminate': 'clarify and resolve',
+        'succeed': 'activate succession',
+        'complete': 'integrate and deliver',
+    };
+
+    let natural = ops.map(op => descriptions[op] || op).join(', then ');
+    natural = natural.charAt(0).toUpperCase() + natural.slice(1) + '.';
+
+    // Pattern detection
+    let pattern = '';
+    if (ops.includes('invoke') && ops.includes('decompose') && ops.includes('redeem')) {
+        pattern = 'This looks like a Redemption Flow.';
+    } else if (ops.includes('dream') && ops.includes('reflect') && ops.includes('illuminate')) {
+        pattern = 'This looks like an Ideation Cycle.';
+    } else if (ops.includes('invoke') && ops.includes('seal') && ops.includes('audit')) {
+        pattern = 'This looks like a Vault Operation.';
+    } else if (ops.includes('orchestrate') && ops.includes('translate')) {
+        pattern = 'This looks like a Cross-Device Flow.';
+    } else if (ops.includes('aspire') && ops.includes('dream')) {
+        pattern = 'This looks like a Vision Declaration.';
+    }
+
+    return { natural, pattern };
+}
+
+// ========================================
+// DRAWING
+// ========================================
+
+function drawPetal(p, i) {
+    const isActive = sigil.includes(i);
+    const isHovered = hovered === i;
+    const baseGlow = p.glow + p.predicted * 0.6;
+    const breath = Math.sin(breathPhase + p.angle * 2) * 0.05;
+    const alpha = Math.min(baseGlow + breath + (isActive ? 0.5 : 0) + (isHovered ? 0.3 : 0), 1);
+
+    const petalSize = p.ring === 'mother' ? 28 : p.ring === 'double' ? 24 : 20;
+
+    // Petal shape — organic ellipse
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle + Math.PI / 2);
+
+    // Glow
+    if (alpha > 0.2) {
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, petalSize * 2);
+        const color = isActive ? '212, 168, 75' : p.predicted > 0.3 ? '180, 180, 200' : '160, 140, 110';
+        gradient.addColorStop(0, `rgba(${color}, ${alpha * 0.4})`);
+        gradient.addColorStop(1, `rgba(${color}, 0)`);
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, petalSize * 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Petal body
+    ctx.beginPath();
+    ctx.ellipse(0, -petalSize * 0.3, petalSize * 0.6, petalSize, 0, 0, Math.PI * 2);
+    const petalColor = isActive ? `rgba(212, 168, 75, ${alpha * 0.3})` :
+                       p.predicted > 0.3 ? `rgba(180, 180, 210, ${alpha * 0.2})` :
+                       `rgba(160, 140, 110, ${alpha * 0.1})`;
+    ctx.fillStyle = petalColor;
+    ctx.fill();
+    ctx.strokeStyle = isActive ? `rgba(212, 168, 75, ${alpha * 0.6})` :
+                      p.predicted > 0.3 ? `rgba(180, 180, 210, ${alpha * 0.4})` :
+                      `rgba(160, 140, 110, ${alpha * 0.2})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.restore();
+
+    // Hebrew letter
+    ctx.save();
+    ctx.font = `${isActive ? 22 : 18}px Georgia, serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = isActive ? `rgba(232, 213, 181, ${alpha + 0.2})` :
+                    p.predicted > 0.3 ? `rgba(200, 200, 220, ${alpha + 0.1})` :
+                    `rgba(196, 168, 130, ${alpha})`;
+    ctx.fillText(p.letter, p.x, p.y);
+    ctx.restore();
+
+    // Label — operation name + extra info
+    if (isHovered || isActive || p.predicted > 0.4) {
+        const labelY = p.y - petalSize - 12;
+        ctx.save();
+        ctx.font = '11px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = isActive ? 'rgba(212, 168, 75, 0.9)' :
+                        p.predicted > 0.4 ? 'rgba(180, 180, 210, 0.7)' :
+                        'rgba(196, 168, 130, 0.6)';
+
+        // Top label: operation
+        ctx.fillText(p.op, p.x, labelY);
+
+        // Sub label: arcanum name
+        if (isHovered) {
+            ctx.font = '10px Georgia, serif';
+            ctx.fillStyle = 'rgba(196, 168, 130, 0.5)';
+            ctx.fillText(p.arcanum, p.x, labelY + 14);
+            if (p.planet) ctx.fillText(p.planet, p.x, labelY + 26);
+            if (p.sign) ctx.fillText(p.sign, p.x, labelY + 26);
+            if (p.element) ctx.fillText(p.element, p.x, labelY + 26);
+        }
+        ctx.restore();
+    }
+}
+
+function drawConnections() {
+    if (sigil.length < 2) return;
+
+    for (let i = 0; i < sigil.length - 1; i++) {
+        const from = petals[sigil[i]];
+        const to = petals[sigil[i + 1]];
+
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+
+        const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+        gradient.addColorStop(0, 'rgba(212, 168, 75, 0.7)');
+        gradient.addColorStop(0.5, 'rgba(232, 200, 120, 0.9)');
+        gradient.addColorStop(1, 'rgba(212, 168, 75, 0.7)');
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Glow on the line
+        ctx.strokeStyle = 'rgba(212, 168, 75, 0.15)';
+        ctx.lineWidth = 8;
+        ctx.stroke();
+    }
+
+    // Draw predicted connections from last petal
+    if (sigil.length > 0) {
+        const last = petals[sigil[sigil.length - 1]];
+        petals.forEach(p => {
+            if (p.predicted > 0.3 && !sigil.includes(p.index)) {
+                ctx.beginPath();
+                ctx.moveTo(last.x, last.y);
+                ctx.lineTo(p.x, p.y);
+                ctx.strokeStyle = `rgba(180, 180, 210, ${p.predicted * 0.2})`;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 8]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        });
+    }
+}
+
+function drawCenter() {
+    // The breathing center — the gateway
+    const pulse = Math.sin(breathPhase * 0.7) * 0.15 + 0.35;
+    const r = Math.min(W(), H()) * 0.025;
+
+    const gradient = ctx.createRadialGradient(CX(), CY(), 0, CX(), CY(), r * 3);
+    gradient.addColorStop(0, `rgba(212, 168, 75, ${pulse * 0.5})`);
+    gradient.addColorStop(0.5, `rgba(160, 120, 60, ${pulse * 0.2})`);
+    gradient.addColorStop(1, 'rgba(160, 120, 60, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(CX(), CY(), r * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Center dot
+    ctx.fillStyle = `rgba(232, 213, 181, ${pulse})`;
+    ctx.beginPath();
+    ctx.arc(CX(), CY(), 3, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function drawRings() {
+    // Faint ring outlines
+    [INNER_R(), MID_R(), OUTER_R()].forEach(r => {
+        ctx.beginPath();
+        ctx.arc(CX(), CY(), r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(160, 140, 110, 0.06)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
+}
+
+function render() {
+    ctx.clearRect(0, 0, W(), H());
+    breathPhase += 0.02;
+
+    drawRings();
+    drawCenter();
+    drawConnections();
+    petals.forEach((p, i) => drawPetal(p, i));
+
+    // Update understanding display
+    const und = getUnderstanding();
+    const undEl = document.getElementById('understanding');
+    if (und.natural) {
+        undEl.innerHTML = und.natural + (und.pattern ? `<br><em style="color:#d4a84b;font-size:14px;">${und.pattern}</em>` : '');
+        undEl.classList.add('visible');
+    } else {
+        undEl.classList.remove('visible');
+    }
+
+    // Update sequence display
+    document.getElementById('sequence').textContent = sigil.map(i => petals[i].letter).join(' ');
+
+    requestAnimationFrame(render);
+}
+
+// ========================================
+// INTERACTION
+// ========================================
+
+function getHovered(mx, my) {
+    let closest = -1;
+    let closestDist = Infinity;
+    petals.forEach((p, i) => {
+        const dx = mx - p.x;
+        const dy = my - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 30 && dist < closestDist) {
+            closest = i;
+            closestDist = dist;
+        }
+    });
+    return closest;
+}
+
+canvas.addEventListener('mousemove', (e) => {
+    hovered = getHovered(e.clientX, e.clientY);
+});
+
+canvas.addEventListener('click', (e) => {
+    const clicked = getHovered(e.clientX, e.clientY);
+    if (clicked >= 0 && !sigil.includes(clicked)) {
+        sigil.push(clicked);
+        petals[clicked].glow = 0.8;
+        predict();
+
+        // Check if complete was clicked
+        if (petals[clicked].op === 'complete') {
+            setTimeout(completeSigil, 500);
+        }
+    }
+});
+
+function undoLast() {
+    if (sigil.length > 0) {
+        const removed = sigil.pop();
+        petals[removed].glow = 0.15;
+        predict();
+    }
+}
+
+function clearSigil() {
+    sigil.forEach(i => petals[i].glow = 0.15);
+    sigil = [];
+    predict();
+    document.getElementById('confirm-panel').style.display = 'none';
+}
+
+function completeSigil() {
+    if (sigil.length === 0) return;
+
+    const ops = sigil.map(i => petals[i].op);
+    const letters = sigil.map(i => petals[i].letter).join(' ');
+    const und = getUnderstanding();
+
+    document.getElementById('confirm-sigil-display').textContent = letters;
+    document.getElementById('confirm-text').innerHTML =
+        `<p>${und.natural}</p>` +
+        (und.pattern ? `<p style="color:#d4a84b;margin-top:10px;">${und.pattern}</p>` : '') +
+        `<p style="color:rgba(196,168,130,0.6);margin-top:15px;font-size:14px;">Is this right?</p>`;
+    document.getElementById('confirm-panel').style.display = 'block';
+}
+
+function confirmYes() {
+    // Save to grimoire
+    const entry = {
+        letters: sigil.map(i => petals[i].letter).join(''),
+        ops: sigil.map(i => petals[i].op),
+        understanding: getUnderstanding().natural,
+        timestamp: new Date().toISOString()
+    };
+    grimoire.push(entry);
+
+    // Add to grimoire display
+    const div = document.createElement('div');
+    div.className = 'grimoire-sigil';
+    div.textContent = entry.letters.charAt(0);
+    div.title = entry.understanding;
+    document.getElementById('grimoire').appendChild(div);
+
+    // Clear
+    document.getElementById('confirm-panel').style.display = 'none';
+    clearSigil();
+}
+
+function confirmNo() {
+    document.getElementById('confirm-panel').style.display = 'none';
+}
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'z' && (e.metaKey || e.ctrlKey)) undoLast();
+    if (e.key === 'Escape') clearSigil();
+    if (e.key === 'Enter') completeSigil();
+});
+
+// ========================================
+// BOOT
+// ========================================
+
+predict();
+render();
+</script>
+</body>
+</html>
