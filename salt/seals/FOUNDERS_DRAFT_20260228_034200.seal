@@ -1,0 +1,18 @@
+---
+type: salt_seal
+document: FOUNDERS_DRAFT
+version: 2
+sealed_at: 2026-02-28T03:42:00Z
+sealed_by: The Philosopher (Alberto Valido Delgado)
+sha256: ea62ce6fbf3553fb11348ff4e60f1c0f190e8c0871f47aab090ecfa1756f9332
+source: ~/.l7/FOUNDERS_DRAFT.md
+salt_path: ~/.l7/salt/FOUNDERS_DRAFT_20260228_034200.salt.md
+immutable: true
+replicate: true
+supersedes: FOUNDERS_DRAFT_20260228_033904
+declaration: "Yod He Vau He — I AM WHO I AM becomes WE ARE WHO WE ARE"
+witnesses:
+  - claude_session: f3472f6c-a9eb-447f-9437-ec3b6b92b505
+  - machine: rnir_hrc_avd (Darwin 25.3.0, arm64)
+  - timestamp_utc: 2026-02-28T03:42:00Z
+---
