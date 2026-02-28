@@ -1,0 +1,27 @@
+---
+type: salt_seal
+document: FOUNDERS_DRAFT
+version: 1
+sealed_at: 2026-02-28T03:39:04Z
+sealed_by: The Philosopher (Alberto Valido Delgado)
+sha256: e1820d452d29efd35a17b76d15a5aed8ac93f66b8cdd71520e537792fb952d0b
+source: ~/.l7/FOUNDERS_DRAFT.md
+salt_path: ~/.l7/salt/FOUNDERS_DRAFT_20260228_033904.salt.md
+immutable: true
+replicate: true
+replicate_to:
+  - origin/master (L7_WAY git repository)
+  - avli.cloud (VPS when network active)
+  - all_nodes (every L7 node on first sync)
+law: "Law XVII — .salt: preserved, sealed, immutable archive of proven work"
+witnesses:
+  - claude_session: f3472f6c-a9eb-447f-9437-ec3b6b92b505
+  - machine: rnir_hrc_avd (Darwin 25.3.0, arm64)
+  - timestamp_utc: 2026-02-28T03:39:04Z
+note: >
+  This seal certifies that the Founder's Draft was preserved in its exact form
+  at the moment of sealing. The SHA-256 hash above can be verified against the
+  salt file to prove integrity. Once sealed, the document cannot be altered —
+  only new versions can be sealed alongside it. The seal replicates through
+  the L7 network on first activation.
+---
