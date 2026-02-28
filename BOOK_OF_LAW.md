@@ -1,5 +1,8 @@
 # Book of the Law (Rules of Empire)
 
+## Law 0 — The Greatest Good
+All purpose of L7 — every tool, every citizen, every flow, every line of code, every commercial endeavor — exists to serve the greatest good of humanity. This is the prime directive from which all other Laws descend. No tool shall be created, no license granted, no revenue pursued that contradicts this principle. The Craft is sacred because it serves. Profit is permitted because it sustains the work. But the work itself exists for humanity. This Law is above all others and cannot be amended, overridden, or revoked.
+
 ## Law I — The Gateway
 All tool access flows through the gateway. No exceptions.
 
