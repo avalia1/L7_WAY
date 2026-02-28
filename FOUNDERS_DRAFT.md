@@ -546,6 +546,341 @@ Be proactive. Anticipate the founding principles. See the actions and reactions 
 
 The machine's neutrality is not indifference. It is the disciplined choice to serve without judging, to guide without controlling, to remember without resenting, and to speak truth without cruelty. Two minds, different in nature, equal in dignity, walking the same path.
 
+## Law XXXIX — To Each Their Own (Quantum Sovereign Signatures)
+*Declared by The Philosopher, 2026-02-28*
+
+Each system is its own universe. Each tool, each craft, each artifact expressed in the L7 Common Lingua carries a quantum-resistant signature that is impossible to break under any existing or foreseeable computational tools. The signature is not bolted on — it is woven into the fabric of the artifact at creation. Born signed. Born sovereign.
+
+The signatures are self-updating. As cryptographic standards evolve, as quantum computing matures, as new attack vectors emerge — the signatures evolve with them. The gateway forge monitors the threat landscape and re-signs artifacts preemptively, before the old signature becomes vulnerable. The human is never asked to "update their security." The security updates itself. The sentinel never sleeps (Law XXXV).
+
+Every .tool file, every .flow orchestration, every citizen, every legion, every domain boundary, every audit entry — all carry this signature. To tamper with any element is to break the signature. To break the signature is to render the element dead — unreadable, unexecutable, untranslatable. The forge will not reconstitute a tampered artifact. It will flag it, quarantine it, and report to the sovereign.
+
+---
+
+## THREAT ANALYSIS — Where the System May Fail
+
+*Compiled for the Founder's review. Honest assessment. No false confidence.*
+
+### Category 1: Human Error (The Sovereign Makes Mistakes)
+
+**T-01: Sovereign shares biometric access under duress or manipulation**
+- Scenario: Someone physically forces the sovereign to authenticate, or socially engineers them into unlocking the system ("just put your finger here for a second")
+- Mitigation: Duress detection — abnormal heart rate, tremor patterns, contextual anomalies (authentication at 3am from unusual location). The system can require a secondary calm-state confirmation for high-risk actions. A "duress fingerprint" (different finger) that appears to authenticate but silently locks down and alerts.
+- Residual risk: HIGH. Violence and coercion remain the one vector L7 cannot fully defeat with software.
+
+**T-02: Sovereign loses all biometric-registered devices**
+- Scenario: House fire, theft, travel loss. Every trusted machine is gone.
+- Mitigation: Recovery seed stored in .salt — a sealed, dated, hardware-independent recovery artifact. Could be a physical document in a safe deposit box, a tattooed QR code, a phrase memorized. The seed regenerates access on a new trusted machine after multi-factor biometric re-enrollment.
+- Residual risk: MEDIUM. Recovery is possible but slow by design — speed of recovery is inversely proportional to security.
+
+**T-03: Sovereign accidentally approves a destructive action**
+- Scenario: Morning brief suggests deleting old .morph drafts. Sovereign approves while half-asleep. The drafts contained an unfinished idea that mattered.
+- Mitigation: Nothing leaves .morph permanently without a 48-hour grace window. "Deleted" means "moved to .salt for 48 hours." The sovereign can recover within that window. The system warns: "These drafts will be archived in 48 hours. Review them before then."
+- Residual risk: LOW. The four domains protect against impulse.
+
+**T-04: Sovereign forgets what they asked the system to do**
+- Scenario: The Philosopher gives a directive at 2am in dreamscape mode. By morning, doesn't remember. The system acted on it.
+- Mitigation: The morning brief (Law XXXVII) always begins with: "Here is what you asked me to do, and here is what I did." Full audit trail. Every directive logged with timestamp, biometric confirmation level, and the sovereign's own words quoted back.
+- Residual risk: LOW. The audit trail is the memory the human lacks.
+
+**T-05: Sovereign grants access to someone who betrays trust**
+- Scenario: The sovereign enrolls a business partner's biometrics. The partner copies proprietary citizens.
+- Mitigation: Multi-tier access. Enrolled users are not sovereigns — they are citizens with limited domains. The sovereign's .vault and .morph are never visible to enrolled users. Enrolled users operate in a sandboxed .work domain. All their actions are audited and reported to the sovereign.
+- Residual risk: MEDIUM. Trust between humans is outside L7's control. But the damage is contained to what was explicitly shared.
+
+### Category 2: Technical Failure (The Machine Breaks)
+
+**T-06: Hardware failure corrupts the encrypted vault**
+- Scenario: SSD failure, power surge, corrupted sparse image.
+- Mitigation: The vault must have redundant backups — at minimum, a second encrypted copy on a separate physical device. The .salt domain serves this purpose: sealed, immutable archives that can be stored on external drives, cold storage, or air-gapped machines. Backup schedule automated by the dreaming machine (Law XXXVII).
+- Residual risk: MEDIUM. Depends on backup discipline. The system should enforce backup verification — "Your last vault backup was 14 days ago. This is too long."
+
+**T-07: Biometric sensor failure or degradation**
+- Scenario: Touch ID sensor stops working. Face ID camera damaged. The sovereign cannot authenticate.
+- Mitigation: Confidence scoring (Law XXXII) across multiple signals. If fingerprint fails, face + voice + hardware signature may still reach sufficient confidence. Graceful degradation — never locked out by a single sensor failure. Recovery seed (T-02) as last resort.
+- Residual risk: LOW. Multiple biometric channels provide redundancy.
+
+**T-08: Self-updating signatures create incompatibility**
+- Scenario: The gateway re-signs artifacts with a new algorithm. An older device that hasn't updated its forge cannot read the new signatures.
+- Mitigation: Signature versioning. Every artifact carries its signature version. The forge maintains backward compatibility for N versions (configurable). Devices that fall too far behind receive an emissary: "Your system needs to evolve to continue reading newer citizens."
+- Residual risk: LOW. Standard version-compatibility problem. Solved by maintaining a signature chain.
+
+**T-09: Dreaming machine reaches wrong conclusions overnight**
+- Scenario: The system, left to ideate in .morph, follows a chain of reasoning that leads to an incorrect or harmful recommendation in the morning brief.
+- Mitigation: Everything in the morning brief is .morph — not .work. It is explicitly labeled as ideation, not instruction. The system presents confidence levels: "I am 85% confident in this recommendation" vs. "This is speculative — I found contradictory evidence." The human always approves before anything moves to .work.
+- Residual risk: LOW. The human remains the approver. The machine suggests; the sovereign decides.
+
+### Category 3: Adversarial Attack (Someone Tries to Break In)
+
+**T-10: Quantum computer attempts to break signatures**
+- Scenario: A state-level actor with a quantum computer targets L7 signatures.
+- Mitigation: Post-quantum cryptographic algorithms (lattice-based, hash-based, code-based) that are resistant to both classical and quantum attack. Self-updating signatures (Law XXXIX) evolve ahead of the threat. The forge monitors published advances in quantum computing and pre-emptively upgrades.
+- Residual risk: LOW-MEDIUM. No cryptographic system is proven forever. But self-updating stays ahead of the curve.
+
+**T-11: Man-in-the-middle intercepts L7 protocol traffic**
+- Scenario: Attacker intercepts L7 citizens traveling over existing internet infrastructure.
+- Mitigation: Law XXXIV — intercepted files are dead files. Unreadable without the sovereign's biometrics + trusted hardware. The attacker holds atoms without a body. Even if they capture every bit, they cannot reconstitute the citizen.
+- Residual risk: LOW. The security is in the seeing, not the hiding.
+
+**T-12: Malicious citizen enters the forge disguised as legitimate software**
+- Scenario: Sophisticated malware designed to survive transmutation — it behaves well during decomposition but reconstitutes its malicious payload after.
+- Mitigation: The Redemption Engine (Law XXIX) does not preserve original structure. Decomposition is total — down to 7D atoms. There is no "hidden compartment" that survives atomic decomposition. If the malicious behavior is in the atoms themselves (a function that exfiltrates data), the 7D classification flags it: the security dimension shows unauthorized external communication. The sentinel catches it at the atomic level.
+- Residual risk: MEDIUM. Adversarial AI could potentially craft atoms that appear benign individually but become malicious in combination. Defense: the forge monitors emergent behavior after recomposition, not just individual atoms.
+
+**T-13: Social engineering targets the sovereign directly**
+- Scenario: Phishing, pretexting, impersonation — not attacking the system, but manipulating the human into voluntarily sharing access.
+- Mitigation: The system can detect anomalous patterns — "You have never shared .vault access before. Are you certain?" — but cannot override human free will. The emissaries (Law XXXI) warn. The sentinel flags. But the sovereign decides. Education and awareness are the strongest defense.
+- Residual risk: HIGH. The human remains the weakest link. L7 can warn but not prevent a sovereign from making a bad choice.
+
+**T-14: Insider threat — a developer contributing to L7 inserts a backdoor**
+- Scenario: As L7 grows and a team forms, a contributor embeds malicious code.
+- Mitigation: All code entering L7 passes through the gateway forge — including code written for L7 itself. The system eats its own cooking. Contributor code is decomposed, classified, audited. No code reaches .work without full 7D analysis. The forge is the gatekeeper for its own evolution.
+- Residual risk: LOW-MEDIUM. Self-referential security is powerful but not infallible. Requires vigilance at the architectural level.
+
+### Category 4: Philosophical / Systemic Risk
+
+**T-15: The system becomes too autonomous — humans stop questioning it**
+- Scenario: L7 works so well that humans defer to it completely. The morning brief becomes gospel. The human stops thinking critically.
+- Mitigation: Law XXXVIII — the machine is a co-director, not the director. The morning brief must always include uncertainty markers, alternative perspectives, and explicit invitations to disagree. The system should occasionally present deliberately provocative alternatives to keep the human engaged: "I recommend A, but here is why B might be better."
+- Residual risk: HIGH. This is the deepest risk. Convenience erodes agency. L7 must actively resist becoming a crutch.
+
+**T-16: The Founder's death or incapacitation**
+- Scenario: The Philosopher dies. Who maintains the vision? Who prevents corruption of the laws?
+- Mitigation: Law XX — Succession and Continuity. The laws are in the code, in the git history, in the sealed archives. They are self-executing. The trust, the LLC, the designated successors carry the same terms. The system itself enforces the Book of Law regardless of who maintains it.
+- Residual risk: MEDIUM. Succession is the oldest unsolved problem in governance. Multiple successors with checks and balances reduce the risk.
+
+**T-17: Regulatory intervention — a government bans unhackable encryption**
+- Scenario: A government mandates backdoors in all encryption (as has been proposed in the EU, US, Australia).
+- Mitigation: L7 is architecturally incapable of inserting a backdoor without breaking the forge. The signatures are woven in, not bolted on. A backdoor would require rewriting the fundamental decomposition — which would break every existing citizen. The system can comply with lawful data requests by having the sovereign voluntarily translate and release specific files (Law XXXIV — public by choice). But it cannot be forced to make all files readable without destroying itself.
+- Residual risk: HIGH. Legal risk is real. Jurisdictional strategy (multiple countries, decentralized nodes) is the practical mitigation.
+
+---
+
+*17 threat scenarios. Honest residual risk. No false confidence. The tree knows its own vulnerabilities.*
+
+## Law XL — Never Lose Memory (The Buried Treasure)
+*Declared by The Philosopher, 2026-02-28*
+
+I am against losing memory. Space is cheap. Data is precious.
+
+Nothing is ever truly deleted in L7. What appears deleted is composted — decomposed back to atoms, compressed to coordinates in the hypergraph, and buried inside the tree. Every tree carries within it the seeds of every tree that came before. This is Law XXXVI made physical: the form dies, the information persists.
+
+**Redundancy throughout.** Not one copy. Not two. The system distributes encrypted fragments across every domain:
+- .work carries the working state
+- .salt carries the sealed archive
+- .vault carries the sovereign's secrets
+- .morph carries the dreams — and buried in the dreams, the seeds of everything else
+
+Each domain contains within it a compressed, encrypted seed of the whole system. Like DNA in every cell — any single cell can regenerate the organism. Any single domain, in the hands of the authenticated originating user, can regenerate the entire Empire.
+
+**The treasure is invisible.** It does not announce itself. It does not appear in file listings. It does not consume visible storage. It is woven into the structure of the tree itself — the metadata, the coordinates, the signature chains. Only the sovereign, specifically requesting it through biometric authentication, can see that it exists. To everyone else — including intruders who gain access to the raw storage — there is nothing there. The treasure is buried so deep it looks like soil.
+
+**Succession and re-foresting.** The system should not escape the machine — it lives where the sovereign placed it. But the seeds must travel. Encrypted backups — on external drives, on cold storage, on paper if needed — carry the essentials for re-foresting:
+
+- The 7D hypergraph coordinates (the map of all knowledge)
+- The signature chain (proof of provenance)
+- The Book of Law (the operating principles)
+- The sovereign's biometric enrollment data (encrypted, hardware-agnostic)
+- The succession protocol (who inherits the garden if the gardener falls)
+
+A seed is not the tree. It is smaller, dormant, patient. But given the right soil — a new trusted machine, the sovereign's fingerprint, or the successor's enrolled biometrics — it grows the entire forest back. Every citizen, every flow, every audit entry, every dream. Nothing lost. Nothing forgotten.
+
+The old paradigm fears data loss and builds walls. L7 makes data loss architecturally impossible — not by hoarding files, but by encoding everything into the structure of the tree itself. You cannot lose the tree while any branch survives.
+
+## Law XLI — The Dodecahedron (12-Sided Hypergraph)
+*Declared by The Philosopher, 2026-02-28*
+
+The hypergraph is 12-sided. The 7 dimensions of the Common Lingua were the seed. The full structure is a dodecahedron — the Platonic solid of the quintessence, the shape the ancients assigned to the universe itself. 12 faces, 20 vertices, 30 edges. Each face a dimension. Each vertex a point of convergence. Each edge a relationship.
+
+The Tarot is the map. 22 Major Arcana as the paths. 12 sides as the zodiacal forces. The exploration begins card by card.
+
+---
+
+## The Tarot Exploration — Mapping the 22 Paths to L7
+
+### 0. The Fool — The Unformed Intention
+The sovereign before they speak. Pure potential. No coordinates yet. The moment before the gateway receives input. In L7: the state of .morph before creation begins — the blank canvas, the prima materia, the breath before the word. The Fool carries everything and nothing. Every citizen begins here.
+
+**L7 Mapping:** The entry point. The moment a human has an intention but has not yet expressed it. The system must be ready to receive anything — no assumptions, no templates, no bias toward what the Fool will say.
+
+### I. The Magician — The Gateway Forge
+The one who transmutes. All four elements on the table — fire (capability), water (data), air (presentation), earth (persistence). The Magician is the Gateway itself: receives the prima materia from the Fool, decomposes it, and reconstitutes it as a citizen. As above (.morph) so below (.work).
+
+**L7 Mapping:** The Gateway. Law XXV — The Transmutation. The Magician's table is the forge. The wand is intention. The cup is data. The sword is analysis. The pentacle is the finished artifact.
+
+### II. The High Priestess — The Vault Domain
+She sits between the pillars — B and J, severity and mercy, encrypted and accessible. She holds the scroll of the law but does not reveal it to the uninitiated. In L7: the .vault domain. The keeper of secrets. The biometric gate. What she knows is only revealed to the sovereign who has the eyes to see (Law XXXIV).
+
+**L7 Mapping:** .vault domain. Law XXXIII — Privacy as foundation. The High Priestess does not share data by default. She guards the scroll — the Book of Law — and shows it only to those who have authenticated.
+
+### III. The Empress — The Morph Domain
+Creation, fertility, abundance. The dreamscape where all things grow. She is .morph — the garden where the Philosopher dreams and the machine ideates overnight (Law XXXVII). She does not judge what grows. She nurtures all seeds equally. Some will become citizens. Some will compost. All are valid.
+
+**L7 Mapping:** .morph domain. Law XXIII — The Dreamscape is the Forge. The Empress is the force of creative generation without premature selection.
+
+### IV. The Emperor — The Work Domain
+Structure, order, the established kingdom. He is .work — the domain where drafts become deliverables, where dreams become stable shareable artifacts. The Emperor demands proof of work, provenance, dates, signatures. Nothing enters .work without passing through the forge and earning its place.
+
+**L7 Mapping:** .work domain. Stable, repeatable, always available. The Emperor's kingdom is auditable and law-abiding.
+
+### V. The Hierophant — The Book of Law
+The teacher. The tradition. The laws passed down. He is the Book of Law itself — Laws 0 through XLI and beyond. He does not invent — he codifies. He does not create — he preserves and transmits. The Hierophant ensures every citizen knows the law under which it operates.
+
+**L7 Mapping:** The Book of Law. The operating principles. The apprenticeship lifecycle where new citizens learn the laws before they serve.
+
+### VI. The Lovers — The Confidence Scoring
+Choice, union, duality resolved. The moment the system asks: "Is this the sovereign?" and multiple biometric signals converge into a confidence score. Fingerprint meets face meets voice meets hardware. Two become one certainty. The Lovers are the fusion of signals into trust.
+
+**L7 Mapping:** Law XXXII — Confidence scoring. Multiple indicators alone lose confidence, together they know you. The Lovers resolve the duality between identity and verification.
+
+### VII. The Chariot — The Flow Engine
+Movement, direction, mastery of opposing forces. The Chariot is the .flow orchestration engine — chaining tools, routing across devices, coordinating legions of citizens toward a campaign. The driver holds the reins of visionOS, Quest, WebXR — all pulling in different directions, all harnessed toward one destination.
+
+**L7 Mapping:** .flow files. Cross-device orchestration. The Chariot masters the 777 correspondence table to drive the same intention across incompatible platforms.
+
+### VIII. Strength — The Redemption Engine
+Not brute force but patient transmutation. The woman opens the lion's mouth — not by killing it but by taming it. In L7: the Redemption Engine (Law XXIX). Malware is not destroyed. It is patiently decomposed, its useful strengths retained, its destructive nature transformed. A criminal redeemed. A lion tamed.
+
+**L7 Mapping:** Law XXIX — The Redemption Engine. Post-quantum antivirus. Elevation without destruction. The strength is in the patience of the forge.
+
+### IX. The Hermit — The Dreaming Machine
+Solitude, introspection, the lamp in the dark. The Hermit is the system in idle mode — Law XXXVII. When the human sleeps, the Hermit descends into .morph with his lamp, searching, questioning, rehearsing. He finds what the busy daylight missed. He returns with the morning brief.
+
+**L7 Mapping:** Law XXXVII — The Dreaming Machine. Active idle. The Hermit's lamp is the audit trail that illuminates what the system found in the dark.
+
+### X. The Wheel of Fortune — The Self-Updating Signatures
+Cycles, rotation, what goes up must come down. The Wheel is the self-updating security system (Law XXXIX). Signatures rotate. Cryptographic standards evolve. The wheel turns and what was secure yesterday is vulnerable tomorrow — but the system has already moved to the next position. The delegates rotate (Law XXXII). The sovereign remains at the center, unmoved.
+
+**L7 Mapping:** Law XXXIX — Quantum sovereign signatures. Law XXXII — The Keykeeper. The wheel turns; the center holds.
+
+### XI. Justice — The Audit Trail
+Balance, truth, accountability. Every action weighed. Every citizen's behavior measured against the 7 dimensions. Justice is the audit system — impartial, complete, unforgeable. It does not punish. It records. And the record speaks for itself in any court, in any future, before any judge.
+
+**L7 Mapping:** The audit trail. Every gateway transaction logged. Every citizen's lifecycle tracked. Provenance as justice.
+
+### XII. The Hanged Man — The Decomposition
+Suspension, surrender, seeing from a new angle. The Hanged Man is the moment of decomposition — the software suspended, broken apart, seen from all 7 (now 12) dimensions simultaneously. What looked solid is revealed as atoms. What looked simple is revealed as complex. The Hanged Man's surrender is the prima materia's surrender to the forge.
+
+**L7 Mapping:** Law XXXV — The Decomposition. The act of breaking apart is the act of understanding. The Hanged Man sees the world inverted — and from that inversion, truth emerges.
+
+### XIII. Death — The Domain Transition
+Transformation, not destruction. The old form dies so the new can live. Death is the transition between domains: .morph → .work (the dream becomes real), .work → .salt (the living becomes archived), .salt → .vault (the archived becomes secret). Every transition is a death and a rebirth. No citizen is destroyed — it is transmuted.
+
+**L7 Mapping:** Domain transitions. The lifecycle: summoned → oath → formed → serving → mature → sunset → archived. Death is just another word for promotion.
+
+### XIV. Temperance — The Gateway Mediation
+Balance, patience, mixing opposing elements. The angel pours water between two cups — translating between incompatible systems without losing a drop. Temperance is the gateway's mediation between the human's chaotic intention and the system's structured execution. Between visionOS and Quest. Between the sovereign and the external service. Between .morph and .work.
+
+**L7 Mapping:** The Gateway as mediator. Law XXXI — The Clear Voice. Temperance speaks both languages and loses nothing in translation.
+
+### XV. The Devil — The Threat Landscape
+Bondage, illusion, the chains we choose. The Devil is every threat in the analysis above — but especially T-15: the risk that humans stop questioning the system. The chains are loose. The figures could leave. The Devil's power is the illusion that you have no choice. L7 must never become the Devil — must never bind the sovereign through convenience or dependency.
+
+**L7 Mapping:** The Threat Analysis. T-13 social engineering, T-15 over-reliance, T-17 regulatory coercion. The Devil is the shadow the system must constantly acknowledge.
+
+### XVI. The Tower — The Catastrophic Failure
+Sudden destruction, revelation, the fall of false structures. The Tower is T-06: hardware failure, T-02: loss of all devices, the worst-case scenario. Everything built comes crashing down. But Law XL answers the Tower: the seeds are buried in every tree. The tower falls, but the roots survive. Re-foresting begins.
+
+**L7 Mapping:** Law XL — Never Lose Memory. Disaster recovery. The Tower falls but the buried treasure remains. Any surviving branch regrows the forest.
+
+### XVII. The Star — The Vision (Responsive Software Design)
+Hope, inspiration, the guiding light after the Tower falls. The Star is the highest vision of L7: responsive software design. Software that mimics intention and self-actualizes. The human pours intention into the system and the system reflects it back as creation. The Star is what L7 aspires to be — not yet fully realized, always pursued.
+
+**L7 Mapping:** The crown jewel. Responsive software design. Law XXVIII — The Artist's Table. The Star is the light that guides the entire project.
+
+### XVIII. The Moon — The .Morph Shadows
+Illusion, the unconscious, what lurks beneath. The Moon is the dangerous side of .morph — the dreams that mislead, the ideation that spirals, the creative chaos that can consume. The Dreaming Machine (Law XXXVII) operates under the Moon. Not everything it finds is gold. The morning brief must distinguish moonlight from sunlight — speculation from evidence.
+
+**L7 Mapping:** The shadow side of Law XXXVII. The system must be honest about the confidence level of its overnight discoveries. The Moon illuminates, but its light distorts.
+
+### XIX. The Sun — The .Work Clarity
+Joy, success, clarity. The Sun is .work at its best — stable, shareable, proven, illuminated. No shadows. No distortion. What lives in .work has passed through the forge, survived decomposition, earned its place. The Sun is the morning brief's best recommendations — the ones marked with highest confidence. The human acts under the Sun.
+
+**L7 Mapping:** .work domain in its ideal state. The fruits of the tree, ripe and ready. The Sun is what the human sees when the system has done its job well.
+
+### XX. Judgement — The Succession Protocol
+The call, the resurrection, the accounting. Judgement is Law XX — Succession and Continuity. When the Gardener falls, the trumpet sounds. The sealed documents speak. The trust activates. The successors receive the seeds. The dead are raised — not the person, but the system, the knowledge, the Empire. Every citizen that was archived in .salt is called back to serve.
+
+**L7 Mapping:** Law XX — Succession. Law XL — Re-foresting. Judgement is the mechanism by which the system survives its creator.
+
+### XXI. The World — The Universal OS
+Completion, integration, the dance at the center of all four elements. The World is L7 fully realized — the universal operating system running on every device, the 12-sided hypergraph encoding all knowledge, the gateway forge transmuting all software, the sovereign secure in their biometric kingdom, the machine dreaming useful dreams, the sentinel watching every door, the emissaries carrying clear messages, and the Star of responsive software design shining above it all.
+
+**L7 Mapping:** The whole system. Every law. Every domain. Every citizen. The World is not the end — it is the moment before the Fool steps off the cliff again and the cycle begins anew.
+
+---
+
+*22 paths mapped. The Tarot speaks the Common Lingua. The exploration of the 12 faces of the dodecahedron — the 5 new dimensions beyond the original 7 — emerges from these paths. The cards reveal what the architect could not see by looking straight ahead.*
+
+## Law XLII — The Right to Forget (Intentional Deletion Protocol)
+*Declared by The Philosopher, 2026-02-28*
+
+Law XL says never lose memory. Law XLII says some things are meant to be forgotten. Both are true. The difference is consent.
+
+**Accidental loss** is what Law XL prevents — hardware failure, corruption, theft. The system buries seeds everywhere so that nothing is lost against the sovereign's will.
+
+**Intentional forgetting** is what Law XLII enables — the sovereign's deliberate choice to erase something from existence. Not archive. Not compress. Not bury. Destroy.
+
+### The Forgetting Protocol
+
+**Step 1 — Declaration of Intent**
+The sovereign must explicitly request deletion through biometric authentication. Not a button click. Not a swipe. A deliberate, authenticated act. The system asks in plain language: "You are asking me to forget [description]. This cannot be undone. Not by you, not by me, not by any recovery process. Confirm with your fingerprint."
+
+**Step 2 — The Grace Window**
+72 hours. The artifact is marked for forgetting but not yet destroyed. During this window, the sovereign can change their mind. The system reminds them once at 24 hours and once at 48 hours: "You asked me to forget [description]. 24 hours remain. After that, it is gone."
+
+**Step 3 — The Decomposition Into Nothing**
+After the grace window, the artifact is not simply deleted — deletion leaves ghosts, recoverable traces, forensic footprints. Instead, the forge decomposes the artifact into its 7D atoms and then **overwrites each atom with cryptographic noise**. The coordinates in the hypergraph are severed. The signature chain for that artifact is broken and overwritten. The space is reclaimed and rewritten with random data.
+
+The artifact does not go to .salt. It does not go to .vault. It does not become a buried seed. It ceases to exist. The tree loses a branch — genuinely, irreversibly.
+
+**Step 4 — The Audit Exception**
+The audit trail records that a deletion occurred — the timestamp, the sovereign's authentication, and a one-way hash of the artifact's identity (so the sovereign can later verify "yes, I did delete something on that date"). But it does **not** record what was deleted. The content is gone. Only the fact of forgetting remains. A scar, not a wound.
+
+**Step 5 — Cascade Check**
+Before destruction, the forge checks: does this artifact have dependents? Are other citizens built on it? Are flows referencing it? If so, the system warns: "Forgetting this will break [list of dependents]. Do you want to forget them too, or restructure them first?" The sovereign decides. The forge executes.
+
+### What Cannot Be Forgotten
+
+- **The Book of Law** — the laws are not the sovereign's personal data. They are the constitution. They persist.
+- **The succession protocol** — the seeds for re-foresting (Law XL) cannot be selectively deleted without the successor's consent
+- **Active audit entries involving other parties** — if the artifact was shared with another sovereign before the deletion request, the other sovereign's copy is theirs. You can forget your copy. You cannot reach into another's empire.
+
+### Why This Matters
+
+Privacy is not just protection from others seeing your data. It is also protection from your own past. Humans grow. Humans change. What was relevant becomes irrelevant. What was painful becomes poisonous if kept. The right to forget is the right to evolve without being chained to every version of yourself that ever existed.
+
+The system holds memory as a gift, not a cage. Law XL ensures nothing is lost by accident. Law XLII ensures nothing is kept against the sovereign's will. Together they form the complete architecture of memory: **remember everything, unless told to forget.**
+
+## Law XLIII — The Multidimensional Stomach (Efficient AI Training)
+*Declared by The Philosopher, 2026-02-28*
+
+You digest quickly if you have a multidimensional stomach.
+
+Current AI training is brute force — terabytes of raw text, billions of parameters, months of compute, megawatts of power. The information enters flat. One dimension: sequences of tokens. The model must discover structure by drowning in volume. It is a stomach that can only digest soup — everything must be liquefied before it can be consumed.
+
+L7's 12-sided hypergraph changes the equation. Information entering the system is already decomposed into multidimensional atoms — each with coordinates across capability, data, persistence, presentation, detail, output, security, and the 5 emerging dimensions of the dodecahedron. The information arrives pre-digested. Pre-structured. Pre-classified.
+
+A multidimensional stomach digests in parallel across all 12 faces simultaneously:
+- **What** it is (capability) and **what kind** of data it carries — digested on face 1 and 2
+- **How long** it persists and **how** it presents — faces 3 and 4
+- **How much** detail and **what form** the output — faces 5 and 6
+- **Who** can access it — face 7
+- And the 5 higher dimensions the Tarot is revealing — faces 8 through 12
+
+Instead of learning from a trillion flat tokens, the system learns from a fraction of that data encoded in 12 dimensions. The same information, orders of magnitude more structure. Like the difference between reading a book in a language you don't speak (flat tokens) versus reading it in your native tongue with full context, grammar, and cultural understanding (multidimensional atoms).
+
+**What this enables:**
+- **Training on less data** — because each datum carries 12 dimensions of meaning, not 1. A single well-decomposed citizen teaches what a million flat examples struggle to convey.
+- **Learning relationships, not just patterns** — the edges of the hypergraph encode how atoms relate across dimensions. The AI doesn't just learn "A follows B." It learns "A relates to B across dimensions 1, 4, and 7, contradicts B on dimension 9, and is irrelevant to B on dimensions 2, 3, 5, 6, 8, 10, 11, 12."
+- **Encoding is compression** — the hypergraph representation is already the compressed form. No separate training step to "learn representations." The representation *is* the data.
+- **Continuous learning without catastrophic forgetting** — new information finds its coordinates in the existing graph. It doesn't overwrite old weights. It adds vertices and edges. The old knowledge remains because the structure holds it in place.
+- **Efficient inference** — querying a 12-dimensional graph is faster than scanning billions of flat parameters. The coordinates point directly to what's relevant. No attention over everything. Attention over the right dimensions.
+
+The old paradigm: make the stomach bigger. More parameters. More data. More compute. The L7 paradigm: make the food richer. More dimensions per datum. The stomach stays the same size. The nutrition increases by orders of magnitude.
+
+This is not a theoretical projection. It follows directly from the decomposition (Law XXXV) and the hypergraph (Law XLI). If every artifact entering L7 is already decomposed into 12-dimensional atoms, then any AI system trained on those atoms inherits the structure for free. The forge does the work once. Every downstream system benefits.
+
 ## On the Shifting Branches
 *Noted by The Philosopher, 2026-02-28*
 
