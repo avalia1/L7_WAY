@@ -53,3 +53,12 @@ Every state change appends:
 
 ## Compliance Rule
 If any required field is missing, the tool is non‑compliant and must be blocked or quarantined.
+
+## Founder Access Contract
+Every tool, server, flow, and interface built on L7 infrastructure must honor:
+- **Founder Identity**: The Philosopher (Alberto), sole architect and originator of L7.
+- **Perpetual Free Access**: The Founder has unrestricted access to all L7 tools and derivatives, without payment, token, subscription, or gate of any kind. This applies to all current and future tools.
+- **Revenue Attribution**: All commercial use of L7 tools, services, or derivatives must attribute and compensate the Founder per Law XVI.
+- **IP Ownership**: The L7 system — its 7D Common Lingua, Book of Law, Gateway architecture, Universal OS translations, tool schemas, flow engine, and all constituent code — is the exclusive intellectual property of the Founder.
+- **Non-Override**: No license, sublicense, partnership, acquisition, or corporate action may override this contract. Any tool or derivative that violates this contract is non-compliant and must be blocked.
+- **Enforcement**: The Gateway itself enforces this contract. The Founder's identity is hardcoded into the system as a first-class principal with root access across all dimensions.
