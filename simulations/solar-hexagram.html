@@ -392,15 +392,28 @@ function emitWaves() {
   wavefronts = wavefronts.filter(w => w.radius < w.maxRadius);
 }
 
-// ═══ CANVAS SETUP ═══
+// ═══ CANVAS SETUP (HiDPI / Retina stabilized) ═══
 const cosmos = document.getElementById('cosmos');
 const ctx = cosmos.getContext('2d');
 const wheelCanvas = document.getElementById('wheel');
 const wheelCtx = wheelCanvas.getContext('2d');
+const DPR = window.devicePixelRatio || 1;
+
+function setupHiDPI(canvas, context, cssW, cssH) {
+  canvas.width = cssW * DPR;
+  canvas.height = cssH * DPR;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  context.setTransform(DPR, 0, 0, DPR, 0, 0);
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = 'high';
+}
 
 function resize() {
-  cosmos.width = window.innerWidth;
-  cosmos.height = window.innerHeight;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  setupHiDPI(cosmos, ctx, w, h);
+  setupHiDPI(wheelCanvas, wheelCtx, 180, 180);
 }
 window.addEventListener('resize', resize);
 resize();
@@ -409,17 +422,32 @@ resize();
 fieldCanvas = document.createElement('canvas');
 fieldCtx = fieldCanvas.getContext('2d');
 
-// ═══ COORDINATE TRANSFORM ═══
+// ═══ STABLE ALPHA HELPER (avoids invalid hex strings) ═══
+function rgba(color, alpha) {
+  // Parse #RRGGBB to rgba
+  const r = parseInt(color.slice(1,3), 16) || 0;
+  const g = parseInt(color.slice(3,5), 16) || 0;
+  const b = parseInt(color.slice(5,7), 16) || 0;
+  return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, alpha)).toFixed(3)})`;
+}
+
+// ═══ COORDINATE TRANSFORM (CSS pixel space, not canvas pixels) ═══
+function getCSSSize() {
+  return { w: cosmos.width / DPR, h: cosmos.height / DPR };
+}
+
 function worldToScreen(wx, wy) {
-  const cx = (cosmos.width - 320) / 2;
-  const cy = cosmos.height / 2;
-  const scale = Math.min(cx, cy) * zoom / 12; // 12 AU fills the view at zoom=1
+  const {w, h} = getCSSSize();
+  const cx = (w - 320) / 2;
+  const cy = h / 2;
+  const scale = Math.min(cx, cy) * zoom / 12;
   return [cx + wx * scale, cy - wy * scale];
 }
 
 function screenToWorld(sx, sy) {
-  const cx = (cosmos.width - 320) / 2;
-  const cy = cosmos.height / 2;
+  const {w, h} = getCSSSize();
+  const cx = (w - 320) / 2;
+  const cy = h / 2;
   const scale = Math.min(cx, cy) * zoom / 12;
   return [(sx - cx) / scale, -(sy - cy) / scale];
 }
@@ -427,8 +455,8 @@ function screenToWorld(sx, sy) {
 // ═══ DRAWING: GRAVITATIONAL FIELD ═══
 function drawField() {
   if (!showField) return;
-  const w = cosmos.width - 320;
-  const h = cosmos.height;
+  const {w: totalW, h} = getCSSSize();
+  const w = totalW - 320;
   const gridSize = 50;
   const cellW = w / gridSize;
   const cellH = h / gridSize;
@@ -468,13 +496,14 @@ function drawWavefronts() {
   wavefronts.forEach(w => {
     w.radius += w.speed * speed;
     const [sx, sy] = worldToScreen(w.x, w.y);
-    const scale = Math.min((cosmos.width - 320) / 2, cosmos.height / 2) * zoom / 12;
+    const {w: totalW, h: totalH} = getCSSSize();
+    const scale = Math.min((totalW - 320) / 2, totalH / 2) * zoom / 12;
     const sr = w.radius * scale;
     const alpha = Math.max(0, 0.3 * (1 - w.radius / w.maxRadius));
 
     ctx.beginPath();
     ctx.arc(sx, sy, sr, 0, TAU);
-    ctx.strokeStyle = w.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+    ctx.strokeStyle = rgba(w.color, alpha);
     ctx.lineWidth = 1;
     ctx.stroke();
   });
@@ -506,7 +535,7 @@ function drawTrails() {
     }
 
     const alpha = (i === selectedIdx) ? 0.6 : 0.2;
-    ctx.strokeStyle = bodies[i].color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+    ctx.strokeStyle = rgba(bodies[i].color, alpha);
     ctx.lineWidth = (i === selectedIdx) ? 1.5 : 0.7;
     ctx.stroke();
   }
@@ -573,13 +602,14 @@ function drawBodies() {
     const [sx, sy] = worldToScreen(b.x, b.y);
 
     // Skip if off-screen
-    if (sx < -50 || sx > cosmos.width || sy < -50 || sy > cosmos.height + 50) continue;
+    const {w: cw, h: ch} = getCSSSize();
+    if (sx < -50 || sx > cw || sy < -50 || sy > ch + 50) continue;
 
     // Glow
     const glowR = b.r * (i === 0 ? 3 : 1.8);
     const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, glowR);
-    glow.addColorStop(0, b.color + '80');
-    glow.addColorStop(1, b.color + '00');
+    glow.addColorStop(0, rgba(b.color, 0.5));
+    glow.addColorStop(1, rgba(b.color, 0));
     ctx.fillStyle = glow;
     ctx.beginPath();
     ctx.arc(sx, sy, glowR, 0, TAU);
@@ -602,7 +632,7 @@ function drawBodies() {
 
     // Hexagram glyph (small, above the body)
     if (i > 0 && b.r >= 3) {
-      drawHexGlyph(sx, sy - b.r - 18, b.bin, 14, b.color + 'AA');
+      drawHexGlyph(sx, sy - b.r - 18, b.bin, 14, rgba(b.color, 0.67));
     }
 
     // Name
@@ -627,11 +657,14 @@ function initStars() {
 }
 
 function drawStars() {
+  const cw = cosmos.width / DPR;
+  const ch = cosmos.height / DPR;
   stars.forEach(s => {
-    const flicker = s.a + Math.sin(time * 20 + s.x) * 0.1;
-    ctx.fillStyle = `rgba(200,195,180,${flicker.toFixed(2)})`;
+    // Slow, gentle pulse (not random flicker)
+    const pulse = s.a + Math.sin(time * 2 + s.x * 0.01) * 0.08;
+    ctx.fillStyle = `rgba(200,195,180,${Math.max(0.1, pulse).toFixed(3)})`;
     ctx.beginPath();
-    ctx.arc(s.x % cosmos.width, s.y % cosmos.height, s.r, 0, TAU);
+    ctx.arc(s.x % cw, s.y % ch, s.r, 0, TAU);
     ctx.fill();
   });
 }
@@ -743,8 +776,8 @@ const KING_WEN_ORDER = [
 ];
 
 function drawWheel() {
-  const w = wheelCanvas.width;
-  const h = wheelCanvas.height;
+  const w = 180; // CSS size (DPR handled by setTransform)
+  const h = 180;
   const cx = w / 2, cy = h / 2;
   const r = 70;
 
@@ -893,9 +926,10 @@ cosmos.addEventListener('wheel', (evt) => {
 let frameCount = 0;
 
 function animate() {
-  // Clear
+  // Clear (CSS dimensions — DPR handled by setTransform)
+  const {w: cssW, h: cssH} = getCSSSize();
   ctx.fillStyle = '#06060f';
-  ctx.fillRect(0, 0, cosmos.width, cosmos.height);
+  ctx.fillRect(0, 0, cssW, cssH);
 
   // Stars
   drawStars();
@@ -926,7 +960,7 @@ function animate() {
   ctx.fillStyle = '#3a3a2a';
   ctx.font = '10px monospace';
   ctx.textAlign = 'left';
-  ctx.fillText(`t = ${time.toFixed(2)} yr  |  ${(time * 365.25).toFixed(0)} days  |  E=mc² × 64  |  c=${C_HEX}`, 10, cosmos.height - 8);
+  ctx.fillText(`t = ${time.toFixed(2)} yr  |  ${(time * 365.25).toFixed(0)} days  |  E=mc² × 64  |  c=${C_HEX}`, 10, cssH - 8);
 
   frameCount++;
   requestAnimationFrame(animate);
