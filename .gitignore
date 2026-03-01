@@ -1,4 +1,7 @@
 node_modules/
 .vault/
+.vault_encrypted.dmg.sparseimage
 .DS_Store
 empire/empire.log
+tectonic
+timemachine/

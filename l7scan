@@ -1,0 +1,18 @@
+#!/bin/bash
+# L7 SCAN — Filesystem Archaeology Scanner (launcher)
+# Delegates to Node.js for speed. Bash wrapper for backward/drill/header.
+NODE="${HOME}/.config/goose/mcp-hermit/bin/node"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+case "${1:-}" in
+    --backward|--drill|--header)
+        # These operations are file-specific, keep in bash for interactivity
+        exec "$NODE" "${SCRIPT_DIR}/l7scan.js" "$@"
+        ;;
+    --help|-h)
+        exec "$NODE" "${SCRIPT_DIR}/l7scan.js" --help
+        ;;
+    *)
+        exec "$NODE" "${SCRIPT_DIR}/l7scan.js" "$@"
+        ;;
+esac

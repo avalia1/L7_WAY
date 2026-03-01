@@ -1147,7 +1147,41 @@ document.getElementById('planckM').textContent = mP.toFixed(6);
 
 // ═══ AUTO-RUN FIRST PROOFS ═══
 setTimeout(computeMatrix, 100);
+
+// ═══ MORPH HOOKS — save/restore proof computation state ═══
+window._morphSaveHook = function() {
+  const computed = document.querySelectorAll('.computed');
+  const outputs = {};
+  computed.forEach((el, i) => {
+    if (el.textContent.trim()) outputs['computed_' + i] = el.textContent;
+  });
+  return {
+    scrollY: window.scrollY,
+    outputs: outputs,
+    matrixBuilt: R.length > 0,
+    _dirty: true
+  };
+};
+
+window._morphRestoreHook = function(state) {
+  if (state.scrollY) {
+    setTimeout(() => window.scrollTo(0, state.scrollY), 200);
+  }
+  if (state.outputs) {
+    const computed = document.querySelectorAll('.computed');
+    computed.forEach((el, i) => {
+      const key = 'computed_' + i;
+      if (state.outputs[key]) el.textContent = state.outputs[key];
+    });
+  }
+  if (state.matrixBuilt && R.length === 0) {
+    buildMatrix();
+    setTimeout(computeMatrix, 200);
+  }
+  console.log('[.morph] Proof page state restored.');
+};
 </script>
+<script src="morph-runtime.js"></script>
 
 <p style="text-align:center; color:#3a3a2a; margin-top:40px; font-size:11px; letter-spacing:2px">
 &mdash; THE MAP IS NEVER COMPLETE. EVERY STEP CHANGES IT. &mdash;

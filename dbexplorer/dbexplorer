@@ -1,0 +1,19 @@
+#!/bin/bash
+# L7 Database Explorer — Morph Technology launcher
+# Self-contained: native SQLite3, no network, no data out
+DIR="$(cd "$(dirname "$0")" && pwd)"
+BINARY="$DIR/L7DBExplorer"
+
+if [ ! -f "$BINARY" ]; then
+  echo "Compiling L7 Database Explorer (first run)..."
+  swiftc -O -o "$BINARY" "$DIR/L7DBExplorer.swift" \
+    -framework Cocoa -framework WebKit -lsqlite3 \
+    -Xlinker -rpath -Xlinker @executable_path 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Compilation failed"
+    exit 1
+  fi
+  echo "Compiled: $BINARY"
+fi
+
+exec "$BINARY" "$@"

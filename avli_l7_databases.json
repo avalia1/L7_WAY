@@ -1,0 +1,154 @@
+[
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/NCLS_SCRIPTS/SCRIPTS/knowledge_graph/chroma_db/chroma.sqlite3",
+    "name": "chroma.sqlite3",
+    "dir": "Backup/NCLS_SCRIPTS/SCRIPTS/knowledge_graph/chroma_db",
+    "size": 277610496,
+    "modified": "2026-02-01T01:10:02",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/Scripts/llm_assisted_scrapper/true_graph.db",
+    "name": "true_graph.db",
+    "dir": "Backup/Scripts/llm_assisted_scrapper",
+    "size": 65196032,
+    "modified": "2026-02-04T01:26:03",
+    "ext": "db"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/Downloads/NC_LIFE_STUDY_TIMELINE.db",
+    "name": "NC_LIFE_STUDY_TIMELINE.db",
+    "dir": "Backup/Downloads",
+    "size": 34889728,
+    "modified": "2025-12-11T17:30:58",
+    "ext": "db"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/Scripts/llm_assisted_scrapper/comprehensive_graph.db",
+    "name": "comprehensive_graph.db",
+    "dir": "Backup/Scripts/llm_assisted_scrapper",
+    "size": 25378816,
+    "modified": "2026-02-04T01:26:04",
+    "ext": "db"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligencePlatform.Entity/IntelligencePlatform.Entity.sqlite3",
+    "name": "IntelligencePlatform.Entity.sqlite3",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligencePlatform.Entity",
+    "size": 9965568,
+    "modified": "2026-02-01T01:24:50",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/NCLS_SCRIPTS/SCRIPTS/intelligence_extraction/intelligence_extraction_db/chroma.sqlite3",
+    "name": "chroma.sqlite3",
+    "dir": "Backup/NCLS_SCRIPTS/SCRIPTS/intelligence_extraction/intelligence_extraction_db",
+    "size": 9691136,
+    "modified": "2026-02-02T10:17:07",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/Documents/Obsidian Vault/00 AI Playground/llama_index/llama-index-packs/llama-index-packs-raptor/examples/raptor/chroma.sqlite3",
+    "name": "chroma.sqlite3",
+    "dir": "Backup/Documents/Obsidian Vault/00 AI Playground/llama_index/llama-index-packs/llama-index-packs-raptor/examples/raptor",
+    "size": 1388544,
+    "modified": "2025-12-03T02:09:51",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligencePlatform.Entity/IntelligencePlatform.Entity-fullRebuild.sqlite3",
+    "name": "IntelligencePlatform.Entity-fullRebuild.sqlite3",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligencePlatform.Entity",
+    "size": 278528,
+    "modified": "2026-01-30T11:23:26",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/gen_questions/data/open-webui/vector_db/chroma.sqlite3",
+    "name": "chroma.sqlite3",
+    "dir": "Backup/gen_questions/data/open-webui/vector_db",
+    "size": 163840,
+    "modified": "2026-01-02T03:49:31",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Games.RecentlyPlayed/Games.RecentlyPlayed.sqlite3",
+    "name": "Games.RecentlyPlayed.sqlite3",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Games.RecentlyPlayed",
+    "size": 73728,
+    "modified": "2026-02-01T01:26:21",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/Scripts/llm_assisted_scrapper/immutable_truth.db.backup_20251207_081632",
+    "name": "immutable_truth.db.backup_20251207_081632",
+    "dir": "Backup/Scripts/llm_assisted_scrapper",
+    "size": 73728,
+    "modified": "2026-02-04T01:26:07",
+    "ext": "backup_20251207_081632"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/Scripts/llm_assisted_scrapper/lexisnexis_graph.db",
+    "name": "lexisnexis_graph.db",
+    "dir": "Backup/Scripts/llm_assisted_scrapper",
+    "size": 61440,
+    "modified": "2026-02-04T01:26:56",
+    "ext": "db"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/NCLS_SCRIPTS/SCRIPTS/.playwright-profile/first_party_sets.db",
+    "name": "first_party_sets.db",
+    "dir": "Backup/NCLS_SCRIPTS/SCRIPTS/.playwright-profile",
+    "size": 49152,
+    "modified": "2026-01-28T20:50:09",
+    "ext": "db"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligenceFlow.Transcript.Datastream.Indexes/IntelligenceFlow.Transcript.Datastream.Indexes.sqlite3",
+    "name": "IntelligenceFlow.Transcript.Datastream.Indexes.sqlite3",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligenceFlow.Transcript.Datastream.Indexes",
+    "size": 40960,
+    "modified": "2026-02-01T01:25:55",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Siri.PostSiriEngagement.Indexes/Siri.PostSiriEngagement.Indexes.sqlite3",
+    "name": "Siri.PostSiriEngagement.Indexes.sqlite3",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Siri.PostSiriEngagement.Indexes",
+    "size": 28672,
+    "modified": "2025-11-02T19:36:47",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/VPS RECOVERY/avli_cloud/data/yearbooks.sqlite",
+    "name": "yearbooks.sqlite",
+    "dir": "Backup/VPS RECOVERY/avli_cloud/data",
+    "size": 20480,
+    "modified": "2026-01-17T03:58:40",
+    "ext": "sqlite"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligenceFlow.Telemetry.Indexes/IntelligenceFlow.Telemetry.Indexes.sqlite3",
+    "name": "IntelligenceFlow.Telemetry.Indexes.sqlite3",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/IntelligenceFlow.Telemetry.Indexes",
+    "size": 12288,
+    "modified": "2025-11-02T19:36:50",
+    "ext": "sqlite3"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Games.RecentlyPlayed/Games.RecentlyPlayed-fullRebuild.sqlite3 2",
+    "name": "Games.RecentlyPlayed-fullRebuild.sqlite3 2",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Games.RecentlyPlayed",
+    "size": 12288,
+    "modified": "2025-12-04T03:01:10",
+    "ext": "sqlite3 2"
+  },
+  {
+    "path": "/Users/rnir_hrc_avd/Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Games.RecentlyPlayed/Games.RecentlyPlayed-fullRebuild.sqlite3",
+    "name": "Games.RecentlyPlayed-fullRebuild.sqlite3",
+    "dir": "Backup/00_PYTHON_PROJECTS/avli_cloud.2.0/databases/Games.RecentlyPlayed",
+    "size": 12288,
+    "modified": "2026-01-30T11:23:26",
+    "ext": "sqlite3"
+  }
+]

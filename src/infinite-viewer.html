@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L7 MERIDIAN — Infinite Resolution</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --gold: #d4a853;
+    --gold-dim: rgba(212, 168, 83, 0.4);
+    --gold-glow: rgba(212, 168, 83, 0.15);
+    --surface: #141414;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --font: 'Helvetica Neue', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body.dragging { cursor: grabbing; }
+
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.7) 80%, transparent 100%);
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  #header > * { pointer-events: auto; }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    font-weight: 300;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-left: 6px;
+  }
+
+  #hud {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 24px;
+    background: rgba(20, 20, 20, 0.85);
+    border: 1px solid rgba(212, 168, 83, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 100;
+    font-size: 13px;
+    transition: opacity 0.3s;
+  }
+
+  #hud .label { color: var(--text-dim); font-weight: 400; }
+  #hud .value { color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; min-width: 60px; }
+  #hud .sep { width: 1px; height: 18px; background: rgba(255,255,255,0.1); }
+
+  #mode-btn {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: var(--font);
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  #mode-btn:hover { background: var(--gold-glow); border-color: var(--gold); }
+
+  #canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  #drop-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 10, 10, 0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  #drop-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #drop-overlay .ring {
+    width: 160px; height: 160px;
+    border: 2px dashed var(--gold-dim);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-ring {
+    0%, 100% { border-color: var(--gold-dim); transform: scale(1); }
+    50% { border-color: var(--gold); transform: scale(1.05); }
+  }
+
+  #drop-overlay .ring-icon {
+    font-size: 48px;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+
+  #drop-overlay .drop-text {
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  #drop-overlay .drop-sub {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  #initial-prompt {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 50;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+
+  #initial-prompt.hidden { opacity: 0; }
+
+  #initial-prompt h2 {
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+
+  #initial-prompt p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    line-height: 1.8;
+  }
+
+  #initial-prompt .key {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    font-size: 11px;
+    margin: 0 2px;
+    color: var(--text-dim);
+  }
+
+  .toast {
+    position: fixed;
+    top: 72px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--surface);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 300;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="logo">L7 MERIDIAN<span>Infinite Resolution</span></div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div id="drop-overlay">
+  <div class="ring"><div class="ring-icon">+</div></div>
+  <div class="drop-text">Drop Image</div>
+  <div class="drop-sub">PNG, JPG, WebP, BMP, SVG</div>
+</div>
+
+<div id="initial-prompt">
+  <h2>INFINITE ZOOM VIEWER</h2>
+  <p>
+    Drag and drop an image to begin<br>
+    or press <span class="key">M</span> for Mandelbrot demo<br><br>
+    <span class="key">Scroll</span> Zoom &nbsp; <span class="key">Drag</span> Pan &nbsp; <span class="key">R</span> Reset &nbsp; <span class="key">F</span> Fullscreen
+  </p>
+</div>
+
+<div id="hud">
+  <span class="label">Zoom</span>
+  <span class="value" id="zoom-val">1.00x</span>
+  <div class="sep"></div>
+  <span class="label">Position</span>
+  <span class="value" id="pos-val">0, 0</span>
+  <div class="sep"></div>
+  <span class="label" id="mode-label">Mode</span>
+  <button id="mode-btn" title="Switch to Mandelbrot demo">MANDELBROT</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== L7 MERIDIAN — Infinite Resolution Viewer =====
+// Self-contained. No dependencies. HiDPI-aware. 4K+.
+
+(function() {
+  'use strict';
+
+  // --- DOM ---
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+  const zoomVal = document.getElementById('zoom-val');
+  const posVal = document.getElementById('pos-val');
+  const modeBtn = document.getElementById('mode-btn');
+  const modeLabel = document.getElementById('mode-label');
+  const dropOverlay = document.getElementById('drop-overlay');
+  const initialPrompt = document.getElementById('initial-prompt');
+  const toastEl = document.getElementById('toast');
+
+  // --- State ---
+  let dpr = window.devicePixelRatio || 1;
+  let W, H;           // logical dimensions
+  let PW, PH;         // physical pixel dimensions
+  let viewX = 0, viewY = 0;  // pan offset in logical px
+  let zoom = 1;
+  const ZOOM_MIN = 0.1;
+  const ZOOM_MAX = 1e15;  // effectively infinite for Mandelbrot
+  let mode = 'empty';  // 'empty' | 'image' | 'mandelbrot'
+  let loadedImage = null;
+  let imgW = 0, imgH = 0;
+  let dragging = false;
+  let dragStartX, dragStartY, dragViewX, dragViewY;
+  let needsRender = true;
+  let animFrame = null;
+  let toastTimer = null;
+
+  // Mandelbrot state
+  let mbCenterX = -0.5, mbCenterY = 0;
+  let mbScale = 3.5;  // visible width in complex plane
+  let mbMaxIter = 256;
+  let mbImageData = null;
+  let mbBuf = null;
+  let mbBuf8 = null;
+
+  // Image enhancement buffers
+  let enhancedCanvas = null;
+  let enhancedCtx = null;
+
+  // --- Resize ---
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    PW = Math.round(W * dpr);
+    PH = Math.round(H * dpr);
+    canvas.width = PW;
+    canvas.height = PH;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    needsRender = true;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // --- Toast ---
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+
+  // --- URL param ---
+  function checkURLParam() {
+    const params = new URLSearchParams(window.location.search);
+    const imgURL = params.get('img') || params.get('image') || params.get('url');
+    if (imgURL) loadImageFromURL(imgURL);
+  }
+
+  // --- Image loading ---
+  function loadImageFromURL(url) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => activateImage(img);
+    img.onerror = () => toast('Failed to load image');
+    img.src = url;
+    toast('Loading image...');
+  }
+
+  function loadImageFromFile(file) {
+    if (!file.type.startsWith('image/')) { toast('Not an image file'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => activateImage(img);
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    toast('Loading ' + file.name);
+  }
+
+  function activateImage(img) {
+    loadedImage = img;
+    imgW = img.naturalWidth;
+    imgH = img.naturalHeight;
+    mode = 'image';
+    modeBtn.textContent = 'MANDELBROT';
+    modeLabel.textContent = 'Image ' + imgW + 'x' + imgH;
+    initialPrompt.classList.add('hidden');
+
+    // Prepare enhanced canvas
+    enhancedCanvas = document.createElement('canvas');
+    enhancedCanvas.width = imgW;
+    enhancedCanvas.height = imgH;
+    enhancedCtx = enhancedCanvas.getContext('2d', { willReadFrequently: true });
+    enhancedCtx.drawImage(img, 0, 0);
+
+    // Center the image
+    zoom = Math.min(W / imgW, H / imgH) * 0.9;
+    viewX = 0;
+    viewY = 0;
+    needsRender = true;
+    toast('Image loaded: ' + imgW + 'x' + imgH);
+  }
+
+  // --- Mandelbrot ---
+  function activateMandelbrot() {
+    mode = 'mandelbrot';
+    loadedImage = null;
+    modeBtn.textContent = 'DROP IMAGE';
+    modeLabel.textContent = 'Mandelbrot';
+    initialPrompt.classList.add('hidden');
+    mbCenterX = -0.7436438885706;
+    mbCenterY = 0.1318259043124;
+    mbScale = 3.5;
+    zoom = 1;
+    viewX = 0;
+    viewY = 0;
+    needsRender = true;
+    toast('Mandelbrot fractal — zoom infinitely');
+  }
+
+  // --- Progressive Mandelbrot renderer ---
+  // Pass 1: fast preview at reduced resolution, Pass 2+: refine to full res
+  let mbRefinePending = null;
+  let mbRefineGen = 0;  // generation counter to cancel stale refinements
+
+  function renderMandelbrotPass(rW, rH, stepSize) {
+    // Compute at every stepSize-th pixel, fill blocks
+    const effectiveScale = mbScale / zoom;
+    const aspect = rW / rH;
+    const xMin = mbCenterX - effectiveScale * 0.5 * aspect;
+    const yMin = mbCenterY - effectiveScale * 0.5;
+    const dx = effectiveScale * aspect / rW;
+    const dy = effectiveScale / rH;
+
+    // Adaptive iteration count based on zoom depth
+    const adaptiveIter = Math.min(6000, Math.floor(256 + 100 * Math.log2(Math.max(1, zoom))));
+
+    if (!mbImageData || mbImageData.width !== rW || mbImageData.height !== rH) {
+      mbImageData = ctx.createImageData(rW, rH);
+    }
+    const data = mbImageData.data;
+
+    for (let py = 0; py < rH; py += stepSize) {
+      const ci = yMin + (py + 0.5) * dy;
+      for (let px = 0; px < rW; px += stepSize) {
+        const cr = xMin + (px + 0.5) * dx;
+        let zr = 0, zi = 0;
+        let iter = 0;
+        let zr2 = 0, zi2 = 0;
+        while (zr2 + zi2 <= 4 && iter < adaptiveIter) {
+          zi = 2 * zr * zi + ci;
+          zr = zr2 - zi2 + cr;
+          zr2 = zr * zr;
+          zi2 = zi * zi;
+          iter++;
+        }
+
+        // Smooth iteration count (continuous coloring)
+        let smoothIter = iter;
+        if (iter < adaptiveIter) {
+          const log_zn = Math.log(zr2 + zi2) / 2;
+          const nu = Math.log(log_zn / Math.LN2) / Math.LN2;
+          smoothIter = iter + 1 - nu;
+        }
+
+        // Color: gold-themed palette with deep blacks and warm highlights
+        let cr0, cg0, cb0;
+        if (iter >= adaptiveIter) {
+          cr0 = 0; cg0 = 0; cb0 = 0;
+        } else {
+          // Three-wave cosine palette tuned for gold/amber
+          const phase = smoothIter * 0.025;
+          const w1 = 0.5 + 0.5 * Math.cos(phase);
+          const w2 = 0.5 + 0.5 * Math.cos(phase + 0.9);
+          const w3 = 0.5 + 0.5 * Math.cos(phase + 2.1);
+          const t = smoothIter / adaptiveIter;
+          const brightness = Math.pow(t, 0.35);
+          // Gold bias: red channel strongest, green medium, blue restrained
+          cr0 = Math.min(255, Math.floor(255 * (w1 * 0.65 + brightness * 0.35)));
+          cg0 = Math.min(255, Math.floor(255 * (w2 * 0.45 + brightness * 0.22)));
+          cb0 = Math.min(255, Math.floor(255 * (w3 * 0.20 + brightness * 0.06)));
+        }
+
+        // Fill block (for stepSize > 1 this creates the preview)
+        const bx1 = Math.min(rW, px + stepSize);
+        const by1 = Math.min(rH, py + stepSize);
+        for (let by = py; by < by1; by++) {
+          for (let bx = px; bx < bx1; bx++) {
+            const idx = (by * rW + bx) * 4;
+            data[idx]     = cr0;
+            data[idx + 1] = cg0;
+            data[idx + 2] = cb0;
+            data[idx + 3] = 255;
+          }
+        }
+      }
+    }
+
+    return mbImageData;
+  }
+
+  function renderMandelbrot() {
+    const rW = PW;
+    const rH = PH;
+
+    // Cancel any pending refinement from previous frame
+    mbRefineGen++;
+    if (mbRefinePending) {
+      cancelAnimationFrame(mbRefinePending);
+      mbRefinePending = null;
+    }
+
+    // Determine preview block size based on resolution
+    // At 4K (>4M pixels) use 4x4 preview first; at lower res use 2x2 or 1x1
+    const totalPixels = rW * rH;
+    let previewStep;
+    if (totalPixels > 6000000) previewStep = 8;       // 4K+
+    else if (totalPixels > 2000000) previewStep = 4;   // 1440p+
+    else previewStep = 2;
+
+    // Pass 1: fast preview
+    const imgData = renderMandelbrotPass(rW, rH, previewStep);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.putImageData(imgData, 0, 0);
+    ctx.restore();
+
+    // Schedule refinement passes
+    if (previewStep > 1) {
+      const gen = mbRefineGen;
+      let currentStep = previewStep > 4 ? 4 : (previewStep > 2 ? 2 : 1);
+
+      function refinePass() {
+        if (gen !== mbRefineGen) return; // stale — user scrolled/panned
+        const refined = renderMandelbrotPass(rW, rH, currentStep);
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.putImageData(refined, 0, 0);
+        ctx.restore();
+
+        if (currentStep > 1) {
+          currentStep = currentStep > 2 ? 2 : 1;
+          mbRefinePending = requestAnimationFrame(refinePass);
+        }
+      }
+
+      mbRefinePending = requestAnimationFrame(refinePass);
+    }
+  }
+
+  // --- Lanczos resampling kernel ---
+  function lanczos3(x) {
+    if (x === 0) return 1;
+    if (x >= 3 || x <= -3) return 0;
+    const px = Math.PI * x;
+    return (Math.sin(px) / px) * (Math.sin(px / 3) / (px / 3));
+  }
+
+  // --- Image rendering with infinite-resolution enhancement ---
+  function renderImage() {
+    if (!loadedImage || !enhancedCtx) return;
+
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Clear
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, W, H);
+
+    // Calculate image position on screen
+    const drawW = imgW * zoom;
+    const drawH = imgH * zoom;
+    const drawX = (W - drawW) / 2 + viewX;
+    const drawY = (H - drawH) / 2 + viewY;
+
+    // If zoomed within native resolution or below, just draw normally with smoothing
+    const effectiveZoom = zoom;
+    const nativePixelRatio = effectiveZoom; // pixels per source pixel on screen
+
+    if (nativePixelRatio <= 2) {
+      // At or below 2x — standard rendering is fine
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
+    } else {
+      // Beyond native resolution — activate detail synthesis
+
+      // Determine visible region in source image coordinates
+      const srcX0 = Math.max(0, (-drawX) / zoom);
+      const srcY0 = Math.max(0, (-drawY) / zoom);
+      const srcX1 = Math.min(imgW, (W - drawX) / zoom);
+      const srcY1 = Math.min(imgH, (H - drawY) / zoom);
+
+      if (srcX1 <= srcX0 || srcY1 <= srcY0) {
+        ctx.restore();
+        return;
+      }
+
+      // Get source pixel data for visible region (with 3px padding for kernels)
+      const pad = 4;
+      const sx0 = Math.max(0, Math.floor(srcX0) - pad);
+      const sy0 = Math.max(0, Math.floor(srcY0) - pad);
+      const sx1 = Math.min(imgW, Math.ceil(srcX1) + pad);
+      const sy1 = Math.min(imgH, Math.ceil(srcY1) + pad);
+      const sW = sx1 - sx0;
+      const sH = sy1 - sy0;
+
+      if (sW <= 0 || sH <= 0) { ctx.restore(); return; }
+
+      let srcData;
+      try {
+        srcData = enhancedCtx.getImageData(sx0, sy0, sW, sH);
+      } catch (e) {
+        // Fallback: draw normally
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
+        ctx.restore();
+        return;
+      }
+      const src = srcData.data;
+
+      // Determine output tile size — render visible portion
+      const outX0 = Math.max(0, Math.floor(drawX));
+      const outY0 = Math.max(0, Math.floor(drawY));
+      const outX1 = Math.min(W, Math.ceil(drawX + drawW));
+      const outY1 = Math.min(H, Math.ceil(drawY + drawH));
+      const outW = outX1 - outX0;
+      const outH = outY1 - outY0;
+
+      if (outW <= 0 || outH <= 0) { ctx.restore(); return; }
+
+      // Limit render size for performance
+      const maxTile = 1200;
+      const tileScale = Math.min(1, maxTile / Math.max(outW, outH));
+      const tW = Math.ceil(outW * tileScale);
+      const tH = Math.ceil(outH * tileScale);
+
+      // Create output imagedata at tile resolution
+      const tileCanvas = document.createElement('canvas');
+      tileCanvas.width = tW;
+      tileCanvas.height = tH;
+      const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true });
+      const outData = tileCtx.createImageData(tW, tH);
+      const out = outData.data;
+
+      // Helper to sample source with Lanczos interpolation
+      function sampleSrc(fx, fy) {
+        // fx, fy in source image local coordinates (relative to sx0, sy0)
+        const ix = Math.floor(fx);
+        const iy = Math.floor(fy);
+
+        // Fast path: bilinear for speed when tile is large
+        if (tW * tH > 600 * 600) {
+          const dx = fx - ix;
+          const dy = fy - iy;
+          const x0 = Math.max(0, Math.min(sW - 1, ix));
+          const y0 = Math.max(0, Math.min(sH - 1, iy));
+          const x1 = Math.min(sW - 1, x0 + 1);
+          const y1 = Math.min(sH - 1, y0 + 1);
+          const i00 = (y0 * sW + x0) * 4;
+          const i10 = (y0 * sW + x1) * 4;
+          const i01 = (y1 * sW + x0) * 4;
+          const i11 = (y1 * sW + x1) * 4;
+          const r = (src[i00] * (1-dx)*(1-dy) + src[i10]*dx*(1-dy) + src[i01]*(1-dx)*dy + src[i11]*dx*dy);
+          const g = (src[i00+1]*(1-dx)*(1-dy) + src[i10+1]*dx*(1-dy) + src[i01+1]*(1-dx)*dy + src[i11+1]*dx*dy);
+          const b = (src[i00+2]*(1-dx)*(1-dy) + src[i10+2]*dx*(1-dy) + src[i01+2]*(1-dx)*dy + src[i11+2]*dx*dy);
+          return [r, g, b];
+        }
+
+        // Lanczos-3
+        let rr = 0, gg = 0, bb = 0, ww = 0;
+        for (let jj = -2; jj <= 2; jj++) {
+          const sy = Math.max(0, Math.min(sH - 1, iy + jj));
+          const wy = lanczos3(fy - (iy + jj));
+          for (let ii = -2; ii <= 2; ii++) {
+            const sx = Math.max(0, Math.min(sW - 1, ix + ii));
+            const wx = lanczos3(fx - (ix + ii));
+            const w = wx * wy;
+            const idx = (sy * sW + sx) * 4;
+            rr += src[idx] * w;
+            gg += src[idx + 1] * w;
+            bb += src[idx + 2] * w;
+            ww += w;
+          }
+        }
+        if (ww > 0) { rr /= ww; gg /= ww; bb /= ww; }
+        return [rr, gg, bb];
+      }
+
+      // Compute Laplacian (edge) magnitude at a source point
+      function edgeMagnitude(fx, fy) {
+        const d = 1.0; // 1 source pixel
+        const c = sampleSrc(fx, fy);
+        const l = sampleSrc(fx - d, fy);
+        const r = sampleSrc(fx + d, fy);
+        const u = sampleSrc(fx, fy - d);
+        const dd = sampleSrc(fx, fy + d);
+        // Laplacian per channel
+        const lap0 = (l[0] + r[0] + u[0] + dd[0]) - 4 * c[0];
+        const lap1 = (l[1] + r[1] + u[1] + dd[1]) - 4 * c[1];
+        const lap2 = (l[2] + r[2] + u[2] + dd[2]) - 4 * c[2];
+        return Math.sqrt(lap0*lap0 + lap1*lap1 + lap2*lap2) / 255;
+      }
+
+      // Procedural micro-detail: generates subtle texture based on position and local gradient
+      function microDetail(fx, fy, color, edgeStr) {
+        // Hash function for deterministic noise
+        const h1 = Math.sin(fx * 127.1 + fy * 311.7) * 43758.5453;
+        const n1 = h1 - Math.floor(h1);
+        const h2 = Math.sin(fx * 269.5 + fy * 183.3) * 28001.8384;
+        const n2 = h2 - Math.floor(h2);
+
+        // Multi-octave noise
+        const h3 = Math.sin(fx * 12.9898 + fy * 78.233) * 43758.5453;
+        const n3 = (h3 - Math.floor(h3)) - 0.5;
+
+        // Blend noise strength based on zoom beyond native
+        const overZoom = Math.log2(Math.max(1, nativePixelRatio / 2));
+        const noiseAmp = Math.min(12, 2 + overZoom * 1.5);
+
+        // Edge-aware: strengthen detail near edges, soften in flat areas
+        const edgeFactor = Math.min(1, edgeStr * 3);
+
+        // Detail signal
+        const detail = n3 * noiseAmp * (0.3 + 0.7 * edgeFactor);
+
+        // Local luminance affects detail visibility
+        const lum = (color[0] * 0.299 + color[1] * 0.587 + color[2] * 0.114) / 255;
+        const lumFactor = 0.5 + 0.5 * (1 - Math.abs(lum - 0.5) * 2); // more detail in midtones
+
+        return detail * lumFactor;
+      }
+
+      // Sharpen kernel boost for edges
+      function sharpen(color, fx, fy, strength) {
+        const d = 0.5;
+        const l = sampleSrc(fx - d, fy);
+        const r = sampleSrc(fx + d, fy);
+        const u = sampleSrc(fx, fy - d);
+        const dd = sampleSrc(fx, fy + d);
+        const s = strength;
+        return [
+          color[0] + s * (4 * color[0] - l[0] - r[0] - u[0] - dd[0]),
+          color[1] + s * (4 * color[1] - l[1] - r[1] - u[1] - dd[1]),
+          color[2] + s * (4 * color[2] - l[2] - r[2] - u[2] - dd[2])
+        ];
+      }
+
+      // Render each output pixel
+      for (let ty = 0; ty < tH; ty++) {
+        for (let tx = 0; tx < tW; tx++) {
+          // Map tile pixel to screen pixel
+          const screenX = outX0 + tx / tileScale;
+          const screenY = outY0 + ty / tileScale;
+
+          // Map screen pixel to source image coordinate
+          const srcFx = (screenX - drawX) / zoom - sx0;
+          const srcFy = (screenY - drawY) / zoom - sy0;
+
+          // Sample with Lanczos
+          let color = sampleSrc(srcFx, srcFy);
+
+          // Beyond native res: apply edge enhancement and micro-detail
+          if (nativePixelRatio > 2) {
+            // Edge detection
+            const edge = edgeMagnitude(srcFx, srcFy);
+
+            // Sharpen edges (Laplacian enhancement)
+            const sharpStr = Math.min(0.4, 0.1 + 0.05 * Math.log2(nativePixelRatio));
+            color = sharpen(color, srcFx, srcFy, sharpStr * (0.5 + edge));
+
+            // Synthesize micro-detail
+            const detail = microDetail(srcFx * zoom, srcFy * zoom, color, edge);
+            color[0] += detail;
+            color[1] += detail;
+            color[2] += detail;
+          }
+
+          const oi = (ty * tW + tx) * 4;
+          out[oi]     = Math.max(0, Math.min(255, Math.round(color[0])));
+          out[oi + 1] = Math.max(0, Math.min(255, Math.round(color[1])));
+          out[oi + 2] = Math.max(0, Math.min(255, Math.round(color[2])));
+          out[oi + 3] = 255;
+        }
+      }
+
+      tileCtx.putImageData(outData, 0, 0);
+
+      // Draw tile to main canvas
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(tileCanvas, outX0, outY0, outW, outH);
+    }
+
+    ctx.restore();
+  }
+
+  // --- Main render ---
+  function render() {
+    if (!needsRender) return;
+    needsRender = false;
+
+    if (mode === 'mandelbrot') {
+      renderMandelbrot();
+    } else if (mode === 'image') {
+      renderImage();
+    } else {
+      // Empty state — dark bg
+      ctx.save();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+    }
+
+    // Update HUD
+    if (mode === 'mandelbrot') {
+      const effectiveScale = mbScale / zoom;
+      const magnitude = mbScale / effectiveScale;
+      zoomVal.textContent = formatZoom(zoom);
+      posVal.textContent = mbCenterX.toFixed(6) + ', ' + mbCenterY.toFixed(6) + 'i';
+    } else {
+      zoomVal.textContent = formatZoom(zoom);
+      posVal.textContent = Math.round(viewX) + ', ' + Math.round(viewY);
+    }
+  }
+
+  function formatZoom(z) {
+    if (z >= 1e12) return (z / 1e12).toFixed(1) + 'T';
+    if (z >= 1e9) return (z / 1e9).toFixed(1) + 'B';
+    if (z >= 1e6) return (z / 1e6).toFixed(1) + 'M';
+    if (z >= 1e3) return (z / 1e3).toFixed(1) + 'K';
+    if (z >= 100) return z.toFixed(0) + 'x';
+    if (z >= 10) return z.toFixed(1) + 'x';
+    return z.toFixed(2) + 'x';
+  }
+
+  function loop() {
+    render();
+    animFrame = requestAnimationFrame(loop);
+  }
+  loop();
+
+  // --- Zoom ---
+  function handleZoom(e) {
+    e.preventDefault();
+
+    // Determine zoom delta
+    let delta;
+    if (e.ctrlKey) {
+      // Trackpad pinch gesture
+      delta = -e.deltaY * 0.01;
+    } else {
+      delta = -e.deltaY * 0.002;
+    }
+
+    const factor = Math.exp(delta * 2);
+    const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom * factor));
+
+    if (mode === 'mandelbrot') {
+      // Zoom toward cursor in complex plane
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const aspect = W / H;
+      const effectiveScale = mbScale / zoom;
+
+      // Cursor position in complex plane
+      const cx = mbCenterX + (mx / W - 0.5) * effectiveScale * aspect;
+      const cy = mbCenterY + (my / H - 0.5) * effectiveScale;
+
+      const ratio = newZoom / zoom;
+      // Shift center toward cursor
+      mbCenterX = cx + (mbCenterX - cx) / ratio;
+      mbCenterY = cy + (mbCenterY - cy) / ratio;
+
+      zoom = newZoom;
+    } else if (mode === 'image') {
+      // Zoom toward cursor — keep image point under mouse fixed
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      // Image drawn at: drawX = (W - imgW*zoom)/2 + viewX
+      // Point under mouse in image coords: imgCoord = (mx - drawX) / zoom
+      const oldZoom = zoom;
+      const drawXOld = (W - imgW * oldZoom) / 2 + viewX;
+      const drawYOld = (H - imgH * oldZoom) / 2 + viewY;
+      const imgCoordX = (mx - drawXOld) / oldZoom;
+      const imgCoordY = (my - drawYOld) / oldZoom;
+
+      // After zoom change, solve for viewX so that the same imgCoord maps back to mx:
+      // mx = (W - imgW*newZoom)/2 + viewXNew + imgCoordX * newZoom
+      viewX = mx - (W / 2 - imgW * newZoom / 2) - imgCoordX * newZoom;
+      viewY = my - (H / 2 - imgH * newZoom / 2) - imgCoordY * newZoom;
+      zoom = newZoom;
+    }
+
+    needsRender = true;
+  }
+
+  canvas.addEventListener('wheel', handleZoom, { passive: false });
+
+  // --- Pan ---
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    dragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    if (mode === 'mandelbrot') {
+      dragViewX = mbCenterX;
+      dragViewY = mbCenterY;
+    } else {
+      dragViewX = viewX;
+      dragViewY = viewY;
+    }
+    document.body.classList.add('dragging');
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    if (mode === 'mandelbrot') {
+      const aspect = W / H;
+      const effectiveScale = mbScale / zoom;
+      mbCenterX = dragViewX - dx / W * effectiveScale * aspect;
+      mbCenterY = dragViewY - dy / H * effectiveScale;
+    } else {
+      viewX = dragViewX + dx;
+      viewY = dragViewY + dy;
+    }
+    needsRender = true;
+  });
+
+  window.addEventListener('mouseup', () => {
+    dragging = false;
+    document.body.classList.remove('dragging');
+  });
+
+  // --- Touch support ---
+  let lastTouchDist = 0;
+  let lastTouchMidX = 0, lastTouchMidY = 0;
+  let touching = false;
+  let touchStartViewX, touchStartViewY;
+  let touchStartMbX, touchStartMbY;
+
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      touching = true;
+      dragStartX = e.touches[0].clientX;
+      dragStartY = e.touches[0].clientY;
+      if (mode === 'mandelbrot') {
+        touchStartMbX = mbCenterX;
+        touchStartMbY = mbCenterY;
+      } else {
+        touchStartViewX = viewX;
+        touchStartViewY = viewY;
+      }
+    } else if (e.touches.length === 2) {
+      const t = e.touches;
+      lastTouchDist = Math.hypot(t[1].clientX - t[0].clientX, t[1].clientY - t[0].clientY);
+      lastTouchMidX = (t[0].clientX + t[1].clientX) / 2;
+      lastTouchMidY = (t[0].clientY + t[1].clientY) / 2;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && touching) {
+      const dx = e.touches[0].clientX - dragStartX;
+      const dy = e.touches[0].clientY - dragStartY;
+      if (mode === 'mandelbrot') {
+        const aspect = W / H;
+        const effectiveScale = mbScale / zoom;
+        mbCenterX = touchStartMbX - dx / W * effectiveScale * aspect;
+        mbCenterY = touchStartMbY - dy / H * effectiveScale;
+      } else {
+        viewX = touchStartViewX + dx;
+        viewY = touchStartViewY + dy;
+      }
+      needsRender = true;
+    } else if (e.touches.length === 2) {
+      const t = e.touches;
+      const dist = Math.hypot(t[1].clientX - t[0].clientX, t[1].clientY - t[0].clientY);
+      const midX = (t[0].clientX + t[1].clientX) / 2;
+      const midY = (t[0].clientY + t[1].clientY) / 2;
+
+      if (lastTouchDist > 0) {
+        const factor = dist / lastTouchDist;
+        const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom * factor));
+
+        if (mode === 'mandelbrot') {
+          const ratio = newZoom / zoom;
+          const aspect = W / H;
+          const effectiveScale = mbScale / zoom;
+          const cx = mbCenterX + (midX / W - 0.5) * effectiveScale * aspect;
+          const cy = mbCenterY + (midY / H - 0.5) * effectiveScale;
+          mbCenterX = cx + (mbCenterX - cx) / ratio;
+          mbCenterY = cy + (mbCenterY - cy) / ratio;
+        } else if (mode === 'image') {
+          const drawXOld = (W - imgW * zoom) / 2 + viewX;
+          const drawYOld = (H - imgH * zoom) / 2 + viewY;
+          const imgCoordX = (midX - drawXOld) / zoom;
+          const imgCoordY = (midY - drawYOld) / zoom;
+          viewX = midX - (W / 2 - imgW * newZoom / 2) - imgCoordX * newZoom;
+          viewY = midY - (H / 2 - imgH * newZoom / 2) - imgCoordY * newZoom;
+        }
+
+        zoom = newZoom;
+        needsRender = true;
+      }
+
+      lastTouchDist = dist;
+      lastTouchMidX = midX;
+      lastTouchMidY = midY;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', (e) => {
+    touching = false;
+    lastTouchDist = 0;
+  });
+
+  // --- Drag and drop ---
+  let dragCounter = 0;
+  document.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    dragCounter++;
+    dropOverlay.classList.add('active');
+  });
+  document.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      dropOverlay.classList.remove('active');
+    }
+  });
+  document.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+  document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dragCounter = 0;
+    dropOverlay.classList.remove('active');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      loadImageFromFile(files[0]);
+    } else {
+      // Check for dropped URL
+      const text = e.dataTransfer.getData('text/plain');
+      if (text && (text.startsWith('http://') || text.startsWith('https://'))) {
+        loadImageFromURL(text);
+      }
+    }
+  });
+
+  // --- Keyboard ---
+  document.addEventListener('keydown', (e) => {
+    switch (e.key.toLowerCase()) {
+      case 'm':
+        if (mode !== 'mandelbrot') {
+          activateMandelbrot();
+        }
+        break;
+      case 'r':
+        // Reset
+        if (mode === 'mandelbrot') {
+          mbCenterX = -0.7436438885706;
+          mbCenterY = 0.1318259043124;
+          mbScale = 3.5;
+          zoom = 1;
+        } else {
+          viewX = 0;
+          viewY = 0;
+          if (loadedImage) {
+            zoom = Math.min(W / imgW, H / imgH) * 0.9;
+          } else {
+            zoom = 1;
+          }
+        }
+        needsRender = true;
+        toast('View reset');
+        break;
+      case 'f':
+        // Fullscreen
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen();
+        }
+        break;
+      case '+':
+      case '=':
+        zoom = Math.min(ZOOM_MAX, zoom * 1.5);
+        needsRender = true;
+        break;
+      case '-':
+        zoom = Math.max(ZOOM_MIN, zoom / 1.5);
+        needsRender = true;
+        break;
+    }
+  });
+
+  // --- Mode button ---
+  modeBtn.addEventListener('click', () => {
+    if (mode === 'mandelbrot') {
+      mode = 'empty';
+      modeBtn.textContent = 'MANDELBROT';
+      modeLabel.textContent = 'Mode';
+      initialPrompt.classList.remove('hidden');
+      zoom = 1; viewX = 0; viewY = 0;
+      needsRender = true;
+    } else {
+      activateMandelbrot();
+    }
+  });
+
+  // --- Fullscreen change ---
+  document.addEventListener('fullscreenchange', () => {
+    setTimeout(resize, 100);
+  });
+
+  // --- Init ---
+  checkURLParam();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+#!/bin/bash
+# ============================================================
+# L7 THEME ENGINE — Transmute macOS into the Magisterium
+# No third-party downloads. Everything forged by our tools.
+# ============================================================
+
+set -e
+DIR="$(cd "$(dirname "$0")" && pwd)"
+ICONS="$HOME/.l7/icons"
+BINARY="$DIR/IconForge"
+
+echo "═══════════════════════════════════════"
+echo "  L7 THEME ENGINE — The Magisterium"
+echo "═══════════════════════════════════════"
+
+# Step 1: Compile and run the icon forge
+if [ ! -f "$BINARY" ]; then
+    echo ""
+    echo "Stage 1 — NIGREDO: Compiling the Icon Forge..."
+    swiftc -O -o "$BINARY" "$DIR/IconForge.swift" \
+        -framework Cocoa -framework CoreGraphics 2>&1
+    echo "  Forge compiled."
+fi
+
+echo ""
+echo "Stage 2 — ALBEDO: Generating alchemical icons..."
+"$BINARY"
+
+# Step 2: Set Dark Mode (the void)
+echo ""
+echo "Stage 3 — CITRINITAS: Setting the dark aesthetic..."
+osascript -e 'tell application "System Events" to tell appearance preferences to set dark mode to true' 2>/dev/null || true
+
+# Step 3: Set accent color to Gold
+# Gold = accent color 4 (orange is closest to gold in macOS)
+defaults write NSGlobalDomain AppleAccentColor -int 1 2>/dev/null || true
+defaults write NSGlobalDomain AppleHighlightColor -string "0.83 0.68 0.38 Gold" 2>/dev/null || true
+
+# Step 4: Apply folder icons
+echo ""
+echo "Stage 4 — RUBEDO: Applying icons to the kingdom..."
+
+apply_icon() {
+    local icon_name="$1"
+    local target_path="$2"
+    local icns_file="$ICONS/${icon_name}.icns"
+
+    if [ -f "$icns_file" ] && [ -e "$target_path" ]; then
+        # Use Python to set custom folder icon via resource fork
+        python3 -c "
+import Cocoa
+import os
+img = Cocoa.NSImage.alloc().initWithContentsOfFile_('$icns_file')
+if img:
+    Cocoa.NSWorkspace.sharedWorkspace().setIcon_forFile_options_(img, '$target_path', 0)
+    print('  Applied: $icon_name → $target_path')
+else:
+    print('  SKIP: Could not load $icns_file')
+" 2>/dev/null || echo "  SKIP: $target_path (needs permission)"
+    fi
+}
+
+# Home folders
+apply_icon "folder-documents" "$HOME/Documents"
+apply_icon "folder-downloads" "$HOME/Downloads"
+apply_icon "folder-desktop" "$HOME/Desktop"
+apply_icon "folder-pictures" "$HOME/Pictures"
+apply_icon "folder-music" "$HOME/Music"
+apply_icon "folder-movies" "$HOME/Movies"
+apply_icon "folder-library" "$HOME/Library"
+
+# L7 WAY directories
+L7="$HOME/Backup/L7_WAY"
+if [ -d "$L7" ]; then
+    apply_icon "l7-gateway" "$L7"
+    apply_icon "l7-forge" "$L7/lib"
+    apply_icon "l7-vault" "$L7/vault"
+    apply_icon "l7-keykeeper" "$L7/keykeeper"
+    apply_icon "l7-rose" "$L7/rose"
+    apply_icon "l7-scanner" "$L7/l7scan.js"
+    apply_icon "l7-timemachine" "$L7/timemachine"
+    apply_icon "l7-dbexplorer" "$L7/dbexplorer"
+    apply_icon "l7-prima" "$L7/lib/prima.js"
+fi
+
+# L7 data directories
+apply_icon "domain-morph" "$HOME/.l7" 2>/dev/null || true
+apply_icon "domain-salt" "$HOME/.l7/scan" 2>/dev/null || true
+apply_icon "l7-dbexplorer" "$HOME/.l7/databases" 2>/dev/null || true
+apply_icon "tree-of-life" "$HOME/.l7/tools" 2>/dev/null || true
+
+# Step 5: Generate and set wallpaper
+echo ""
+echo "Stage 5 — Setting the Magisterium wallpaper..."
+
+python3 << 'WALLPAPER_EOF'
+import Cocoa
+import CoreGraphics
+
+# Generate a dark alchemical wallpaper
+screen = Cocoa.NSScreen.mainScreen()
+w = int(screen.frame().size.width * 2)
+h = int(screen.frame().size.height * 2)
+
+# Create image
+rep = Cocoa.NSBitmapImageRep.alloc().initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bytesPerRow_bitsPerPixel_(
+    None, w, h, 8, 4, True, False, Cocoa.NSDeviceRGBColorSpace, 0, 0
+)
+
+ctx = Cocoa.NSGraphicsContext.graphicsContextWithBitmapImageRep_(rep)
+Cocoa.NSGraphicsContext.setCurrentContext_(ctx)
+g = ctx.CGContext()
+
+# Dark void background
+CoreGraphics.CGContextSetRGBFillColor(g, 0.035, 0.025, 0.055, 1.0)
+CoreGraphics.CGContextFillRect(g, ((0, 0), (w, h)))
+
+# Subtle radial gradient from center
+import math
+cx, cy = w // 2, h // 2
+for r in range(min(w, h) // 2, 0, -2):
+    alpha = 0.02 * (1 - r / (min(w, h) / 2))
+    CoreGraphics.CGContextSetRGBFillColor(g, 0.18, 0.12, 0.06, alpha)
+    CoreGraphics.CGContextFillEllipseInRect(g, ((cx - r, cy - r), (r * 2, r * 2)))
+
+# Draw subtle geometric pattern — hexagram grid
+import random
+random.seed(42)
+CoreGraphics.CGContextSetLineWidth(g, 1.0)
+
+# Faint grid of alchemical symbols
+spacing = 200
+for gx in range(0, w, spacing):
+    for gy in range(0, h, spacing):
+        alpha = 0.015 + random.random() * 0.01
+        CoreGraphics.CGContextSetRGBStrokeColor(g, 0.83, 0.68, 0.38, alpha)
+        # Small circle
+        sr = 3 + random.random() * 5
+        CoreGraphics.CGContextStrokeEllipseInRect(g, ((gx - sr, gy - sr), (sr * 2, sr * 2)))
+
+# Central sigil — large hexagram
+CoreGraphics.CGContextSetRGBStrokeColor(g, 0.83, 0.68, 0.38, 0.04)
+CoreGraphics.CGContextSetLineWidth(g, 2.0)
+sr = min(w, h) * 0.25
+for i in range(6):
+    angle = i * math.pi / 3
+    x1 = cx + math.cos(angle) * sr
+    y1 = cy + math.sin(angle) * sr
+    x2 = cx + math.cos(angle + math.pi * 2 / 3) * sr
+    y2 = cy + math.sin(angle + math.pi * 2 / 3) * sr
+    CoreGraphics.CGContextMoveToPoint(g, x1, y1)
+    CoreGraphics.CGContextAddLineToPoint(g, x2, y2)
+CoreGraphics.CGContextStrokePath(g)
+
+# Outer circle
+CoreGraphics.CGContextStrokeEllipseInRect(g, ((cx - sr, cy - sr), (sr * 2, sr * 2)))
+
+# Inner circle
+CoreGraphics.CGContextStrokeEllipseInRect(g, ((cx - sr * 0.5, cy - sr * 0.5), (sr, sr)))
+
+# Save
+wallpaper_path = Cocoa.NSString.stringWithString_(
+    Cocoa.NSHomeDirectory() + "/.l7/icons/wallpaper-magisterium.png"
+).UTF8String()
+import os
+wallpaper_path = os.path.expanduser("~/.l7/icons/wallpaper-magisterium.png")
+data = rep.representationUsingType_properties_(Cocoa.NSBitmapImageRep.NSPNGFileType if hasattr(Cocoa.NSBitmapImageRep, 'NSPNGFileType') else 4, None)
+if data:
+    data.writeToFile_atomically_(wallpaper_path, True)
+    print(f"  Wallpaper generated: {wallpaper_path}")
+
+    # Set as wallpaper
+    ws = Cocoa.NSWorkspace.sharedWorkspace()
+    screen = Cocoa.NSScreen.mainScreen()
+    url = Cocoa.NSURL.fileURLWithPath_(wallpaper_path)
+    ws.setDesktopImageURL_forScreen_options_error_(url, screen, {}, None)
+    print("  Wallpaper applied!")
+else:
+    print("  WARNING: Could not generate wallpaper data")
+WALLPAPER_EOF
+
+# Step 6: Restart Finder to apply icon changes
+echo ""
+echo "Restarting Finder to apply changes..."
+killall Finder 2>/dev/null || true
+
+echo ""
+echo "═══════════════════════════════════════"
+echo "  THE MAGISTERIUM IS SET"
+echo ""
+echo "  Icons:      $ICONS/"
+echo "  Wallpaper:  $ICONS/wallpaper-magisterium.png"
+echo "  Dark mode:  Enabled"
+echo "  Accent:     Gold"
+echo ""
+echo "  \"Each graph contains the previous ones.\""
+echo "═══════════════════════════════════════"

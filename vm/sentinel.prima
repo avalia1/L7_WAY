@@ -1,0 +1,18 @@
+# ════════════════════════════════════════════════════════
+# THE SENTINEL SIGIL — Gateway watchdog
+# ════════════════════════════════════════════════════════
+# Monitors incoming data, decomposes it, verifies identity,
+# quarantines threats, redeems clean data as citizens.
+# The immune system of L7 OS.
+# ════════════════════════════════════════════════════════
+
+invoke capability=6 security=9 consciousness=7 intention=8
+decompose security=10 detail=10 transformation=7
+verify security=9 intention=8 consciousness=8
+reflect consciousness=9 memory=8 direction=7
+quarantine security=8 capability=2 output=1
+redeem capability=7 transformation=9 security=6 direction=8
+bind security=8 intention=9 persistence=7
+audit capability=5 consciousness=9 memory=9 direction=8
+publish detail=7 output=8 persistence=8 memory=9
+complete
