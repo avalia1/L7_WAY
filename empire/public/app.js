@@ -1,3 +1,5 @@
+
+
 const catalogEl = document.getElementById('catalog');
 const legionsEl = document.getElementById('legions');
 const launchersEl = document.getElementById('launchers');
@@ -904,3 +906,11 @@ if (campaignApproveBtn) campaignApproveBtn.addEventListener('click', approveCamp
 if (campaignHaltBtn) campaignHaltBtn.addEventListener('click', haltCampaign);
 
 loadCampaigns();
+
+// L7:PROVENANCE
+// Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+// File: empire/public/app.js | Body-Hash: SHA-256:bf7f0404e875747dac591738e8bb0239259a4a1b638f65d5958dd2dd169ec012
+// Chain-Hash: SHA-256:4bb0134a439e8563eb71866b4e02df123920e92b115565bad2d2f51d1c3ae802 | Signed: 2026-03-01T15:09:56.452222+00:00
+// This work is the intellectual property of Alberto Valido Delgado.
+// Chain: 35 works. Verify: python3 provenance.py verify empire/public/app.js
+// L7:PROVENANCE

@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env node
 /**
  * L7 Gateway Server — The Unified Self, listening.
@@ -261,3 +263,11 @@ const server = http.createServer(async (req, res) => {
     process.exit(1);
   }
 })();
+
+// L7:PROVENANCE
+// Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+// File: serve.js | Body-Hash: SHA-256:ae5a29c4e93b2520e1fecd54b33c1fdaa45a67f5a1626c8edbfdc4b503e1438a
+// Chain-Hash: SHA-256:a782b44e1ffd235b3bb293f6cc4426914a78ec5dd1b668f8c93b5a44b3200035 | Signed: 2026-03-01T15:09:50.006072+00:00
+// This work is the intellectual property of Alberto Valido Delgado.
+// Chain: 5 works. Verify: python3 provenance.py verify serve.js
+// L7:PROVENANCE

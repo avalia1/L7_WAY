@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env node
 /**
  * L7 INDEX — Build directory index from scan manifest
@@ -233,3 +235,11 @@ async function buildIndex() {
 }
 
 buildIndex().catch(e => { console.error(e); process.exit(1); });
+
+// L7:PROVENANCE
+// Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+// File: l7index.js | Body-Hash: SHA-256:c5fb18572219f11f1af942da1006faa8dff0876780acb66b5d6f6559557e5ac3
+// Chain-Hash: SHA-256:51c3abf97977ed975d993c89a77072503c489f2be839f704475d2d4865d560ca | Signed: 2026-03-01T15:09:50.004535+00:00
+// This work is the intellectual property of Alberto Valido Delgado.
+// Chain: 2 works. Verify: python3 provenance.py verify l7index.js
+// L7:PROVENANCE

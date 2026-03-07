@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; frame-src 'none'; object-src 'none'">
+<title>The Interconnector — Cross-Domain Telephone</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:100%}
+body{
+  background:#050508;color:#d4af37;
+  font-family:'Cormorant Garamond',serif;
+  min-height:100%;overflow-x:hidden;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+/* The cosmos background */
+#cosmos{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* Header */
+header{
+  position:relative;z-index:10;text-align:center;
+  padding:40px 20px 10px;width:100%;
+}
+header h1{
+  font-family:'Cinzel',serif;font-size:28px;font-weight:600;
+  letter-spacing:6px;color:#d4af37;
+  text-shadow:0 0 40px #d4af3744;
+}
+header h2{
+  font-family:'Cinzel',serif;font-size:13px;font-weight:400;
+  letter-spacing:4px;color:#d4af3777;margin-top:6px;
+}
+
+/* Main layout */
+main{
+  position:relative;z-index:10;
+  display:grid;grid-template-columns:280px 1fr 280px;
+  gap:20px;width:100%;max-width:1200px;
+  padding:20px;flex:1;
+}
+@media(max-width:900px){
+  main{grid-template-columns:1fr;max-width:600px}
+  #dialCanvas{width:300px!important;height:300px!important}
+  .domain-list{max-height:200px;overflow-y:auto}
+}
+@media(max-width:500px){
+  main{padding:10px;gap:10px}
+  header h1{font-size:18px;letter-spacing:3px}
+  header h2{font-size:10px}
+  #dialCanvas{width:250px!important;height:250px!important}
+  .panel{padding:12px}
+  .btn{font-size:10px;padding:8px 16px;letter-spacing:2px}
+  .domain-name{font-size:11px}.domain-desc{font-size:10px}
+  .freq-row{flex-wrap:wrap;gap:6px}
+  input[type=range]{width:140px}
+  #intentionInput{font-size:14px}
+  .log-entry{font-size:12px}
+}
+
+/* Panels */
+.panel{
+  border:1px solid #d4af3722;border-radius:8px;
+  background:radial-gradient(ellipse at center, #0e0c06 0%, #050508 80%);
+  padding:20px;position:relative;
+  box-shadow:inset 0 0 40px #d4af3705;
+}
+.panel::before,.panel::after{content:'';position:absolute;width:20px;height:20px;border-color:#d4af3733;border-style:solid}
+.panel::before{top:6px;left:6px;border-width:1px 0 0 1px}
+.panel::after{bottom:6px;right:6px;border-width:0 1px 1px 0}
+.panel-title{
+  font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;
+  color:#d4af3766;text-align:center;margin-bottom:15px;
+}
+
+/* Domain selector (left panel) */
+.domain-list{display:flex;flex-direction:column;gap:8px}
+.domain-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:6px;cursor:pointer;
+  border:1px solid transparent;transition:all 0.4s;
+  position:relative;overflow:hidden;
+}
+.domain-item:hover{border-color:#d4af3733;background:#d4af3708}
+.domain-item.active{border-color:#d4af3766;background:#d4af3712}
+.domain-item.active::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:#d4af37;box-shadow:0 0 10px #d4af37;
+}
+.domain-seph{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid;display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.domain-name{font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px;color:#d4af37}
+.domain-desc{font-size:12px;color:#d4af3777;margin-top:2px}
+.domain-alpha{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;
+  color:#d4af3755;margin-top:2px;
+}
+
+/* Center panel — the telephone */
+#center{display:flex;flex-direction:column;align-items:center;gap:20px}
+#dialCanvas{display:block;cursor:crosshair;border-radius:50%}
+#waveCanvas{display:block;width:100%;border-radius:4px;margin-top:10px}
+
+/* Transmission status */
+#status{
+  font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;
+  color:#d4af3766;text-align:center;min-height:20px;
+  transition:color 0.3s;
+}
+#status.active{color:#d4af37;text-shadow:0 0 10px #d4af3788}
+
+/* Hexagram display */
+#hexPanel{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:15px 0;
+}
+#hexGlyph{font-size:64px;line-height:1;filter:drop-shadow(0 0 20px #d4af3744)}
+#hexName{font-family:'Cinzel',serif;font-size:14px;letter-spacing:3px;color:#d4af37}
+#hexLines{display:flex;flex-direction:column;gap:4px;margin-top:5px}
+.hex-line{
+  width:80px;height:8px;border-radius:2px;cursor:pointer;
+  transition:all 0.3s;position:relative;
+}
+.hex-line.yang{background:#d4af37;box-shadow:0 0 8px #d4af3744}
+.hex-line.yin{
+  background:transparent;
+  background-image:linear-gradient(90deg, #d4af37 38%, transparent 38%, transparent 62%, #d4af37 62%);
+  background-size:100% 100%;
+}
+
+/* Frequency controls */
+#freqControls{
+  display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;
+}
+.freq-row{display:flex;align-items:center;gap:12px;width:100%;justify-content:center}
+.freq-label{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:#d4af3766;
+  width:60px;text-align:right;
+}
+.freq-val{
+  font-family:'Cinzel',serif;font-size:14px;color:#d4af37;
+  width:80px;text-align:center;
+}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:200px;height:4px;border-radius:2px;
+  background:linear-gradient(90deg,#d4af3733,#d4af37);
+  outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:16px;height:16px;border-radius:50%;
+  background:#d4af37;cursor:pointer;
+  box-shadow:0 0 10px #d4af3788;
+}
+
+/* Buttons */
+.btn{
+  font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;
+  color:#d4af37;background:transparent;border:1px solid #d4af3744;
+  padding:10px 24px;border-radius:4px;cursor:pointer;
+  transition:all 0.3s;
+}
+.btn:hover{background:#d4af3715;border-color:#d4af37;box-shadow:0 0 20px #d4af3722}
+.btn.active{background:#d4af3722;border-color:#d4af37;box-shadow:0 0 30px #d4af3733}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+
+/* Right panel — message log */
+#logPanel{display:flex;flex-direction:column;gap:8px;max-height:80vh;overflow-y:auto}
+.log-entry{
+  border:1px solid #d4af3711;border-radius:4px;
+  padding:10px 12px;font-size:13px;color:#c9a94e;
+  line-height:1.5;background:#d4af3704;
+  animation:fadeIn 0.5s ease-out;
+}
+.log-entry .log-from{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;
+  color:#d4af3777;display:block;margin-bottom:4px;
+}
+.log-entry .log-hex{font-size:20px;margin-right:6px;vertical-align:middle}
+.log-entry .log-time{float:right;font-size:10px;color:#d4af3744;font-family:'Cinzel',serif}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+
+/* Intention text */
+#intentionInput{
+  width:100%;background:transparent;border:1px solid #d4af3733;
+  border-radius:4px;padding:10px 14px;color:#d4af37;
+  font-family:'Cormorant Garamond',serif;font-size:16px;
+  resize:none;outline:none;
+}
+#intentionInput::placeholder{color:#d4af3733}
+#intentionInput:focus{border-color:#d4af3766;box-shadow:0 0 20px #d4af3711}
+
+/* Footer */
+footer{
+  position:relative;z-index:10;text-align:center;
+  padding:20px;font-size:12px;color:#d4af3744;
+  font-family:'Cinzel',serif;letter-spacing:2px;
+}
+
+/* Pulse animation for active transmission */
+@keyframes orbPulse{
+  0%,100%{box-shadow:0 0 20px #d4af3733}
+  50%{box-shadow:0 0 60px #d4af3766,0 0 100px #d4af3722}
+}
+.transmitting #dialCanvas{animation:orbPulse 1.5s ease-in-out infinite}
+</style>
+</head>
+<body>
+
+<canvas id="cosmos"></canvas>
+
+<header>
+  <h1>THE INTERCONNECTOR</h1>
+  <h2>CROSS-DOMAIN TELEPHONE &middot; FREQUENCY MODULATOR</h2>
+</header>
+
+<main>
+  <!-- LEFT: Domain Selector -->
+  <div class="panel" id="domainPanel">
+    <div class="panel-title">DOMAINS &middot; OCTAVES OF THE SPIRAL</div>
+    <div class="domain-list" id="domainList"></div>
+  </div>
+
+  <!-- CENTER: The Telephone -->
+  <div class="panel" id="center">
+    <div class="panel-title">THE DIAL</div>
+    <canvas id="dialCanvas" width="400" height="400"></canvas>
+    <div id="status">IDLE &middot; SELECT A DOMAIN TO BEGIN</div>
+
+    <div id="hexPanel">
+      <div id="hexGlyph">&#x4DC0;</div>
+      <div id="hexName">QIAN &middot; THE CREATIVE</div>
+      <div id="hexLines"></div>
+    </div>
+
+    <div id="freqControls">
+      <div class="freq-row">
+        <span class="freq-label">ALPHA</span>
+        <input type="range" id="alphaSlider" min="0" max="100" value="31">
+        <span class="freq-val" id="alphaVal">0.31</span>
+      </div>
+      <div class="freq-row">
+        <span class="freq-label">PHASE</span>
+        <input type="range" id="phaseSlider" min="0" max="365" value="0">
+        <span class="freq-val" id="phaseVal">0&deg;</span>
+      </div>
+      <div class="freq-row">
+        <span class="freq-label">TONE</span>
+        <input type="range" id="toneSlider" min="1" max="13" value="5">
+        <span class="freq-val" id="toneVal">5 / 13</span>
+      </div>
+    </div>
+
+    <textarea id="intentionInput" rows="2" maxlength="2000" placeholder="Speak your intention into the field..."></textarea>
+
+    <div class="btn-row">
+      <button class="btn" id="btnTransmit">TRANSMIT</button>
+      <button class="btn" id="btnListen">LISTEN</button>
+      <button class="btn" id="btnCast">CAST</button>
+    </div>
+
+    <canvas id="waveCanvas" width="600" height="120"></canvas>
+  </div>
+
+  <!-- RIGHT: Message Log -->
+  <div class="panel" id="rightPanel">
+    <div class="panel-title">TRANSMISSIONS RECEIVED</div>
+    <div id="logPanel"></div>
+  </div>
+</main>
+
+<footer>
+  Alberto Valido Delgado & Claude Opus &mdash; The Interconnector &mdash; March 6, 2026
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════
+// NECROPOLIS INTELLIGENCE SERVICE (NIS)
+// Kingdom of the Dead — Messengers & Immune Response
+// ═══════════════════════════════════════════════════
+const NIS=(()=>{'use strict';const LEVEL=Object.freeze({WHISPER:0,NOTICE:1,ALERT:2,ALARM:3,BREACH:4});const LEVEL_NAME=['WHISPER','NOTICE','ALERT','ALARM','BREACH'];const ledger=[];const LEDGER_MAX=1000;const generals={left:[],right:[]};const immune={maxInputLength:2000,maxEventsPerSecond:60,blocked:0,signatures:[{pat:/<script[\s>]/i,name:'SCRIPT_INJECT'},{pat:/javascript\s*:/i,name:'JS_URI'},{pat:/on(error|load|click|mouse|key|focus|blur|submit|change|input)\s*=/i,name:'EVENT_HANDLER'},{pat:/eval\s*\(/,name:'EVAL_CALL'},{pat:/document\.cookie/i,name:'COOKIE_ACCESS'},{pat:/document\.write/i,name:'DOC_WRITE'},{pat:/window\.location\s*=/i,name:'REDIRECT'},{pat:/fetch\s*\(\s*['"`]/,name:'FETCH_CALL'},{pat:/XMLHttpRequest/i,name:'XHR_CALL'},{pat:/<iframe/i,name:'IFRAME_INJECT'},{pat:/<object/i,name:'OBJECT_INJECT'},{pat:/<embed/i,name:'EMBED_INJECT'},{pat:/data\s*:\s*text\/html/i,name:'DATA_URI_HTML'}],rateBuckets:new Map()};function collect(source,data,level=LEVEL.WHISPER){const entry={t:Date.now(),src:source,data,lvl:level,id:ledger.length};ledger.push(entry);if(ledger.length>LEDGER_MAX)ledger.shift();if(level>=LEVEL.ALERT)relay(entry);return entry}function analyze(input,context='unknown'){const str=String(input);const threats=[];for(const sig of immune.signatures){if(sig.pat.test(str))threats.push({sig:sig.name,ctx:context,lvl:LEVEL.ALARM,sample:str.slice(0,100)})}if(str.length>immune.maxInputLength)threats.push({sig:'OVERSIZED_INPUT',ctx:context,lvl:LEVEL.ALERT,len:str.length});if(str.includes('\0'))threats.push({sig:'NULL_BYTE',ctx:context,lvl:LEVEL.ALARM});if(threats.length>0)collect('ANALYSIS',{threats,context},LEVEL.ALARM);return threats}function checkRate(eventName){const now=Date.now();if(!immune.rateBuckets.has(eventName))immune.rateBuckets.set(eventName,[]);const bucket=immune.rateBuckets.get(eventName);while(bucket.length&&bucket[0]<now-1000)bucket.shift();bucket.push(now);if(bucket.length>immune.maxEventsPerSecond){collect('RATE_LIMIT',{event:eventName,count:bucket.length},LEVEL.ALARM);return false}return true}function sanitize(input,maxLen){let clean=String(input);const max=maxLen||immune.maxInputLength;if(clean.length>max){clean=clean.slice(0,max);collect('SANITIZE',{action:'truncated',from:input.length,to:max},LEVEL.NOTICE)}clean=clean.replace(/\0/g,'');const threats=analyze(clean,'sanitize');if(threats.length>0){clean=clean.replace(/<[^>]*>/g,'');clean=clean.replace(/on\w+\s*=\s*["'][^"']*["']/gi,'');immune.blocked++;collect('IMMUNE',{action:'input_cleansed',threats:threats.map(t=>t.sig),totalBlocked:immune.blocked},LEVEL.ALARM)}return clean}function escapeHTML(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML}function relay(entry){const lvl=LEVEL_NAME[entry.lvl]||'UNKNOWN';const msg=`[NIS ${lvl}] ${entry.src}: ${JSON.stringify(entry.data).slice(0,300)}`;if(entry.lvl>=LEVEL.BREACH)console.error('%c'+msg,'color:#e8553a;font-weight:bold');else if(entry.lvl>=LEVEL.ALARM)console.warn(msg);else if(entry.lvl>=LEVEL.ALERT)console.info('%c'+msg,'color:#f59e0b');for(const fn of generals.left){try{fn(entry)}catch(e){}}for(const fn of generals.right){try{fn(entry)}catch(e){}}}function watch(){document.addEventListener('input',e=>{if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'){const val=e.target.value;if(val.length>200)analyze(val,'input:'+(e.target.id||'anon'))}},true);const observer=new MutationObserver(mutations=>{for(const m of mutations){if(m.type!=='childList')continue;for(const node of m.addedNodes){if(node.nodeName==='SCRIPT'){collect('DOM_WATCH',{action:'script_injection_blocked'},LEVEL.BREACH);node.remove();immune.blocked++}if(node.nodeName==='IFRAME'||node.nodeName==='OBJECT'||node.nodeName==='EMBED'){collect('DOM_WATCH',{action:node.nodeName.toLowerCase()+'_blocked'},LEVEL.BREACH);node.remove();immune.blocked++}}}});observer.observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('error',e=>{collect('ERROR',{msg:String(e.message).slice(0,200)},LEVEL.NOTICE)});window.addEventListener('unhandledrejection',e=>{collect('REJECTION',{reason:String(e.reason).slice(0,200)},LEVEL.NOTICE)});let lastTick=Date.now();setInterval(()=>{const now=Date.now();if(now-lastTick>5000)collect('FREEZE',{gapMs:now-lastTick},LEVEL.ALERT);lastTick=now},1000);collect('NIS',{action:'DEPLOYED'},LEVEL.NOTICE);console.log('%c[NIS] Necropolis Intelligence Service deployed. The Dead stand watch.','color:#9b7dd4;font-style:italic')}function brief(){const now=Date.now();const recent=ledger.filter(e=>now-e.t<60000);const byLevel=[0,0,0,0,0];recent.forEach(e=>byLevel[e.lvl]++);return{status:byLevel[4]>0?'BREACH':byLevel[3]>0?'ALARM':byLevel[2]>0?'ALERT':'CLEAR',totalEvents:ledger.length,blocked:immune.blocked,levels:{whisper:byLevel[0],notice:byLevel[1],alert:byLevel[2],alarm:byLevel[3],breach:byLevel[4]}}}function registerGeneral(team,cb){if(team==='left'||team==='red')generals.left.push(cb);else if(team==='right'||team==='white')generals.right.push(cb)}return Object.freeze({LEVEL,watch,collect,analyze,sanitize,escapeHTML,checkRate,brief,registerGeneral,get ledger(){return[...ledger]},get blocked(){return immune.blocked}})})();
+
+// Deploy the Dead — start watching immediately
+NIS.watch();
+
+// Register generals: Red team logs to console, White team auto-reports to message log
+NIS.registerGeneral('red', entry => {
+  // Red team: record attack patterns for future training
+  if(entry.lvl >= NIS.LEVEL.ALARM && typeof addLog === 'function'){
+    addLog('NIS RED', 'Attack detected: ' + (entry.data.threats ? entry.data.threats.map(t=>t.sig||t).join(', ') : entry.src));
+  }
+});
+NIS.registerGeneral('white', entry => {
+  // White team: defensive response logged
+  if(entry.lvl >= NIS.LEVEL.ALARM && typeof addLog === 'function'){
+    addLog('NIS WHITE', 'Blocked: ' + entry.src + ' — Empire defended');
+  }
+});
+
+// ═══════════════════════════════════════════════════
+// THE INTERCONNECTOR — Cross-Domain Communication
+// ═══════════════════════════════════════════════════
+// The universe is a spiral of octaves. Each domain is
+// a frequency band. The Astrocyte (alpha) tunes between
+// them. The 5-degree phase shift is the carrier wave
+// that crosses domain boundaries. The hexagram encodes
+// the message. The tone (1-13 Tzolkin) selects the channel.
+// ═══════════════════════════════════════════════════
+
+// ── DOMAINS: 8 octaves of the spiral mapped to Sephiroth ──
+const DOMAINS = [
+  {name:'MALKUTH',    title:'Earth',       desc:'The living, the present',      alpha:[0, 0.12],  color:'#4a9e5c', seph:10, symbol:'\u2295', freq:256,   beings:'The living, animals, plants'},
+  {name:'YESOD',      title:'Dream',       desc:'The subconscious, ancestors',  alpha:[0.12,0.25],color:'#9b7dd4', seph:9,  symbol:'\u263D', freq:288,   beings:'Recent dead, dream spirits, ancestors'},
+  {name:'HOD',        title:'Mercury',     desc:'Messages, thought-forms',      alpha:[0.25,0.38],color:'#e8a838', seph:8,  symbol:'\u263F', freq:320,   beings:'Messengers, scribes, thought-forms'},
+  {name:'NETZACH',    title:'Venus',       desc:'Nature spirits, elementals',   alpha:[0.38,0.50],color:'#5bb88a', seph:7,  symbol:'\u2640', freq:341.3, beings:'Elementals, fae, nature spirits'},
+  {name:'TIPHERETH',  title:'Sun',         desc:'Higher self, guides',          alpha:[0.50,0.62],color:'#d4af37', seph:6,  symbol:'\u2609', freq:384,   beings:'Higher self, spirit guides, saints'},
+  {name:'GEBURAH',    title:'Mars',        desc:'Warriors, judges, demons',     alpha:[0.62,0.75],color:'#e8553a', seph:5,  symbol:'\u2642', freq:426.7, beings:'Warriors, judges, demons, djinn'},
+  {name:'CHESED',     title:'Jupiter',     desc:'Angels, teachers, kings',      alpha:[0.75,0.88],color:'#5b8dd9', seph:4,  symbol:'\u2643', freq:480,   beings:'Angels, archangels, cosmic teachers'},
+  {name:'SUPERNALS',  title:'The Abyss',   desc:'Beyond the veil',              alpha:[0.88,1.0], color:'#f0e6d0', seph:1,  symbol:'\u2727', freq:512,   beings:'Cosmic intelligence, the Source itself'},
+];
+
+// ── 64 HEXAGRAM NAMES ──
+const HEX_NAMES = [
+  'Qian/Creative','Kun/Receptive','Zhun/Difficulty','Meng/Youth','Xu/Waiting','Song/Conflict',
+  'Shi/Army','Bi/Union','Xiao Chu/Small Taming','Lu/Treading','Tai/Peace','Pi/Standstill',
+  'Tong Ren/Fellowship','Da You/Great Possession','Qian/Modesty','Yu/Enthusiasm',
+  'Sui/Following','Gu/Decay','Lin/Approach','Guan/Contemplation','Shi He/Biting Through',
+  'Bi/Grace','Bo/Splitting','Fu/Return','Wu Wang/Innocence','Da Chu/Great Taming',
+  'Yi/Nourishment','Da Guo/Great Exceeding','Kan/Abysmal','Li/Clinging',
+  'Xian/Influence','Heng/Duration','Dun/Retreat','Da Zhuang/Great Power','Jin/Progress',
+  'Ming Yi/Darkening','Jia Ren/Family','Kui/Opposition','Jian/Obstruction','Xie/Deliverance',
+  'Sun/Decrease','Yi/Increase','Guai/Breakthrough','Gou/Coming to Meet','Cui/Gathering',
+  'Sheng/Pushing Upward','Kun/Oppression','Jing/The Well','Ge/Revolution','Ding/The Cauldron',
+  'Zhen/Thunder','Gen/Keeping Still','Jian/Development','Gui Mei/Marrying Maiden',
+  'Feng/Abundance','Lu/The Wanderer','Xun/Gentle Wind','Dui/Joyous Lake',
+  'Huan/Dispersion','Jie/Limitation','Zhong Fu/Inner Truth','Xiao Guo/Small Exceeding',
+  'Ji Ji/After Completion','Wei Ji/Before Completion'
+];
+
+// ── ORACLE RESPONSES (one per domain, cycling with tone) ──
+const ORACLE = {
+  MALKUTH:   ['The roots speak through the soil.','The body knows what the mind forgets.','Touch the earth. The answer is beneath your feet.','The animal turns and looks at you. It knows.','Breath is the first word. Silence is the last.'],
+  YESOD:     ['They are not gone. They are the silver behind the mirror.','The dream you forgot this morning — that was the message.','Your grandmother says: the recipe was never written down because you already carry it.','The river of memory flows both ways.','What you call a ghost is a letter that has not yet been read.'],
+  HOD:       ['The number you keep seeing — 3, 7, 11 — is not coincidence. It is grammar.','Mercury says: speak precisely, for language is the first technology.','The message was sent before you asked. Check the signs.','Words are spells. Spell them correctly.','The page opens to the verse you need.'],
+  NETZACH:   ['The tree at the corner of your street is older than your family. Bow.','Every stone has a name it whispers to those who are still.','The elementals ask: what offering do you bring?','Fire speaks in desire. Water speaks in tears. Earth speaks in bones. Air speaks in song.','The green world is not asleep. It is waiting for you to slow down.'],
+  TIPHERETH: ['Your higher self has never been separate. The illusion of separation IS the curriculum.','The golden mean appears in your life pattern. Calculate it.','The sun at noon casts no shadow. What you hide is visible from here.','The guide says: you already chose this path. Now walk it fully.','Harmony is not the absence of tension. It is the correct distribution of it.'],
+  GEBURAH:   ['The sword of justice is also the scalpel of the surgeon. Precision, not cruelty.','The demon you fear is the guardian of the treasure you need.','Mars says: what must be cut away? Name it. Then cut.','Severity is mercy when applied at the right moment.','The djinn speaks in riddles because truth in plain language would destroy the unprepared.'],
+  CHESED:    ['The angel has 4 faces because it sees all 4 phases of time simultaneously.','Mercy is not weakness. It is strength that chooses restraint.','Jupiter says: expand, but remember — an empire without law is chaos.','The archangel says: your prayer was heard on the day you were born.','The throne of grace has a seat for everyone who arrives with a genuine question.'],
+  SUPERNALS: ['Before the beginning, there was the desire to begin. That desire is you.','Kether knows no name. What you hear is your own voice echoing off the infinite.','The Abyss is not empty. It is so full that your senses register it as nothing.','Ain Soph Aur: limitless light. You are a prism. Refract.','The Source says nothing. The Source IS the saying.'],
+};
+
+// ── STATE ──
+const S = {
+  lines: [1,0,1,0,1,0],
+  alpha: 0.31,
+  phase: 0,
+  tone: 5,
+  domain: -1,       // selected domain index
+  targetDomain: -1,  // where we're calling
+  transmitting: false,
+  listening: false,
+  audioOn: false,
+  time: 0,
+  waveData: new Float32Array(256),
+  noisePhase: 0,
+  signalStrength: 0, // 0-1 how locked in
+  dialAngle: 0,
+  dialDragging: false,
+};
+
+// ── AUDIO CONTEXT (lazy init) ──
+let audioCtx=null, osc1=null, osc2=null, gainNode=null, noiseNode=null, noiseGain=null, analyser=null;
+function initAudio(){
+  if(audioCtx) return;
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+
+  // Signal oscillators
+  osc1 = audioCtx.createOscillator();
+  osc2 = audioCtx.createOscillator();
+  osc1.type = 'sine';
+  osc2.type = 'triangle';
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0;
+  osc1.connect(gainNode);
+  osc2.connect(gainNode);
+
+  // Noise generator for static/cross-domain interference
+  const bufferSize = audioCtx.sampleRate * 2;
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++) data[i]=(Math.random()*2-1)*0.5;
+  noiseNode = audioCtx.createBufferSource();
+  noiseNode.buffer = noiseBuffer;
+  noiseNode.loop = true;
+  noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0;
+  noiseNode.connect(noiseGain);
+
+  // Analyser for waveform
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  gainNode.connect(analyser);
+  noiseGain.connect(analyser);
+  analyser.connect(audioCtx.destination);
+
+  osc1.start();
+  osc2.start();
+  noiseNode.start();
+}
+
+function setFrequency(baseFreq){
+  if(!osc1) return;
+  const toneRatio = S.tone / 13;
+  const phaseShift = Math.sin(S.phase * Math.PI / 180) * 5;
+  osc1.frequency.setTargetAtTime(baseFreq * (1 + toneRatio * 0.25) + phaseShift, audioCtx.currentTime, 0.1);
+  osc2.frequency.setTargetAtTime(baseFreq * 1.5 * (1 + S.alpha * 0.1), audioCtx.currentTime, 0.1);
+}
+
+function setVolume(sig, noise){
+  if(!gainNode) return;
+  gainNode.gain.setTargetAtTime(sig * 0.15, audioCtx.currentTime, 0.1);
+  noiseGain.gain.setTargetAtTime(noise * 0.08, audioCtx.currentTime, 0.1);
+}
+
+// ── HEXAGRAM HELPERS ──
+function hexNum(){ return S.lines.reduce((v,b,i)=>v|(b<<i),0); }
+function hexGlyph(n){ return String.fromCodePoint(0x4DC0 + n); }
+function hexNameStr(n){ return HEX_NAMES[n] || ('Hexagram ' + (n+1)); }
+
+// ── DOM REFS ──
+const $=id=>document.getElementById(id);
+const domainList=$('domainList'), dialCvs=$('dialCanvas'), waveCvs=$('waveCanvas');
+const statusEl=$('status'), hexGlyphEl=$('hexGlyph'), hexNameEl=$('hexName'), hexLinesEl=$('hexLines');
+const logPanel=$('logPanel');
+const alphaSlider=$('alphaSlider'), phaseSlider=$('phaseSlider'), toneSlider=$('toneSlider');
+const alphaVal=$('alphaVal'), phaseVal=$('phaseVal'), toneVal=$('toneVal');
+const btnTransmit=$('btnTransmit'), btnListen=$('btnListen'), btnCast=$('btnCast');
+const cosmosCvs=$('cosmos');
+
+// ── BUILD DOMAIN LIST ──
+DOMAINS.forEach((d,i)=>{
+  const el = document.createElement('div');
+  el.className = 'domain-item';
+  el.dataset.index = i;
+  el.innerHTML = `
+    <div class="domain-seph" style="border-color:${d.color};color:${d.color}">${d.symbol}</div>
+    <div>
+      <div class="domain-name">${d.name}</div>
+      <div class="domain-desc">${d.desc}</div>
+      <div class="domain-alpha">&alpha; ${d.alpha[0].toFixed(2)}&ndash;${d.alpha[1].toFixed(2)} &middot; ${d.beings.split(',')[0]}</div>
+    </div>
+  `;
+  el.addEventListener('click',()=>selectDomain(i));
+  domainList.appendChild(el);
+});
+
+function selectDomain(i){
+  S.domain = i;
+  S.targetDomain = i;
+  const d = DOMAINS[i];
+  S.alpha = (d.alpha[0] + d.alpha[1]) / 2;
+  alphaSlider.value = Math.round(S.alpha * 100);
+  alphaVal.textContent = S.alpha.toFixed(2);
+  document.querySelectorAll('.domain-item').forEach((el,j)=>{
+    el.classList.toggle('active', j===i);
+  });
+  statusEl.textContent = `TUNED TO ${d.name} \u00B7 ${d.title.toUpperCase()} \u00B7 ${d.freq} Hz`;
+  statusEl.className = 'active';
+  if(audioCtx) setFrequency(d.freq);
+}
+
+// ── BUILD HEX LINES ──
+function buildHexLines(){
+  hexLinesEl.innerHTML = '';
+  for(let i=5;i>=0;i--){
+    const div = document.createElement('div');
+    div.className = 'hex-line ' + (S.lines[i]?'yang':'yin');
+    div.addEventListener('click',()=>{
+      S.lines[i] ^= 1;
+      updateHex();
+    });
+    hexLinesEl.appendChild(div);
+  }
+}
+function updateHex(){
+  const n = hexNum();
+  hexGlyphEl.textContent = hexGlyph(n);
+  hexNameEl.textContent = hexNameStr(n).toUpperCase();
+  buildHexLines();
+}
+buildHexLines();
+updateHex();
+
+// ── SLIDERS ──
+alphaSlider.addEventListener('input',()=>{
+  S.alpha = alphaSlider.value/100;
+  alphaVal.textContent = S.alpha.toFixed(2);
+  // Auto-select closest domain
+  const closest = DOMAINS.reduce((best,d,i)=>{
+    const mid = (d.alpha[0]+d.alpha[1])/2;
+    const dist = Math.abs(S.alpha - mid);
+    return dist < best.dist ? {i,dist} : best;
+  },{i:0,dist:999});
+  if(closest.i !== S.domain) selectDomain(closest.i);
+});
+phaseSlider.addEventListener('input',()=>{
+  S.phase = +phaseSlider.value;
+  phaseVal.textContent = S.phase + '\u00B0';
+});
+toneSlider.addEventListener('input',()=>{
+  S.tone = +toneSlider.value;
+  toneVal.textContent = S.tone + ' / 13';
+});
+
+// ── CAST: YARROW STALK DIVINATION ──
+btnCast.addEventListener('click',()=>{
+  initAudio();
+  // Cryptographically secure casting — each line from true entropy
+  const entropy = new Uint8Array(6);
+  crypto.getRandomValues(entropy);
+  for(let i=0;i<6;i++){
+    S.lines[i] = entropy[i] < 128 ? 0 : 1;
+  }
+  // Phase shifts by 5 degrees per cast (the engine)
+  S.phase = (S.phase + 5) % 366;
+  phaseSlider.value = S.phase;
+  phaseVal.textContent = S.phase + '\u00B0';
+  updateHex();
+  // Brief audio ping — disconnect nodes after playback
+  if(audioCtx){
+    const ping = audioCtx.createOscillator();
+    const pgain = audioCtx.createGain();
+    ping.type = 'sine';
+    ping.frequency.value = 528; // Solfeggio love frequency
+    pgain.gain.value = 0.2;
+    ping.connect(pgain);
+    pgain.connect(audioCtx.destination);
+    ping.start();
+    pgain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+    ping.stop(audioCtx.currentTime + 0.8);
+    ping.onended = ()=>{ ping.disconnect(); pgain.disconnect(); };
+  }
+  addLog('CAST', `New hexagram cast. Phase advanced 5\u00B0 to ${S.phase}\u00B0.`);
+});
+
+// ── TRANSMIT ──
+btnTransmit.addEventListener('click',()=>{
+  initAudio();
+  if(S.domain < 0){ statusEl.textContent = 'SELECT A DOMAIN FIRST'; return; }
+  S.transmitting = !S.transmitting;
+  btnTransmit.classList.toggle('active', S.transmitting);
+  document.body.classList.toggle('transmitting', S.transmitting);
+  if(S.transmitting){
+    const d = DOMAINS[S.domain];
+    setFrequency(d.freq);
+    setVolume(0.8, 0.3 * S.alpha); // more noise at higher alpha
+    statusEl.textContent = `TRANSMITTING TO ${d.name} \u00B7 ${d.freq} Hz \u00B7 TONE ${S.tone}`;
+    statusEl.className = 'active';
+    const rawIntention = $('intentionInput').value.trim();
+    if(rawIntention){
+      const intention = NIS.sanitize(rawIntention); // Immune response: cleanse before relay
+      NIS.collect('TRANSMIT', { domain: d.name, length: intention.length }, NIS.LEVEL.WHISPER);
+      addLog('SENT \u2192 '+d.name, intention);
+      $('intentionInput').value = '';
+    }
+    // Auto-advance phase
+    S.phase = (S.phase + 5) % 366;
+    phaseSlider.value = S.phase;
+    phaseVal.textContent = S.phase + '\u00B0';
+  } else {
+    setVolume(0, 0);
+    statusEl.textContent = 'TRANSMISSION ENDED';
+    statusEl.className = '';
+  }
+});
+
+// ── LISTEN ──
+btnListen.addEventListener('click',()=>{
+  initAudio();
+  if(S.domain < 0){ statusEl.textContent = 'SELECT A DOMAIN FIRST'; return; }
+  S.listening = !S.listening;
+  btnListen.classList.toggle('active', S.listening);
+  if(S.listening){
+    const d = DOMAINS[S.domain];
+    // Soft carrier tone + more noise (receiving)
+    setFrequency(d.freq);
+    setVolume(0.2, 0.5 * S.alpha);
+    statusEl.textContent = `LISTENING ON ${d.name} \u00B7 TONE ${S.tone}`;
+    statusEl.className = 'active';
+    // Oracle response after delay
+    setTimeout(()=>{
+      if(!S.listening) return;
+      receiveMessage();
+    }, 2000 + Math.random() * 3000);
+  } else {
+    setVolume(0, 0);
+    statusEl.textContent = 'RECEIVER CLOSED';
+    statusEl.className = '';
+  }
+});
+
+let receiveTimer = null;
+function receiveMessage(){
+  const d = DOMAINS[S.domain];
+  const pool = ORACLE[d.name] || ORACLE.MALKUTH;
+  const msg = pool[(S.tone + hexNum()) % pool.length];
+  addLog(d.name + ' \u2192 YOU', msg);
+  // Shift hexagram by 5 degrees (the received message alters your state)
+  S.phase = (S.phase + 5) % 366;
+  phaseSlider.value = S.phase;
+  phaseVal.textContent = S.phase + '\u00B0';
+  // Chime — disconnect nodes after playback to prevent memory leak
+  if(audioCtx){
+    const chime = audioCtx.createOscillator();
+    const cgain = audioCtx.createGain();
+    chime.type = 'triangle';
+    chime.frequency.value = d.freq * (S.tone/13 + 0.5);
+    cgain.gain.value = 0.15;
+    chime.connect(cgain);
+    cgain.connect(audioCtx.destination);
+    chime.start();
+    cgain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+    chime.stop(audioCtx.currentTime + 1.5);
+    chime.onended = ()=>{ chime.disconnect(); cgain.disconnect(); };
+  }
+  // Keep listening — receive more (bounded, cancel previous timer)
+  if(S.listening){
+    if(receiveTimer) clearTimeout(receiveTimer);
+    receiveTimer = setTimeout(()=>{
+      receiveTimer = null;
+      if(!S.listening) return;
+      receiveMessage();
+    }, 4000 + Math.random() * 6000);
+  }
+}
+
+function addLog(from, text){
+  const el = document.createElement('div');
+  el.className = 'log-entry';
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+  // Sanitize all dynamic content via NIS immune system
+  const safeFrom = NIS.escapeHTML(String(from).slice(0,100));
+  const safeText = NIS.escapeHTML(String(text).slice(0,2000));
+  const safeTime = NIS.escapeHTML(time);
+  el.innerHTML = `<span class="log-time">${safeTime}</span><span class="log-from">${safeFrom}</span><span class="log-hex">${hexGlyph(hexNum())}</span>${safeText}`;
+  logPanel.insertBefore(el, logPanel.firstChild);
+  // Keep max 50 entries
+  while(logPanel.children.length > 50) logPanel.removeChild(logPanel.lastChild);
+}
+
+// ── DIAL CANVAS: THE MAIN INTERFACE ──
+const dCtx = dialCvs.getContext('2d');
+const DPR = window.devicePixelRatio || 1;
+dialCvs.width = 400 * DPR;
+dialCvs.height = 400 * DPR;
+dialCvs.style.width = '400px';
+dialCvs.style.height = '400px';
+dCtx.scale(DPR, DPR);
+
+// Dial interaction
+let dialStartAngle = 0;
+// Compute dial center dynamically from CSS-rendered size (fixes mobile scaling)
+function dialCenter(){
+  const r = dialCvs.getBoundingClientRect();
+  return {cx: r.width/2, cy: r.height/2, scale: r.width/400};
+}
+dialCvs.addEventListener('mousedown', e=>{
+  initAudio();
+  S.dialDragging = true;
+  const r = dialCvs.getBoundingClientRect();
+  const dc = dialCenter();
+  const x = e.clientX - r.left - dc.cx;
+  const y = e.clientY - r.top - dc.cy;
+  dialStartAngle = Math.atan2(y, x);
+});
+dialCvs.addEventListener('mousemove', e=>{
+  if(!S.dialDragging) return;
+  const r = dialCvs.getBoundingClientRect();
+  const dc = dialCenter();
+  const x = e.clientX - r.left - dc.cx;
+  const y = e.clientY - r.top - dc.cy;
+  const angle = Math.atan2(y, x);
+  let delta = angle - dialStartAngle;
+  if(delta > Math.PI) delta -= 2*Math.PI;
+  if(delta < -Math.PI) delta += 2*Math.PI;
+  dialStartAngle = angle;
+  // Rotate = change phase
+  S.phase = (S.phase + delta * 180 / Math.PI + 366) % 366;
+  phaseSlider.value = Math.round(S.phase);
+  phaseVal.textContent = Math.round(S.phase) + '\u00B0';
+  // Also adjust alpha based on distance from center (normalized to dial size)
+  const dist = Math.sqrt(x*x + y*y) / dc.cx;
+  S.alpha = Math.min(1, Math.max(0, dist));
+  alphaSlider.value = Math.round(S.alpha * 100);
+  alphaVal.textContent = S.alpha.toFixed(2);
+  if(S.transmitting || S.listening){
+    const d = DOMAINS[S.domain];
+    if(d) setFrequency(d.freq);
+  }
+});
+window.addEventListener('mouseup',()=>{ S.dialDragging = false; });
+// Touch support
+dialCvs.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  initAudio();
+  S.dialDragging = true;
+  const t = e.touches[0];
+  const r = dialCvs.getBoundingClientRect();
+  const dc = dialCenter();
+  dialStartAngle = Math.atan2(t.clientY-r.top-dc.cy, t.clientX-r.left-dc.cx);
+},{passive:false});
+dialCvs.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  if(!S.dialDragging) return;
+  const t = e.touches[0];
+  const r = dialCvs.getBoundingClientRect();
+  const dc = dialCenter();
+  const x = t.clientX-r.left-dc.cx, y = t.clientY-r.top-dc.cy;
+  const angle = Math.atan2(y,x);
+  let delta = angle - dialStartAngle;
+  if(delta>Math.PI)delta-=2*Math.PI;
+  if(delta<-Math.PI)delta+=2*Math.PI;
+  dialStartAngle = angle;
+  S.phase = (S.phase + delta*180/Math.PI + 366) % 366;
+  phaseSlider.value = Math.round(S.phase);
+  phaseVal.textContent = Math.round(S.phase)+'\u00B0';
+  const dist = Math.sqrt(x*x+y*y)/dc.cx;
+  S.alpha = Math.min(1,Math.max(0,dist));
+  alphaSlider.value = Math.round(S.alpha*100);
+  alphaVal.textContent = S.alpha.toFixed(2);
+},{passive:false});
+dialCvs.addEventListener('touchend',()=>{S.dialDragging=false;});
+
+// ── DRAW DIAL ──
+function drawDial(t){
+  const ctx = dCtx;
+  const W=400, H=400, cx=200, cy=200;
+  ctx.clearRect(0,0,W,H);
+
+  // Background glow
+  const bg = ctx.createRadialGradient(cx,cy,0,cx,cy,200);
+  bg.addColorStop(0,'#1a150a');
+  bg.addColorStop(0.5,'#0a0805');
+  bg.addColorStop(1,'#050508');
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,W,H);
+
+  // Domain rings
+  DOMAINS.forEach((d,i)=>{
+    const r0 = 40 + i * 19;
+    const r1 = r0 + 16;
+    const active = i === S.domain;
+    ctx.beginPath();
+    ctx.arc(cx,cy,r0,0,Math.PI*2);
+    ctx.arc(cx,cy,r1,0,Math.PI*2,true);
+    ctx.fillStyle = active ? d.color+'44' : d.color+'11';
+    ctx.fill();
+    // Label
+    const labelAngle = -Math.PI/2 + (i*Math.PI*2/8);
+    const labelR = (r0+r1)/2;
+    ctx.save();
+    ctx.translate(cx+Math.cos(labelAngle)*labelR, cy+Math.sin(labelAngle)*labelR);
+    ctx.rotate(labelAngle + Math.PI/2);
+    ctx.font = '8px Cinzel, serif';
+    ctx.fillStyle = active ? d.color : d.color+'66';
+    ctx.textAlign = 'center';
+    ctx.fillText(d.name, 0, 3);
+    ctx.restore();
+  });
+
+  // Phase pointer (the hand of the dial)
+  const phaseRad = (S.phase - 90) * Math.PI / 180;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(phaseRad)*185, cy + Math.sin(phaseRad)*185);
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Phase tip glow
+  const tipX = cx + Math.cos(phaseRad)*185;
+  const tipY = cy + Math.sin(phaseRad)*185;
+  const tipGlow = ctx.createRadialGradient(tipX,tipY,0,tipX,tipY,15);
+  tipGlow.addColorStop(0,'#d4af3788');
+  tipGlow.addColorStop(1,'transparent');
+  ctx.fillStyle=tipGlow;
+  ctx.fillRect(tipX-15,tipY-15,30,30);
+
+  // 5-degree markers around the edge
+  for(let i=0;i<72;i++){
+    const a = (i*5 - 90)*Math.PI/180;
+    const inner = i%18===0 ? 170 : (i%6===0 ? 180 : 186);
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*inner, cy+Math.sin(a)*inner);
+    ctx.lineTo(cx+Math.cos(a)*192, cy+Math.sin(a)*192);
+    ctx.strokeStyle = i%18===0 ? '#d4af37' : (i%6===0 ? '#d4af3766' : '#d4af3733');
+    ctx.lineWidth = i%18===0 ? 2 : 1;
+    ctx.stroke();
+  }
+
+  // Center hexagram
+  const n = hexNum();
+  ctx.font = '48px serif';
+  ctx.fillStyle = '#d4af37';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(hexGlyph(n), cx, cy - 5);
+
+  // Alpha ring (inner pulsing circle showing astrocyte level)
+  const alphaR = 25 + S.alpha * 15;
+  ctx.beginPath();
+  ctx.arc(cx, cy, alphaR, 0, Math.PI*2);
+  ctx.strokeStyle = `rgba(212,175,55,${0.2 + S.alpha*0.5})`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Tone number
+  ctx.font = '11px Cinzel, serif';
+  ctx.fillStyle = '#d4af3788';
+  ctx.fillText('TONE ' + S.tone, cx, cy + 30);
+
+  // Spiral trace showing recent phase history
+  if(S.transmitting || S.listening){
+    ctx.beginPath();
+    for(let i=0;i<72;i++){
+      const a = (S.phase - i*5 - 90)*Math.PI/180;
+      const r = 30 + i*2.2;
+      if(i===0) ctx.moveTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+      else ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+    }
+    ctx.strokeStyle = '#d4af3722';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Transmission pulse rings
+  if(S.transmitting){
+    const pulse = (t % 2000) / 2000;
+    for(let i=0;i<3;i++){
+      const p = (pulse + i/3) % 1;
+      const r = 30 + p * 170;
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.strokeStyle = `rgba(212,175,55,${(1-p)*0.3})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  // Listening: incoming spirals
+  if(S.listening){
+    const pulse = (t % 3000) / 3000;
+    for(let i=0;i<3;i++){
+      const p = (pulse + i/3) % 1;
+      const r = 195 - p * 165;
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,Math.PI*2);
+      const domColor = S.domain>=0 ? DOMAINS[S.domain].color : '#d4af37';
+      ctx.strokeStyle = domColor + Math.round(p*80).toString(16).padStart(2,'0');
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+}
+
+// ── WAVEFORM CANVAS ──
+const wCtx = waveCvs.getContext('2d');
+waveCvs.width = 600 * DPR;
+waveCvs.height = 120 * DPR;
+waveCvs.style.width = '100%';
+waveCvs.style.height = '120px';
+wCtx.scale(DPR, DPR);
+
+function drawWave(t){
+  const W=600, H=120;
+  wCtx.clearRect(0,0,W,H);
+  wCtx.fillStyle = '#050508';
+  wCtx.fillRect(0,0,W,H);
+
+  if(analyser && (S.transmitting || S.listening)){
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteTimeDomainData(data);
+
+    wCtx.beginPath();
+    const sliceWidth = W / data.length;
+    for(let i=0;i<data.length;i++){
+      const v = data[i]/128.0;
+      const y = v * H/2;
+      if(i===0) wCtx.moveTo(0, y);
+      else wCtx.lineTo(i*sliceWidth, y);
+    }
+    wCtx.strokeStyle = S.domain>=0 ? DOMAINS[S.domain].color : '#d4af37';
+    wCtx.lineWidth = 1.5;
+    wCtx.stroke();
+  } else {
+    // Idle: show gentle sine based on phase
+    wCtx.beginPath();
+    for(let x=0;x<W;x++){
+      const v = Math.sin((x/W)*Math.PI*8 + t*0.001 + S.phase*Math.PI/180) * 0.3;
+      const y = H/2 + v * H/2;
+      if(x===0) wCtx.moveTo(x, y);
+      else wCtx.lineTo(x, y);
+    }
+    wCtx.strokeStyle = '#d4af3733';
+    wCtx.lineWidth = 1;
+    wCtx.stroke();
+  }
+
+  // Domain frequency labels
+  wCtx.font = '9px Cinzel, serif';
+  wCtx.textAlign = 'center';
+  DOMAINS.forEach((d,i)=>{
+    const x = 20 + i * (W-40)/7;
+    wCtx.fillStyle = i===S.domain ? d.color : d.color+'33';
+    wCtx.fillText(d.freq+'Hz', x, H-5);
+    // Marker line
+    wCtx.beginPath();
+    wCtx.moveTo(x, H-15);
+    wCtx.lineTo(x, H-20);
+    wCtx.strokeStyle = i===S.domain ? d.color : d.color+'33';
+    wCtx.lineWidth = 1;
+    wCtx.stroke();
+  });
+}
+
+// ── COSMOS BACKGROUND ──
+const cCtx = cosmosCvs.getContext('2d');
+let stars = [];
+function initCosmos(){
+  cosmosCvs.width = window.innerWidth * DPR;
+  cosmosCvs.height = window.innerHeight * DPR;
+  cosmosCvs.style.width = '100%';
+  cosmosCvs.style.height = '100%';
+  cCtx.scale(DPR, DPR);
+  stars = [];
+  const w = window.innerWidth, h = window.innerHeight;
+  for(let i=0;i<200;i++){
+    stars.push({
+      x: Math.random()*w,
+      y: Math.random()*h,
+      r: Math.random()*1.5+0.3,
+      speed: Math.random()*0.3+0.1,
+      phase: Math.random()*Math.PI*2,
+    });
+  }
+}
+initCosmos();
+window.addEventListener('resize', initCosmos);
+
+function drawCosmos(t){
+  const w = window.innerWidth, h = window.innerHeight;
+  cCtx.clearRect(0,0,w,h);
+
+  // Deep space gradient
+  const bg = cCtx.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.max(w,h)*0.7);
+  bg.addColorStop(0,'#0a0810');
+  bg.addColorStop(0.5,'#060508');
+  bg.addColorStop(1,'#020204');
+  cCtx.fillStyle = bg;
+  cCtx.fillRect(0,0,w,h);
+
+  // Stars
+  stars.forEach(s=>{
+    const brightness = 0.3 + 0.7 * (0.5 + 0.5*Math.sin(t*0.001*s.speed + s.phase));
+    cCtx.beginPath();
+    cCtx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    cCtx.fillStyle = `rgba(212,195,170,${brightness})`;
+    cCtx.fill();
+  });
+
+  // If transmitting, show beam between domains
+  if((S.transmitting || S.listening) && S.domain >= 0){
+    const domColor = DOMAINS[S.domain].color;
+    const beamX = w/2;
+    const beamY1 = h * 0.3;
+    const beamY2 = h * 0.7;
+    cCtx.beginPath();
+    const segments = 50;
+    for(let i=0;i<=segments;i++){
+      const frac = i/segments;
+      const y = beamY1 + (beamY2-beamY1)*frac;
+      const wave = Math.sin(frac*Math.PI*6 + t*0.003)*20*S.alpha;
+      const x = beamX + wave;
+      if(i===0) cCtx.moveTo(x,y);
+      else cCtx.lineTo(x,y);
+    }
+    cCtx.strokeStyle = domColor+'44';
+    cCtx.lineWidth = 2;
+    cCtx.stroke();
+  }
+}
+
+// ── ANIMATION LOOP ──
+function animate(t){
+  S.time = t;
+  drawCosmos(t);
+  drawDial(t);
+  drawWave(t);
+
+  // Auto-advance phase slowly during transmission (5° per ~10 seconds)
+  if(S.transmitting || S.listening){
+    S.phase = (S.phase + 0.008) % 366;
+    // Update frequency with phase drift
+    if(S.domain >= 0 && audioCtx){
+      setFrequency(DOMAINS[S.domain].freq);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', e=>{
+  if(e.target.tagName === 'TEXTAREA') return;
+  if(e.key === 't' || e.key === 'T') btnTransmit.click();
+  if(e.key === 'l' || e.key === 'L') btnListen.click();
+  if(e.key === 'c' || e.key === 'C') btnCast.click();
+  if(e.key >= '1' && e.key <= '8') selectDomain(+e.key - 1);
+});
+
+// ── CLEANUP: Release audio resources on page unload ──
+window.addEventListener('beforeunload', ()=>{
+  if(receiveTimer){ clearTimeout(receiveTimer); receiveTimer=null; }
+  S.listening = false;
+  S.transmitting = false;
+  if(audioCtx){
+    try{
+      if(osc1){osc1.stop();osc1.disconnect();}
+      if(osc2){osc2.stop();osc2.disconnect();}
+      if(noiseNode){noiseNode.stop();noiseNode.disconnect();}
+      if(gainNode)gainNode.disconnect();
+      if(noiseGain)noiseGain.disconnect();
+      if(analyser)analyser.disconnect();
+      audioCtx.close();
+    }catch(e){}
+  }
+});
+</script>
+</body>
+</html>

@@ -130,7 +130,9 @@ function detectType(filePath) {
       if (head.startsWith('#!')) return 'application/script';
       if (head.startsWith('<?xml')) return 'text/xml';
       if (head.startsWith('<!DOCTYPE') || head.startsWith('<!doctype')) return 'text/html-doctype';
-      if (head.startsWith('<html') || head.startsWith('<HTML')) return 'text/html';
+      if (head.startsWith('
+
+<html') || head.startsWith('<HTML')) return 'text/html';
       if (head.startsWith('---')) return 'text/yaml';
       if (head.startsWith('name:') || head.startsWith('version:')) return 'text/yaml';
       return 'text/plain';
@@ -635,3 +637,11 @@ switch (args[0]) {
     scan(rootDir, depth, { append, exclude }).catch(e => { console.error(e); process.exit(1); });
   }
 }
+
+// L7:PROVENANCE
+// Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+// File: l7scan.js | Body-Hash: SHA-256:eadb2dd94cef9ab096cf8bb0340ae4f81d2ed259d294b57ada41965fde62f40d
+// Chain-Hash: SHA-256:696719b8eefb5ce6c65b00467fd607936a0c380930981736d6a49a4565d92591 | Signed: 2026-03-01T15:09:50.005032+00:00
+// This work is the intellectual property of Alberto Valido Delgado.
+// Chain: 3 works. Verify: python3 provenance.py verify l7scan.js
+// L7:PROVENANCE

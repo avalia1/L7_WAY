@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>The Scribe — 3 Are 1</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080810;overflow:hidden;height:100vh;touch-action:none;user-select:none;font-family:Georgia,serif}
+canvas#C{display:block;cursor:crosshair}
+
+#hud{position:fixed;bottom:0;left:0;right:0;height:90px;background:linear-gradient(transparent,rgba(8,8,16,0.95) 30%);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;gap:40px;pointer-events:none;z-index:10}
+
+.meter{display:flex;flex-direction:column;align-items:center;gap:4px}
+.meter-bar{width:4px;height:48px;background:#151520;border-radius:2px;position:relative;overflow:hidden}
+.meter-fill{position:absolute;bottom:0;left:0;right:0;border-radius:2px;transition:height 0.08s}
+.meter-label{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:#444}
+
+.m-shape .meter-fill{background:linear-gradient(to top,#662222,#cc4422)}
+.m-amp .meter-fill{background:linear-gradient(to top,#225522,#22cc66)}
+.m-angular .meter-fill{background:linear-gradient(to top,#222266,#4466cc)}
+.m-residue .meter-fill{background:linear-gradient(to top,#554422,#ccaa44)}
+
+#trident{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:11}
+#trident svg{width:40px;height:52px;filter:drop-shadow(0 0 6px rgba(200,170,100,0.15))}
+
+#phase-ring{position:fixed;top:16px;right:16px;width:48px;height:48px;pointer-events:none;z-index:10}
+
+#mode-btn{position:fixed;top:16px;left:16px;width:40px;height:40px;border-radius:50%;
+  border:1px solid #2a2a3a;background:rgba(8,8,16,0.9);color:#555;font-size:16px;
+  cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
+#mode-btn:hover{border-color:#555}
+#mode-btn.active{border-color:#c9a96e;color:#c9a96e;box-shadow:0 0 12px rgba(200,170,100,0.15)}
+
+#clear-btn{position:fixed;top:16px;left:66px;width:40px;height:40px;border-radius:50%;
+  border:1px solid #1a1a2a;background:rgba(8,8,16,0.9);color:#3a2a2a;font-size:18px;
+  cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
+#clear-btn:hover{border-color:#4a2a2a;color:#6a3a3a}
+
+#hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:#2a2a3a;font-size:13px;letter-spacing:6px;pointer-events:none;z-index:5;
+  transition:opacity 1s}
+</style>
+</head>
+<body>
+
+<canvas id="C"></canvas>
+
+<div id="hint">DRAW</div>
+
+<div id="hud">
+  <div class="meter m-shape">
+    <div class="meter-bar"><div class="meter-fill" id="fShape" style="height:0%"></div></div>
+    <div class="meter-label">shape</div>
+  </div>
+  <div class="meter m-amp">
+    <div class="meter-bar"><div class="meter-fill" id="fAmp" style="height:0%"></div></div>
+    <div class="meter-label">amp</div>
+  </div>
+  <div id="trident">
+    <svg viewBox="0 0 40 52">
+      <line x1="20" y1="48" x2="20" y2="24" stroke="#333" stroke-width="2" stroke-linecap="round" id="tStaff"/>
+      <path d="M20 24 Q14 16 8 4" fill="none" stroke="#442222" stroke-width="1.8" stroke-linecap="round" id="tL"/>
+      <path d="M20 24 Q20 14 20 4" fill="none" stroke="#224422" stroke-width="1.8" stroke-linecap="round" id="tC"/>
+      <path d="M20 24 Q26 16 32 4" fill="none" stroke="#222244" stroke-width="1.8" stroke-linecap="round" id="tR"/>
+    </svg>
+  </div>
+  <div class="meter m-angular">
+    <div class="meter-bar"><div class="meter-fill" id="fL" style="height:0%"></div></div>
+    <div class="meter-label">spin</div>
+  </div>
+  <div class="meter m-residue">
+    <div class="meter-bar"><div class="meter-fill" id="fRes" style="height:0%"></div></div>
+    <div class="meter-label">pole</div>
+  </div>
+</div>
+
+<svg id="phase-ring" viewBox="0 0 48 48">
+  <circle cx="24" cy="24" r="20" fill="none" stroke="#1a1a2a" stroke-width="2"/>
+  <circle id="pArc" cx="24" cy="24" r="20" fill="none" stroke="#2a5a3a" stroke-width="2.5"
+    stroke-dasharray="125.66 125.66" stroke-dashoffset="125.66"
+    transform="rotate(-90 24 24)" stroke-linecap="round"/>
+  <text x="24" y="27" text-anchor="middle" fill="#3a5a4a" font-size="10" font-family="Courier New" id="pText">0</text>
+</svg>
+
+<button id="mode-btn" onclick="toggleMode()">&Psi;</button>
+<button id="clear-btn" onclick="clearAll()">&times;</button>
+
+<script>
+'use strict';
+
+const C = document.getElementById('C');
+const ctx = C.getContext('2d');
+const TAU = 2 * Math.PI;
+const DEG5 = 5 * Math.PI / 180;
+
+let W, H, dpr;
+let drawing = false, composed = false, animId = null;
+
+const strokes = [];
+const all = [];
+let cur = [];
+let lS = 0, lA = 0, lL = 0, lR = 0;
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  C.width = W * dpr; C.height = H * dpr;
+  C.style.width = W + 'px'; C.style.height = H + 'px';
+  paint();
+}
+
+function clearAll() {
+  strokes.length = 0; all.length = 0; cur.length = 0;
+  lS = lA = lL = lR = 0;
+  composed = false;
+  document.getElementById('mode-btn').classList.remove('active');
+  document.getElementById('hint').style.opacity = '1';
+  if (animId) { cancelAnimationFrame(animId); animId = null; }
+  paint();
+  hud();
+}
+
+function toggleMode() {
+  composed = !composed;
+  document.getElementById('mode-btn').classList.toggle('active', composed);
+  if (composed && all.length > 5) animate3D();
+  else { if (animId) { cancelAnimationFrame(animId); animId = null; } paint(); }
+}
+
+// --- Math ---
+function curv(a, b, c) {
+  const ux = b.x-a.x, uy = b.y-a.y, vx = c.x-b.x, vy = c.y-b.y;
+  const cross = ux*vy - uy*vx;
+  const la = Math.sqrt(ux*ux+uy*uy), lb = Math.sqrt(vx*vx+vy*vy);
+  return (la<1e-4||lb<1e-4) ? 0 : cross/(la*lb);
+}
+function calc(pts, i) {
+  if (i < 2) return {s:0,a:0,l:0,r:0};
+  const k = curv(pts[i-2], pts[i-1], pts[i]);
+  const dt = (pts[i].t - pts[i-1].t) / 1000;
+  const dx = pts[i].x-pts[i-1].x, dy = pts[i].y-pts[i-1].y;
+  const v = dt > 1e-4 ? Math.sqrt(dx*dx+dy*dy)/dt : 0;
+  const L = k * v * 365;
+  const ak = Math.abs(k);
+  const r = ak > 0.01 ? v*ak/TAU : 0;
+  return {s:k, a:v, l:L, r};
+}
+
+// --- Pointer ---
+function pos(e) {
+  const r = C.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return {x:(t.clientX-r.left)/W, y:(t.clientY-r.top)/H, t:performance.now()};
+}
+function onS(e) { if(composed)return; drawing=true; cur=[pos(e)]; document.getElementById('hint').style.opacity='0'; }
+function onM(e) {
+  if(!drawing||composed)return; e.preventDefault();
+  cur.push(pos(e));
+  if(cur.length>=3){const c=calc(cur,cur.length-1);lS=c.s;lA=c.a;lL=c.l;lR=c.r;}
+  paintLive(); hud();
+}
+function onE() {
+  if(!drawing)return; drawing=false;
+  if(cur.length>3){
+    const sh=cur.map((p,i)=>{
+      const a=DEG5*i/cur.length;const dx=p.x-.5,dy=p.y-.5;
+      return{x:.5+dx*Math.cos(a)-dy*Math.sin(a),y:.5+dx*Math.sin(a)+dy*Math.cos(a),t:p.t};
+    });
+    for(let i=0;i<sh.length;i++){const c=i>=2?calc(sh,i):{s:0,a:0,l:0,r:0};Object.assign(sh[i],c);}
+    strokes.push(sh); all.push(...sh);
+  }
+  cur=[]; paint(); hud();
+}
+
+C.addEventListener('mousedown',onS);
+C.addEventListener('mousemove',onM);
+C.addEventListener('mouseup',onE);
+C.addEventListener('mouseleave',onE);
+C.addEventListener('touchstart',onS,{passive:false});
+C.addEventListener('touchmove',onM,{passive:false});
+C.addEventListener('touchend',onE);
+
+// --- Render 2D ---
+function paint() {
+  if(composed)return;
+  ctx.save(); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#080810'; ctx.fillRect(0,0,W,H);
+
+  // Emerald center
+  const cx=W/2,cy=H/2;
+  const eg=ctx.createRadialGradient(cx,cy,0,cx,cy,80);
+  eg.addColorStop(0,'rgba(46,180,100,0.06)');
+  eg.addColorStop(0.5,'rgba(46,180,100,0.02)');
+  eg.addColorStop(1,'rgba(46,180,100,0)');
+  ctx.beginPath();ctx.arc(cx,cy,80,0,TAU);ctx.fillStyle=eg;ctx.fill();
+
+  // Faint cross at center
+  ctx.strokeStyle='rgba(200,170,100,0.04)';ctx.lineWidth=0.5;
+  ctx.beginPath();ctx.moveTo(cx-30,cy);ctx.lineTo(cx+30,cy);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx,cy-30);ctx.lineTo(cx,cy+30);ctx.stroke();
+
+  // Strokes
+  for(const st of strokes) paintStroke(st);
+  ctx.restore();
+}
+
+function paintStroke(pts) {
+  if(pts.length<3)return;
+  for(let i=2;i<pts.length;i++){
+    const p=pts[i-1],q=pts[i];
+    const px=p.x*W,py=p.y*H,qx=q.x*W,qy=q.y*H;
+    const s=Math.abs(q.s||0), a=Math.min(q.a||0,5), L=Math.abs(q.l||0), r=Math.min(q.r||0,2);
+
+    // Gold base — always visible
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(qx,qy);
+    ctx.strokeStyle=`hsla(40,55%,45%,${0.25+r*0.5})`;
+    ctx.lineWidth=1+r*4;ctx.lineCap='round';ctx.stroke();
+
+    // Shape: red at curves
+    if(s>0.02){
+      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(qx,qy);
+      ctx.strokeStyle=`hsla(10,75%,50%,${Math.min(s*3,0.7)})`;
+      ctx.lineWidth=s*15;ctx.lineCap='round';ctx.stroke();
+    }
+
+    // Amplitude: green glow
+    if(a>0.3){
+      const gr=ctx.createRadialGradient(qx,qy,0,qx,qy,a*10);
+      gr.addColorStop(0,`hsla(140,55%,50%,${Math.min(a*0.08,0.2)})`);
+      gr.addColorStop(1,'hsla(140,55%,50%,0)');
+      ctx.beginPath();ctx.arc(qx,qy,a*10,0,TAU);ctx.fillStyle=gr;ctx.fill();
+    }
+
+    // Angular: blue arcs
+    if(L>1){
+      const d=(q.l||0)>0?1:-1;
+      ctx.beginPath();ctx.arc(qx,qy,Math.min(L*3,25),d>0?0:Math.PI,d>0?Math.PI:TAU);
+      ctx.strokeStyle=`hsla(220,60%,55%,${Math.min(L*0.04,0.3)})`;
+      ctx.lineWidth=0.8;ctx.stroke();
+    }
+
+    // Residue: gold node at poles
+    if(r>0.08){
+      ctx.beginPath();ctx.arc(qx,qy,2.5+r*6,0,TAU);
+      ctx.fillStyle=`hsla(45,80%,60%,${Math.min(r*0.6,0.5)})`;
+      ctx.fill();
+    }
+  }
+}
+
+function paintLive() {
+  if(cur.length<2)return;
+  ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+  for(let i=1;i<cur.length;i++){
+    const p=cur[i-1],q=cur[i];
+    const absL=Math.min(Math.abs(lL),8);
+
+    ctx.beginPath();ctx.moveTo(p.x*W,p.y*H);ctx.lineTo(q.x*W,q.y*H);
+    ctx.strokeStyle=`hsla(40,70%,${55+absL*4}%,0.85)`;
+    ctx.lineWidth=1.5+absL*1.5;ctx.lineCap='round';ctx.stroke();
+  }
+  // Glow at cursor
+  const last=cur[cur.length-1];
+  const gl=ctx.createRadialGradient(last.x*W,last.y*H,0,last.x*W,last.y*H,25);
+  gl.addColorStop(0,'hsla(40,70%,60%,0.12)');
+  gl.addColorStop(1,'hsla(40,70%,60%,0)');
+  ctx.beginPath();ctx.arc(last.x*W,last.y*H,25,0,TAU);ctx.fillStyle=gl;ctx.fill();
+  ctx.restore();
+}
+
+// --- 3D ---
+function animate3D() {
+  if(!composed){if(animId){cancelAnimationFrame(animId);animId=null;}return;}
+  autoRotate+=0.006;
+  ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='rgba(8,8,16,0.12)';ctx.fillRect(0,0,W,H);
+
+  const cx=W/2,cy=H/2,sc=Math.min(W,H)*0.3,n=all.length;
+  if(n<4){ctx.restore();animId=requestAnimationFrame(animate3D);return;}
+
+  const ca=Math.cos(autoRotate),sa=Math.sin(autoRotate);
+  const cb=Math.cos(autoRotate*0.618),sb=Math.sin(autoRotate*0.618);
+
+  const proj=[];
+  for(let i=0;i<n;i++){
+    const p=all[i];
+    const x3=(p.x-.5)*2, amp=Math.min((p.a||0)*.5,1);
+    const y3=(p.y-.5)*2*(.3+amp*.7);
+    const z3=Math.tanh((p.l||0)*0.1);
+
+    let x=x3*ca+z3*sa, z=-x3*sa+z3*ca;
+    let y2=y3*cb-z*sb, z2=y3*sb+z*cb;
+    const s=3/(3+z2);
+    proj.push({sx:cx+x*s*sc, sy:cy+y2*s*sc, z:z2, s, r:p.r||0, sh:Math.abs(p.s||0), i});
+  }
+
+  for(let i=1;i<proj.length;i++){
+    const a=proj[i-1],b=proj[i];
+    const r=b.r||0;
+    const hue=r>0.1?40:180+b.sh*200;
+    const alpha=0.15+b.s*0.35+r*0.4;
+    const lw=0.5+r*5+b.sh*4;
+
+    ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);
+    ctx.strokeStyle=`hsla(${hue},55%,${35+b.s*25}%,${Math.min(alpha,0.8)})`;
+    ctx.lineWidth=Math.min(lw,6);ctx.lineCap='round';ctx.stroke();
+
+    if(r>0.08){
+      const gr=ctx.createRadialGradient(b.sx,b.sy,0,b.sx,b.sy,Math.max(r*10*b.s,2));
+      gr.addColorStop(0,`hsla(40,80%,60%,${Math.min(r*0.5,0.4)*b.s})`);
+      gr.addColorStop(1,'hsla(40,80%,60%,0)');
+      ctx.beginPath();ctx.arc(b.sx,b.sy,Math.max(r*10*b.s,2),0,TAU);ctx.fillStyle=gr;ctx.fill();
+    }
+  }
+
+  // XIII
+  if(n>13){const d=proj[13];
+    ctx.beginPath();ctx.arc(d.sx,d.sy,8*d.s,0,TAU);
+    ctx.strokeStyle=`hsla(40,40%,60%,${0.2*d.s})`;ctx.lineWidth=1;ctx.stroke();
+    ctx.font=`${Math.max(8*d.s,6)}px Georgia`;ctx.textAlign='center';
+    ctx.fillStyle=`hsla(40,40%,60%,${0.25*d.s})`;ctx.fillText('XIII',d.sx,d.sy-12*d.s);
+  }
+
+  ctx.restore();
+  animId=requestAnimationFrame(animate3D);
+}
+let autoRotate=0;
+
+// --- HUD ---
+function hud() {
+  const ns=Math.min(Math.abs(lS)*8,1), na=Math.min(lA/3,1), nl=Math.min(Math.abs(lL)/8,1), nr=Math.min(lR*6,1);
+
+  document.getElementById('fShape').style.height=ns*100+'%';
+  document.getElementById('fAmp').style.height=na*100+'%';
+  document.getElementById('fL').style.height=nl*100+'%';
+  document.getElementById('fRes').style.height=nr*100+'%';
+
+  // Trident prongs
+  const sH=`hsl(10,${40+ns*50}%,${20+ns*50}%)`;
+  const aH=`hsl(140,${35+na*45}%,${18+na*50}%)`;
+  const lH=`hsl(220,${40+nl*50}%,${20+nl*50}%)`;
+  const rH=`hsl(40,${30+nr*50}%,${15+nr*50}%)`;
+  document.getElementById('tL').setAttribute('stroke',sH);
+  document.getElementById('tL').setAttribute('stroke-width',1.5+ns*2.5);
+  document.getElementById('tC').setAttribute('stroke',aH);
+  document.getElementById('tC').setAttribute('stroke-width',1.5+na*2.5);
+  document.getElementById('tR').setAttribute('stroke',lH);
+  document.getElementById('tR').setAttribute('stroke-width',1.5+nl*2.5);
+  document.getElementById('tStaff').setAttribute('stroke',rH);
+  document.getElementById('tStaff').setAttribute('stroke-width',1.5+nr*2.5);
+
+  // Phase ring
+  const ph=(strokes.length*5)%365;
+  const f=ph/365, circ=125.66;
+  document.getElementById('pArc').setAttribute('stroke-dashoffset',circ*(1-f));
+  document.getElementById('pText').textContent=ph||'0';
+  document.getElementById('pArc').setAttribute('stroke',`hsl(${140+f*60},50%,${35+f*25}%)`);
+}
+
+// --- Init ---
+resize();
+window.addEventListener('resize',resize);
+</script>
+</body>
+</html>

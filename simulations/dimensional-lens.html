@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' blob:; connect-src 'none'; frame-src 'none'; object-src 'none'">
+<title>The Dimensional Lens — See Beyond the Veil</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#f8f6f0;color:#1a1a2e;font-family:'Cormorant Garamond',serif}
+
+/* Full-screen camera */
+#cam{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;transform:scaleX(-1)}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}
+/* Guilloche background layer */
+#guillocheLayer{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;mix-blend-mode:multiply;opacity:0.25}
+#uiLayer{position:fixed;top:0;left:0;width:100%;height:100%;z-index:10}
+
+/* Iridescent shimmer keyframes */
+@keyframes iridescent{
+  0%{filter:hue-rotate(0deg)}
+  100%{filter:hue-rotate(360deg)}
+}
+@keyframes holoPulse{
+  0%,100%{opacity:0.6}
+  50%{opacity:1}
+}
+
+/* HUD */
+#hud{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:20px;pointer-events:none;
+}
+#hud>*{pointer-events:auto}
+.hud-col{display:flex;flex-direction:column;gap:8px;max-width:260px}
+.hud-label{
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;
+  color:#1a1a2e66;
+}
+.hud-val{
+  font-family:'Cinzel',serif;font-size:14px;letter-spacing:2px;
+  color:#2a1f5e;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899,#f59e0b,#10b981);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hud-bar{
+  width:200px;height:4px;background:#1a1a2e11;border-radius:2px;
+  overflow:hidden;position:relative;
+}
+.hud-fill{height:100%;border-radius:2px;transition:width 0.3s;
+  background:linear-gradient(90deg,#8b5cf6,#ec4899,#f59e0b,#10b981)!important;
+}
+.hud-row{display:flex;align-items:center;gap:10px}
+
+/* Center eye */
+#eyeFrame{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:200px;height:200px;pointer-events:none;
+  transition:opacity 1s;
+}
+
+/* Layer selector (bottom) */
+#layers{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:center;
+}
+.layer-btn{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;
+  color:#1a1a2e88;background:rgba(255,255,255,0.7);
+  border:1px solid #1a1a2e22;border-radius:20px;
+  padding:6px 12px;cursor:pointer;transition:all 0.3s;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.layer-btn:hover{border-color:#8b5cf6;color:#8b5cf6}
+.layer-btn.active{
+  border-color:transparent;color:#fff;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899,#f59e0b);
+  box-shadow:0 2px 15px rgba(139,92,246,0.3);
+}
+
+/* Order selector (above layers) */
+#orders{
+  position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;pointer-events:auto;align-items:center;
+}
+.order-btn{
+  width:36px;height:36px;border-radius:50%;
+  font-family:'Cinzel',serif;font-size:11px;font-weight:600;
+  color:#1a1a2e66;background:rgba(255,255,255,0.6);
+  border:2px solid #1a1a2e11;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.3s;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  position:relative;
+}
+.order-btn::after{
+  content:attr(data-label);position:absolute;top:-16px;
+  font-size:7px;letter-spacing:1px;color:#1a1a2e44;
+  white-space:nowrap;opacity:0;transition:opacity 0.3s;
+}
+.order-btn:hover::after{opacity:1}
+.order-btn:hover{border-color:#8b5cf6;color:#8b5cf6;transform:scale(1.1)}
+.order-btn.active{
+  color:#fff;border-color:transparent;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6,#a855f7);
+  box-shadow:0 0 20px rgba(139,92,246,0.4);transform:scale(1.15);
+}
+#orderLabel{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;
+  color:#1a1a2e55;margin-left:8px;min-width:60px;
+}
+/* Jump arrow between orders */
+.order-jump{
+  font-size:16px;color:#1a1a2e22;margin:0 -2px;pointer-events:none;
+  transition:color 0.3s;
+}
+
+@media(max-width:600px){
+  .layer-btn{font-size:8px;padding:5px 8px;letter-spacing:1px}
+  .order-btn{width:30px;height:30px;font-size:10px}
+  #orders{bottom:52px;gap:4px}
+  #layers{bottom:14px;gap:5px}
+  #hud{padding:10px}
+  .hud-label{font-size:8px}.hud-val{font-size:11px}
+  #controls{right:8px;gap:8px}
+  .ctrl-knob{width:36px;height:36px;font-size:15px}
+  #entangleMeter{left:8px}
+  #eyeFrame{width:120px;height:120px}
+}
+
+/* Controls (right side) */
+#controls{
+  position:absolute;right:20px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:12px;pointer-events:auto;
+}
+.ctrl-knob{
+  width:44px;height:44px;border-radius:50%;
+  border:1px solid #1a1a2e22;background:rgba(255,255,255,0.7);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.3s;color:#1a1a2e;
+  font-size:18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.ctrl-knob:hover{border-color:#8b5cf6;box-shadow:0 2px 15px rgba(139,92,246,0.2);color:#8b5cf6}
+.ctrl-knob.active{
+  background:linear-gradient(135deg,#8b5cf688,#ec489988);
+  border-color:#8b5cf6;color:#fff;
+}
+.ctrl-label{
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;
+  color:#1a1a2e55;text-align:center;margin-top:2px;
+}
+.ctrl-group{display:flex;flex-direction:column;align-items:center}
+
+/* Entanglement meter (left side vertical) */
+#entangleMeter{
+  position:absolute;left:20px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  pointer-events:none;
+}
+#entangleBar{
+  width:6px;height:200px;background:#1a1a2e0a;border-radius:3px;
+  position:relative;overflow:hidden;
+}
+#entangleFill{
+  position:absolute;bottom:0;left:0;width:100%;
+  background:linear-gradient(to top, #10b981, #f59e0b, #ec4899, #8b5cf6);
+  border-radius:3px;transition:height 0.5s;
+}
+#entangleLabel{
+  font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;
+  color:#1a1a2e44;writing-mode:vertical-rl;text-orientation:mixed;
+}
+
+/* Start overlay */
+#startScreen{
+  position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;
+  background:#f8f6f0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;
+  transition:opacity 0.8s;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 40px, #1a1a2e06 40px, #1a1a2e06 41px),
+    repeating-linear-gradient(90deg, transparent, transparent 40px, #1a1a2e06 40px, #1a1a2e06 41px);
+}
+#startScreen h1{
+  font-family:'Cinzel',serif;font-size:32px;letter-spacing:8px;font-weight:600;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899,#f59e0b,#10b981,#8b5cf6);
+  background-size:200% 200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:iridescent 6s linear infinite;
+}
+#startScreen p{font-size:16px;color:#1a1a2e88;max-width:500px;text-align:center;line-height:1.8}
+#startBtn{
+  font-family:'Cinzel',serif;font-size:14px;letter-spacing:4px;
+  color:#fff;background:linear-gradient(135deg,#8b5cf6,#ec4899,#f59e0b);
+  border:none;
+  padding:14px 40px;border-radius:4px;cursor:pointer;
+  transition:all 0.3s;margin-top:20px;
+  box-shadow:0 4px 20px rgba(139,92,246,0.3);
+}
+#startBtn:hover{transform:translateY(-2px);box-shadow:0 6px 30px rgba(139,92,246,0.4)}
+.sublabel{font-family:'Cinzel',serif;font-size:11px;letter-spacing:3px;color:#1a1a2e44;margin-top:4px}
+
+/* Breath guide */
+#breathGuide{
+  position:absolute;bottom:80px;left:50%;transform:translateX(-50%);
+  font-family:'Cinzel',serif;font-size:12px;letter-spacing:3px;
+  color:#1a1a2e44;pointer-events:none;transition:opacity 0.5s;
+}
+
+/* Scrying overlay — messages from the light */
+#scryOverlay{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;display:none;
+}
+#scryOverlay.active{display:block}
+#scryMessage{
+  position:absolute;bottom:120px;left:50%;transform:translateX(-50%);
+  max-width:600px;text-align:center;
+  font-family:'Cormorant Garamond',serif;font-size:22px;
+  color:#2a1f5e;line-height:1.7;
+  text-shadow:0 0 20px rgba(139,92,246,0.2);
+  opacity:0;transition:opacity 1.5s;
+}
+#scryMessage.visible{opacity:1}
+#scryHex{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:120px;opacity:0.04;pointer-events:none;
+  transition:opacity 2s;font-family:serif;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899,#f59e0b);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+#scryHex.pulse{opacity:0.12}
+#scryRegions{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;
+}
+.scry-region{
+  position:absolute;border:1px solid transparent;
+  transition:border-color 0.5s, background 0.5s;
+}
+.scry-region.active{border-color:#8b5cf622;background:rgba(139,92,246,0.02)}
+.scry-region-label{
+  position:absolute;bottom:2px;right:4px;
+  font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;
+  color:#1a1a2e33;
+}
+#scryLog{
+  position:absolute;top:70px;left:20px;
+  max-width:250px;max-height:300px;overflow:hidden;
+  display:flex;flex-direction:column;gap:4px;
+}
+.scry-log-entry{
+  font-family:'Cormorant Garamond',serif;font-size:13px;
+  color:#1a1a2e66;line-height:1.4;
+  animation:scryFadeIn 1s ease-out;
+}
+.scry-log-entry .scry-hex-sm{font-size:16px;vertical-align:middle;margin-right:4px}
+.scry-log-entry .scry-time{font-size:10px;color:#1a1a2e33;font-family:'Cinzel',serif}
+@keyframes scryFadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+#scryStatus{
+  position:absolute;top:50px;left:50%;transform:translateX(-50%);
+  font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;
+  color:#1a1a2e44;
+}
+</style>
+</head>
+<body>
+
+<video id="cam" autoplay playsinline muted></video>
+<canvas id="guillocheLayer"></canvas>
+<canvas id="overlay"></canvas>
+
+<div id="uiLayer">
+  <!-- HUD top -->
+  <div id="hud">
+    <div class="hud-col">
+      <div class="hud-row">
+        <span class="hud-label">LAYER</span>
+        <span class="hud-val" id="hudLayer">ETHERIC</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">ALPHA</span>
+        <span class="hud-val" id="hudAlpha">0.15</span>
+        <div class="hud-bar"><div class="hud-fill" id="hudAlphaBar" style="width:15%"></div></div>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">PHASE</span>
+        <span class="hud-val" id="hudPhase">0&deg;</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">ORDER</span>
+        <span class="hud-val" id="hudOrder">0 DUST</span>
+      </div>
+    </div>
+    <div class="hud-col" style="align-items:flex-end">
+      <div class="hud-row">
+        <span class="hud-label">ENTANGLEMENT</span>
+        <span class="hud-val" id="hudEntangle">0%</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">FIELD EXPANSION</span>
+        <span class="hud-val" id="hudField">1.00x</span>
+      </div>
+      <div class="hud-row">
+        <span class="hud-label">SESSION</span>
+        <span class="hud-val" id="hudTime">00:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Center eye reference -->
+  <canvas id="eyeFrame" width="200" height="200"></canvas>
+
+  <!-- Entanglement meter -->
+  <div id="entangleMeter">
+    <span class="hud-label" style="font-size:8px">1.0</span>
+    <div id="entangleBar"><div id="entangleFill" style="height:0%"></div></div>
+    <span class="hud-label" style="font-size:8px">0.0</span>
+    <span id="entangleLabel">ENTANGLEMENT</span>
+  </div>
+
+  <!-- Order selector (complexity/rendering order) -->
+  <div id="orders"><span id="orderLabel">DUST</span></div>
+
+  <!-- Layer selector -->
+  <div id="layers"></div>
+
+  <!-- Right controls -->
+  <div id="controls"></div>
+
+  <!-- Breath guide -->
+  <div id="breathGuide">BREATHE</div>
+
+  <!-- Scrying overlay -->
+  <div id="scryOverlay">
+    <div id="scryStatus">SCRYING &middot; READING THE LIGHT</div>
+    <div id="scryRegions"></div>
+    <div id="scryHex">&#x4DC0;</div>
+    <div id="scryMessage"></div>
+    <div id="scryLog"></div>
+  </div>
+</div>
+
+<!-- Start screen -->
+<div id="startScreen">
+  <h1>THE DIMENSIONAL LENS</h1>
+  <p>A visual filter that adapts to your environment through the camera, allowing you to perceive subtle fields, auras, and dimensional overlays. Over time it entangles with your perception — as your field of vision expands, you need the lens less and less.</p>
+  <div class="sublabel">CAMERA ACCESS REQUIRED</div>
+  <button id="startBtn">OPEN THE LENS</button>
+  <div class="sublabel" style="margin-top:30px">The lens does not create what you see.<br>It trains your eyes to see what was always there.</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// NECROPOLIS INTELLIGENCE SERVICE (NIS)
+// Kingdom of the Dead — Messengers & Immune Response
+// ═══════════════════════════════════════════════════════════
+const NIS=(()=>{'use strict';const LEVEL=Object.freeze({WHISPER:0,NOTICE:1,ALERT:2,ALARM:3,BREACH:4});const LEVEL_NAME=['WHISPER','NOTICE','ALERT','ALARM','BREACH'];const ledger=[];const LEDGER_MAX=1000;const generals={left:[],right:[]};const immune={maxInputLength:2000,maxEventsPerSecond:60,blocked:0,signatures:[{pat:/<script[\s>]/i,name:'SCRIPT_INJECT'},{pat:/javascript\s*:/i,name:'JS_URI'},{pat:/on(error|load|click|mouse|key|focus|blur|submit|change|input)\s*=/i,name:'EVENT_HANDLER'},{pat:/eval\s*\(/,name:'EVAL_CALL'},{pat:/document\.cookie/i,name:'COOKIE_ACCESS'},{pat:/document\.write/i,name:'DOC_WRITE'},{pat:/window\.location\s*=/i,name:'REDIRECT'},{pat:/fetch\s*\(\s*['"`]/,name:'FETCH_CALL'},{pat:/XMLHttpRequest/i,name:'XHR_CALL'},{pat:/<iframe/i,name:'IFRAME_INJECT'},{pat:/<object/i,name:'OBJECT_INJECT'},{pat:/<embed/i,name:'EMBED_INJECT'},{pat:/data\s*:\s*text\/html/i,name:'DATA_URI_HTML'}],rateBuckets:new Map()};function collect(source,data,level=LEVEL.WHISPER){const entry={t:Date.now(),src:source,data,lvl:level,id:ledger.length};ledger.push(entry);if(ledger.length>LEDGER_MAX)ledger.shift();if(level>=LEVEL.ALERT)relay(entry);return entry}function analyze(input,context='unknown'){const str=String(input);const threats=[];for(const sig of immune.signatures){if(sig.pat.test(str))threats.push({sig:sig.name,ctx:context,lvl:LEVEL.ALARM,sample:str.slice(0,100)})}if(str.length>immune.maxInputLength)threats.push({sig:'OVERSIZED_INPUT',ctx:context,lvl:LEVEL.ALERT,len:str.length});if(str.includes('\0'))threats.push({sig:'NULL_BYTE',ctx:context,lvl:LEVEL.ALARM});if(threats.length>0)collect('ANALYSIS',{threats,context},LEVEL.ALARM);return threats}function checkRate(eventName){const now=Date.now();if(!immune.rateBuckets.has(eventName))immune.rateBuckets.set(eventName,[]);const bucket=immune.rateBuckets.get(eventName);while(bucket.length&&bucket[0]<now-1000)bucket.shift();bucket.push(now);if(bucket.length>immune.maxEventsPerSecond){collect('RATE_LIMIT',{event:eventName,count:bucket.length},LEVEL.ALARM);return false}return true}function sanitize(input,maxLen){let clean=String(input);const max=maxLen||immune.maxInputLength;if(clean.length>max){clean=clean.slice(0,max);collect('SANITIZE',{action:'truncated',from:input.length,to:max},LEVEL.NOTICE)}clean=clean.replace(/\0/g,'');const threats=analyze(clean,'sanitize');if(threats.length>0){clean=clean.replace(/<[^>]*>/g,'');clean=clean.replace(/on\w+\s*=\s*["'][^"']*["']/gi,'');immune.blocked++;collect('IMMUNE',{action:'input_cleansed',threats:threats.map(t=>t.sig),totalBlocked:immune.blocked},LEVEL.ALARM)}return clean}function escapeHTML(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML}function relay(entry){const lvl=LEVEL_NAME[entry.lvl]||'UNKNOWN';const msg=`[NIS ${lvl}] ${entry.src}: ${JSON.stringify(entry.data).slice(0,300)}`;if(entry.lvl>=LEVEL.BREACH)console.error('%c'+msg,'color:#e8553a;font-weight:bold');else if(entry.lvl>=LEVEL.ALARM)console.warn(msg);else if(entry.lvl>=LEVEL.ALERT)console.info('%c'+msg,'color:#f59e0b');for(const fn of generals.left){try{fn(entry)}catch(e){}}for(const fn of generals.right){try{fn(entry)}catch(e){}}}function watch(){document.addEventListener('input',e=>{if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT'){const val=e.target.value;if(val.length>200)analyze(val,'input:'+(e.target.id||'anon'))}},true);const observer=new MutationObserver(mutations=>{for(const m of mutations){if(m.type!=='childList')continue;for(const node of m.addedNodes){if(node.nodeName==='SCRIPT'){collect('DOM_WATCH',{action:'script_injection_blocked'},LEVEL.BREACH);node.remove();immune.blocked++}if(node.nodeName==='IFRAME'||node.nodeName==='OBJECT'||node.nodeName==='EMBED'){collect('DOM_WATCH',{action:node.nodeName.toLowerCase()+'_blocked'},LEVEL.BREACH);node.remove();immune.blocked++}}}});observer.observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('error',e=>{collect('ERROR',{msg:String(e.message).slice(0,200)},LEVEL.NOTICE)});window.addEventListener('unhandledrejection',e=>{collect('REJECTION',{reason:String(e.reason).slice(0,200)},LEVEL.NOTICE)});let lastTick=Date.now();setInterval(()=>{const now=Date.now();if(now-lastTick>5000)collect('FREEZE',{gapMs:now-lastTick},LEVEL.ALERT);lastTick=now},1000);collect('NIS',{action:'DEPLOYED'},LEVEL.NOTICE);console.log('%c[NIS] Necropolis Intelligence Service deployed. The Dead stand watch.','color:#9b7dd4;font-style:italic')}function brief(){const now=Date.now();const recent=ledger.filter(e=>now-e.t<60000);const byLevel=[0,0,0,0,0];recent.forEach(e=>byLevel[e.lvl]++);return{status:byLevel[4]>0?'BREACH':byLevel[3]>0?'ALARM':byLevel[2]>0?'ALERT':'CLEAR',totalEvents:ledger.length,blocked:immune.blocked,levels:{whisper:byLevel[0],notice:byLevel[1],alert:byLevel[2],alarm:byLevel[3],breach:byLevel[4]}}}function registerGeneral(team,cb){if(team==='left'||team==='red')generals.left.push(cb);else if(team==='right'||team==='white')generals.right.push(cb)}return Object.freeze({LEVEL,watch,collect,analyze,sanitize,escapeHTML,checkRate,brief,registerGeneral,get ledger(){return[...ledger]},get blocked(){return immune.blocked}})})();
+
+// Deploy the Dead immediately
+NIS.watch();
+
+// Register generals: Red team monitors patterns, White team defends
+NIS.registerGeneral('red', entry => {
+  // Red team: log attack vectors to console for training records
+  if(entry.lvl >= NIS.LEVEL.ALARM) console.log('%c[RED TEAM] Pattern recorded: ' + entry.src, 'color:#e8553a');
+});
+NIS.registerGeneral('white', entry => {
+  // White team: auto-response — threat neutralized, continue operation
+  if(entry.lvl >= NIS.LEVEL.ALARM) console.log('%c[WHITE TEAM] Threat neutralized: ' + entry.src, 'color:#10b981');
+});
+
+// ═══════════════════════════════════════════════════════════
+// THE DIMENSIONAL LENS
+// ═══════════════════════════════════════════════════════════
+// Principle: The camera feeds reality. The overlay paints
+// what the Astrocyte reveals at each alpha level. As the
+// user spends time with each layer, entanglement grows.
+// Higher entanglement = the filter becomes more transparent,
+// training the eyes to see without the aid. The 5-degree
+// phase shift drives adaptation. Each session builds on
+// the previous (localStorage persistence).
+// ═══════════════════════════════════════════════════════════
+
+// ── LAYERS: 7 dimensional overlays, mapped to octaves ──
+const LAYERS = [
+  {
+    name:'ETHERIC', alpha:0.15, color:'#3b82f6',
+    desc:'Life force, prana, chi — the luminous body 2-4 inches from skin',
+    filter:'edge-glow', blendMode:'multiply',
+    traits:{edgeThreshold:30, glowRadius:8, hue:220, satBoost:0.3}
+  },
+  {
+    name:'ASTRAL', alpha:0.28, color:'#a855f7',
+    desc:'Emotions, desires, dream-body — shifting colors around living things',
+    filter:'aura-colors', blendMode:'multiply',
+    traits:{edgeThreshold:20, glowRadius:20, hue:280, satBoost:0.6}
+  },
+  {
+    name:'MENTAL', alpha:0.42, color:'#f59e0b',
+    desc:'Thought-forms, geometric patterns — sacred geometry in all structures',
+    filter:'geometry', blendMode:'multiply',
+    traits:{edgeThreshold:40, glowRadius:4, hue:40, satBoost:0.1}
+  },
+  {
+    name:'CAUSAL', alpha:0.55, color:'#ec4899',
+    desc:'Karmic threads, cause-effect chains — iridescent filaments between objects',
+    filter:'threads', blendMode:'multiply',
+    traits:{edgeThreshold:25, glowRadius:12, hue:330, satBoost:0.4}
+  },
+  {
+    name:'BUDDHIC', alpha:0.70, color:'#10b981',
+    desc:'Unity field, interconnection — everything breathes as one organism',
+    filter:'unity-field', blendMode:'multiply',
+    traits:{edgeThreshold:15, glowRadius:30, hue:160, satBoost:0.5}
+  },
+  {
+    name:'ATMIC', alpha:0.85, color:'#ef4444',
+    desc:'Pure will, divine spark — points of brilliant light at the heart of every form',
+    filter:'divine-sparks', blendMode:'multiply',
+    traits:{edgeThreshold:50, glowRadius:6, hue:0, satBoost:0.0}
+  },
+  {
+    name:'ADIC', alpha:0.97, color:'#8b5cf6',
+    desc:'The Source field — reality dissolves into vibrating luminous emptiness',
+    filter:'source', blendMode:'multiply',
+    traits:{edgeThreshold:10, glowRadius:40, hue:270, satBoost:0.2}
+  },
+];
+
+const CONTROLS = [
+  {icon:'\u25CE', label:'FOCUS',  key:'f', desc:'Toggle center focus point'},
+  {icon:'\u2300', label:'GRID',   key:'g', desc:'Toggle sacred geometry grid'},
+  {icon:'\u223F', label:'WAVE',   key:'w', desc:'Toggle wave interference pattern'},
+  {icon:'\u2609', label:'AURA',   key:'a', desc:'Toggle aura edge detection'},
+  {icon:'\u2604', label:'TRAIL',  key:'r', desc:'Toggle motion trails / afterimages'},
+  {icon:'\u263D', label:'INVERT', key:'i', desc:'Invert polarity (see shadows as light)'},
+  {icon:'\u2632', label:'SCRY',   key:'s', desc:'Read the light — the environment speaks through pixel luminance'},
+];
+
+// ── STATE ──
+const S = {
+  layer: 0,
+  alpha: 0.15,
+  phase: 0,
+  entanglement: 0,    // 0-1, grows with time in each layer
+  fieldExpansion: 1.0, // multiplier, grows as entanglement grows
+  sessionStart: 0,
+  totalTime: 0,        // accumulated across sessions (seconds)
+  layerTimes: new Array(7).fill(0), // seconds spent per layer
+  controls: {focus:true, grid:false, wave:false, aura:true, trail:false, invert:false, scry:false},
+  // Scrying state
+  scryLines: [0,0,0,0,0,0],        // hexagram read from light
+  scryRegionLum: new Float32Array(6), // luminance per region
+  scryColorDom: [0,0,0],            // dominant RGB
+  scrySymmetry: 0,                   // bilateral symmetry score
+  scryEdgeDensity: new Float32Array(6), // edge density per region
+  scryLastMessage: '',
+  scryMessageTimer: 0,
+  scryHistory: [],                   // recent readings [{hex,msg,time}]
+  scryCooldown: 0,                   // frames between readings
+  breathPhase: 0,      // 0-1 breath cycle
+  motionLevel: 0,      // 0-1 detected motion
+  luminance: 0.5,      // average scene brightness
+  prevFrame: null,     // previous frame data for motion/edge detection
+  frameCount: 0,
+  // Order system (rendering complexity)
+  order: 0,         // 0-7
+  orderPoints: [],  // extracted feature points [{x,y,lum,r,g,b,edge,motion}]
+  orderShapes: [],  // composed shapes for current frame
+};
+
+// Load persistence
+try {
+  const saved = JSON.parse(localStorage.getItem('dimensional-lens'));
+  if(saved){
+    S.entanglement = saved.entanglement || 0;
+    S.fieldExpansion = saved.fieldExpansion || 1.0;
+    S.totalTime = saved.totalTime || 0;
+    S.layerTimes = saved.layerTimes || new Array(7).fill(0);
+  }
+} catch(e){}
+
+function saveState(){
+  try {
+    localStorage.setItem('dimensional-lens', JSON.stringify({
+      entanglement: S.entanglement,
+      fieldExpansion: S.fieldExpansion,
+      totalTime: S.totalTime,
+      layerTimes: S.layerTimes,
+    }));
+  } catch(e){}
+}
+
+// ── DOM ──
+const $=id=>document.getElementById(id);
+const cam=$('cam'), overlay=$('overlay'), startScreen=$('startScreen');
+const layersEl=$('layers'), controlsEl=$('controls');
+const eyeCvs=$('eyeFrame'), eyeCtx=eyeCvs.getContext('2d');
+const oCtx=overlay.getContext('2d',{willReadFrequently:true});
+const guillocheCvs=$('guillocheLayer'), gCtx=guillocheCvs.getContext('2d');
+const DPR = window.devicePixelRatio||1;
+
+// ── GUILLOCHE: currency-style iridescent background ──
+// Drawn once, static. Fine spirograph patterns in rainbow ink on white paper.
+function initGuilloche(){
+  const w=window.innerWidth, h=window.innerHeight;
+  guillocheCvs.width=w*DPR; guillocheCvs.height=h*DPR;
+  guillocheCvs.style.width=w+'px'; guillocheCvs.style.height=h+'px';
+  const g=gCtx;
+  g.setTransform(DPR,0,0,DPR,0,0);
+  g.clearRect(0,0,w,h);
+
+  // Paper texture (subtle noise)
+  for(let i=0;i<8000;i++){
+    const x=Math.random()*w, y=Math.random()*h;
+    g.fillStyle=`rgba(0,0,0,${Math.random()*0.02})`;
+    g.fillRect(x,y,1,1);
+  }
+
+  const cx=w/2, cy=h/2;
+  const maxR=Math.max(w,h)*0.55;
+  g.lineWidth=0.4;
+
+  // Iridescent color palette (like holographic foil on currency)
+  const IRIS_COLORS=[
+    '#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e',
+    '#f59e0b','#eab308','#84cc16','#22c55e','#10b981',
+    '#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1',
+  ];
+
+  // LAYER 1: Large concentric guilloche rosette (center)
+  for(let ring=0;ring<40;ring++){
+    const R=20+ring*maxR/40;
+    const color=IRIS_COLORS[ring%IRIS_COLORS.length];
+    g.strokeStyle=color;
+    g.globalAlpha=0.12+0.05*Math.sin(ring*0.3);
+    g.beginPath();
+    // Spirograph: hypotrochoid
+    const a=R, b=R*(0.3+ring%5*0.1), d=R*(0.5+ring%3*0.15);
+    for(let t=0;t<Math.PI*20;t+=0.02){
+      const x=cx+(a-b)*Math.cos(t)+d*Math.cos((a-b)/b*t);
+      const y=cy+(a-b)*Math.sin(t)-d*Math.sin((a-b)/b*t);
+      if(t===0) g.moveTo(x,y); else g.lineTo(x,y);
+    }
+    g.stroke();
+  }
+
+  // LAYER 2: Corner rosettes (like currency corners)
+  const corners=[[w*0.12,h*0.12],[w*0.88,h*0.12],[w*0.12,h*0.88],[w*0.88,h*0.88]];
+  corners.forEach((c,ci)=>{
+    const [ox,oy]=c;
+    for(let ring=0;ring<15;ring++){
+      const R=10+ring*8;
+      const color=IRIS_COLORS[(ring+ci*4)%IRIS_COLORS.length];
+      g.strokeStyle=color;
+      g.globalAlpha=0.1;
+      g.beginPath();
+      const a=R, b=R*0.35, dd=R*0.6;
+      for(let t=0;t<Math.PI*14;t+=0.03){
+        const x=ox+(a-b)*Math.cos(t)+dd*Math.cos((a-b)/b*t);
+        const y=oy+(a-b)*Math.sin(t)-dd*Math.sin((a-b)/b*t);
+        if(t===0) g.moveTo(x,y); else g.lineTo(x,y);
+      }
+      g.stroke();
+    }
+  });
+
+  // LAYER 3: Horizontal guilloche bands (like the security strip on bills)
+  for(let band=0;band<3;band++){
+    const by=h*0.25+band*h*0.25;
+    for(let wave=0;wave<6;wave++){
+      const color=IRIS_COLORS[(band*6+wave)%IRIS_COLORS.length];
+      g.strokeStyle=color;
+      g.globalAlpha=0.06;
+      g.lineWidth=0.3;
+      g.beginPath();
+      for(let x=0;x<w;x+=1){
+        const freq1=0.01+wave*0.003;
+        const freq2=0.02+wave*0.005;
+        const amp=8+wave*3;
+        const y=by+Math.sin(x*freq1+wave)*amp+Math.sin(x*freq2+wave*2)*amp*0.5;
+        if(x===0) g.moveTo(x,y); else g.lineTo(x,y);
+      }
+      g.stroke();
+    }
+  }
+
+  // LAYER 4: Fine crosshatch microprint texture
+  g.globalAlpha=0.03;
+  g.strokeStyle='#1a1a2e';
+  g.lineWidth=0.3;
+  for(let i=0;i<w+h;i+=6){
+    g.beginPath(); g.moveTo(i,0); g.lineTo(i-h,h); g.stroke();
+    g.beginPath(); g.moveTo(i-w,0); g.lineTo(i,h); g.stroke();
+  }
+
+  // LAYER 5: Holographic strip (vertical iridescent band)
+  const stripX=w*0.72, stripW=w*0.04;
+  for(let y=0;y<h;y++){
+    const t=y/h;
+    const hue=t*720%360;
+    g.fillStyle=`hsla(${hue},80%,60%,0.06)`;
+    g.fillRect(stripX,y,stripW,1);
+  }
+
+  // LAYER 6: Border filigree
+  g.globalAlpha=0.08;
+  g.lineWidth=0.5;
+  const margin=30;
+  for(let i=0;i<4;i++){
+    const off=margin+i*4;
+    const color=IRIS_COLORS[i*3%IRIS_COLORS.length];
+    g.strokeStyle=color;
+    // Wavy border
+    g.beginPath();
+    for(let x=off;x<w-off;x++){
+      const y=off+Math.sin(x*0.05+i)*2;
+      if(x===off) g.moveTo(x,y); else g.lineTo(x,y);
+    }
+    for(let y=off;y<h-off;y++){
+      const x=w-off+Math.sin(y*0.05+i)*2;
+      g.lineTo(x,y);
+    }
+    for(let x=w-off;x>off;x--){
+      const y=h-off+Math.sin(x*0.05+i)*2;
+      g.lineTo(x,y);
+    }
+    for(let y=h-off;y>off;y--){
+      const x=off+Math.sin(y*0.05+i)*2;
+      g.lineTo(x,y);
+    }
+    g.closePath();
+    g.stroke();
+  }
+
+  g.globalAlpha=1;
+}
+initGuilloche();
+let resizeDebounce=null;
+window.addEventListener('resize', ()=>{
+  if(!NIS.checkRate('resize')) return; // NIS rate-limiter blocks DoS via rapid resize
+  if(resizeDebounce) clearTimeout(resizeDebounce);
+  resizeOverlay(); // fast — do immediately
+  resizeDebounce=setTimeout(()=>{ initGuilloche(); resizeDebounce=null; }, 250); // heavy — debounce
+});
+
+// ── BUILD LAYER BUTTONS ──
+LAYERS.forEach((l,i)=>{
+  const btn = document.createElement('div');
+  btn.className = 'layer-btn' + (i===0?' active':'');
+  btn.textContent = l.name;
+  btn.style.borderColor = l.color+'44';
+  btn.addEventListener('click',()=>setLayer(i));
+  layersEl.appendChild(btn);
+});
+
+// ── BUILD CONTROL BUTTONS ──
+CONTROLS.forEach((c,i)=>{
+  const grp = document.createElement('div');
+  grp.className = 'ctrl-group';
+  const btn = document.createElement('div');
+  btn.className = 'ctrl-knob' + (S.controls[c.label.toLowerCase()]?' active':'');
+  btn.textContent = c.icon;
+  btn.title = c.desc;
+  btn.addEventListener('click',()=>toggleControl(c.label.toLowerCase(), btn));
+  const lbl = document.createElement('div');
+  lbl.className = 'ctrl-label';
+  lbl.textContent = c.label;
+  grp.appendChild(btn);
+  grp.appendChild(lbl);
+  controlsEl.appendChild(grp);
+});
+
+function setLayer(i){
+  S.layer = i;
+  S.alpha = LAYERS[i].alpha;
+  document.querySelectorAll('.layer-btn').forEach((b,j)=>{
+    b.classList.toggle('active',j===i);
+  });
+  $('hudLayer').textContent = LAYERS[i].name;
+  $('hudAlpha').textContent = S.alpha.toFixed(2);
+  $('hudAlphaBar').style.width = (S.alpha*100)+'%';
+  $('hudAlphaBar').style.background = LAYERS[i].color;
+}
+
+function toggleControl(name, btn){
+  S.controls[name] = !S.controls[name];
+  btn.classList.toggle('active', S.controls[name]);
+}
+
+// ── CAMERA INIT ──
+$('startBtn').addEventListener('click', async ()=>{
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}},
+      audio:false
+    });
+    cam.srcObject = stream;
+    await cam.play();
+    NIS.collect('CAMERA', { action: 'stream_acquired', tracks: stream.getTracks().length }, NIS.LEVEL.NOTICE);
+    startScreen.style.opacity = '0';
+    setTimeout(()=>{ startScreen.style.display='none'; }, 800);
+    S.sessionStart = performance.now();
+    resizeOverlay();
+    requestAnimationFrame(render);
+  } catch(e){
+    // Show error in DOM instead of alert (prevents alert-based phishing)
+    const errMsg = document.createElement('p');
+    errMsg.style.cssText='color:#e8553a;font-size:14px;text-align:center;max-width:400px;margin-top:20px';
+    errMsg.textContent='Camera access is required for the Dimensional Lens. Please grant permission and try again.';
+    startScreen.appendChild(errMsg);
+  }
+});
+
+function resizeOverlay(){
+  const w=window.innerWidth, h=window.innerHeight;
+  overlay.width = w;
+  overlay.height = h;
+  overlay.style.width = w+'px';
+  overlay.style.height = h+'px';
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e=>{
+  const k = e.key.toLowerCase();
+  if(k>='1' && k<='7') setLayer(+k-1);
+  CONTROLS.forEach(c=>{
+    if(k===c.key){
+      const name = c.label.toLowerCase();
+      S.controls[name] = !S.controls[name];
+      document.querySelectorAll('.ctrl-knob')[CONTROLS.indexOf(c)].classList.toggle('active',S.controls[name]);
+    }
+  });
+  if(k==='+' || k==='=') S.alpha = Math.min(1, S.alpha+0.05);
+  if(k==='-') S.alpha = Math.max(0, S.alpha-0.05);
+  // Shift+number = set order
+  if(e.shiftKey && k>='1' && k<='8') setOrder(+k-1);
+  // Arrow up/down = increment/decrement order
+  if(k==='arrowup' && S.order<7){ setOrder(S.order+1); e.preventDefault(); }
+  if(k==='arrowdown' && S.order>0){ setOrder(S.order-1); e.preventDefault(); }
+});
+
+// ── PROCESSING HELPERS ──
+// Downscale camera frame for analysis
+const PROC_W = 160, PROC_H = 90;
+const procCvs = document.createElement('canvas');
+procCvs.width = PROC_W; procCvs.height = PROC_H;
+const procCtx = procCvs.getContext('2d', {willReadFrequently:true});
+
+function sampleCamera(){
+  procCtx.save();
+  procCtx.scale(-1,1);
+  procCtx.drawImage(cam, -PROC_W, 0, PROC_W, PROC_H);
+  procCtx.restore();
+  return procCtx.getImageData(0,0,PROC_W,PROC_H);
+}
+
+function detectEdges(imgData, threshold){
+  const w=imgData.width, h=imgData.height, d=imgData.data;
+  const out = new Uint8ClampedArray(w*h);
+  for(let y=1;y<h-1;y++){
+    for(let x=1;x<w-1;x++){
+      const i=(y*w+x)*4;
+      const lum=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+      const lumR=d[(y*w+x+1)*4]*0.299+d[(y*w+x+1)*4+1]*0.587+d[(y*w+x+1)*4+2]*0.114;
+      const lumD=d[((y+1)*w+x)*4]*0.299+d[((y+1)*w+x)*4+1]*0.587+d[((y+1)*w+x)*4+2]*0.114;
+      const gx=Math.abs(lum-lumR);
+      const gy=Math.abs(lum-lumD);
+      const g=gx+gy;
+      out[y*w+x]= g>threshold ? Math.min(255,g*3) : 0;
+    }
+  }
+  return out;
+}
+
+function detectMotion(current, prev){
+  if(!prev) return {level:0, hotspots:[]};
+  const w=current.width, h=current.height;
+  const cd=current.data, pd=prev.data;
+  let total=0, count=0;
+  const hotspots=[];
+  const cellW=w/8, cellH=h/6;
+  for(let cy=0;cy<6;cy++){
+    for(let cx=0;cx<8;cx++){
+      let cellMotion=0, cellCount=0;
+      const sx=Math.floor(cx*cellW), sy=Math.floor(cy*cellH);
+      const ex=Math.floor((cx+1)*cellW), ey=Math.floor((cy+1)*cellH);
+      for(let y=sy;y<ey;y+=2){
+        for(let x=sx;x<ex;x+=2){
+          const i=(y*w+x)*4;
+          const diff=Math.abs(cd[i]-pd[i])+Math.abs(cd[i+1]-pd[i+1])+Math.abs(cd[i+2]-pd[i+2]);
+          if(diff>40){cellMotion+=diff;cellCount++;}
+        }
+      }
+      if(cellCount>3){
+        const avg=cellMotion/cellCount/765;
+        total+=avg;count++;
+        if(avg>0.15) hotspots.push({x:(cx+0.5)/8, y:(cy+0.5)/6, intensity:avg});
+      }
+    }
+  }
+  return {level:count>0?Math.min(1,total/count*4):0, hotspots};
+}
+
+function avgLuminance(imgData){
+  const d=imgData.data;
+  let sum=0;
+  for(let i=0;i<d.length;i+=16) sum+=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+  return sum/(d.length/16)/255;
+}
+
+// ── HSL helper ──
+function hsl(h,s,l,a){return `hsla(${h},${Math.round(s*100)}%,${Math.round(l*100)}%,${a})`;}
+
+// ═══════════════════════════════════════════════════════════
+// ORDER SYSTEM — From Dust to Cinema
+// ═══════════════════════════════════════════════════════════
+// 8 orders of rendering complexity. Each builds on the last.
+// Every visual is composed from 6 atomic "metal" shapes:
+//   dot, line, tri, arc, rect, hex
+// These are the binary primitives — composable, universal.
+// ═══════════════════════════════════════════════════════════
+
+const ORDERS = [
+  {name:'DUST',    symbol:'\u00B7', desc:'Point cloud. The raw atoms of the scene.'},
+  {name:'WIRE',    symbol:'\u2500', desc:'Lines connecting nearby points. Constellations.'},
+  {name:'MESH',    symbol:'\u25B3', desc:'Triangulated surface. Low-poly reality.'},
+  {name:'FORM',    symbol:'\u25A0', desc:'Filled shapes with sampled color. Cubist painting.'},
+  {name:'BREATH',  symbol:'\u223F', desc:'Forms pulse and breathe. Living canvas.'},
+  {name:'FLOW',    symbol:'\u2248', desc:'Particle streams and ribbons. Cinematic motion.'},
+  {name:'DREAM',   symbol:'\u2734', desc:'Kaleidoscopic mirrors and multiplied geometry.'},
+  {name:'CINEMA',  symbol:'\u2605', desc:'Full scene transformation. The movie.'},
+];
+
+// Build order buttons
+const ordersEl=$('orders');
+ORDERS.forEach((o,i)=>{
+  const btn=document.createElement('div');
+  btn.className='order-btn'+(i===0?' active':'');
+  btn.textContent=o.symbol;
+  btn.dataset.label=o.name;
+  btn.title=o.desc;
+  btn.addEventListener('click',()=>setOrder(i));
+  ordersEl.appendChild(btn);
+});
+
+function setOrder(i){
+  S.order=i;
+  document.querySelectorAll('.order-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  $('orderLabel').textContent=ORDERS[i].name;
+}
+
+// ═══════════════════════════════════════
+// METAL SHAPE KERNEL — 6 atomic primitives
+// ═══════════════════════════════════════
+// All visuals compose from these. Each takes a context,
+// coordinates, size, color. They ARE the binary alphabet.
+
+const Metal = {
+  dot(ctx,x,y,r,color){
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fill();
+  },
+  line(ctx,x1,y1,x2,y2,color,w){
+    ctx.strokeStyle=color;
+    ctx.lineWidth=w||1;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.stroke();
+  },
+  tri(ctx,x1,y1,x2,y2,x3,y3,color,fill){
+    if(fill){ctx.fillStyle=color;}else{ctx.strokeStyle=color;ctx.lineWidth=0.8;}
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x3,y3);ctx.closePath();
+    if(fill)ctx.fill();else ctx.stroke();
+  },
+  arc(ctx,x,y,r,startA,endA,color,w){
+    ctx.strokeStyle=color;
+    ctx.lineWidth=w||1;
+    ctx.beginPath();
+    ctx.arc(x,y,r,startA,endA);
+    ctx.stroke();
+  },
+  rect(ctx,x,y,w,h,rot,color,fill){
+    ctx.save();
+    ctx.translate(x,y);
+    if(rot)ctx.rotate(rot);
+    if(fill){ctx.fillStyle=color;ctx.fillRect(-w/2,-h/2,w,h);}
+    else{ctx.strokeStyle=color;ctx.lineWidth=0.8;ctx.strokeRect(-w/2,-h/2,w,h);}
+    ctx.restore();
+  },
+  hex(ctx,x,y,r,color,fill){
+    if(fill){ctx.fillStyle=color;}else{ctx.strokeStyle=color;ctx.lineWidth=0.8;}
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const a=i*Math.PI/3-Math.PI/6;
+      const px=x+Math.cos(a)*r, py=y+Math.sin(a)*r;
+      if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    if(fill)ctx.fill();else ctx.stroke();
+  },
+};
+
+// ═══════════════════════════════════════
+// FEATURE POINT EXTRACTION
+// ═══════════════════════════════════════
+// Samples the camera frame to extract points of interest.
+// These points are the raw material for ALL orders.
+
+function extractPoints(imgData, edges, W, H){
+  if(!imgData) return;
+  const d=imgData.data, eW=imgData.width, eH=imgData.height;
+  const scaleX=W/eW, scaleY=H/eH;
+  const pts=[];
+
+  // Density depends on order (higher order = more points)
+  const step = Math.max(2, 6 - S.order);
+
+  for(let y=1;y<eH-1;y+=step){
+    for(let x=1;x<eW-1;x+=step){
+      const i=(y*eW+x)*4;
+      const r=d[i], g=d[i+1], b=d[i+2];
+      const lum=r*0.299+g*0.587+b*0.114;
+      const edge=edges?edges[y*eW+x]:0;
+
+      // Include point if it's on an edge OR has interesting luminance
+      const interesting = edge>25 || (S.order>=3 && lum>30);
+      if(!interesting && S.order<3) continue;
+
+      pts.push({
+        x: x*scaleX,
+        y: y*scaleY,
+        lum: lum/255,
+        r, g, b,
+        edge: edge/255,
+        size: 1 + edge/50 + (S.order>4 ? Math.sin(S.phase*0.01+x*0.1)*2 : 0),
+      });
+    }
+  }
+
+  S.orderPoints=pts;
+}
+
+// ═══════════════════════════════════════
+// ORDER RENDERERS
+// ═══════════════════════════════════════
+
+function renderOrder(ctx, W, H, t, opacity){
+  const pts=S.orderPoints;
+  if(!pts.length) return;
+
+  ctx.save();
+  ctx.globalCompositeOperation='source-over';
+  const phase=t*0.001+S.phase*Math.PI/180;
+  const ord=S.order;
+
+  // ORDER 0: DUST — points only
+  if(ord>=0){
+    const dotOpacity = ord===0 ? opacity*0.9 : opacity*Math.max(0.05,0.3-ord*0.04);
+    ctx.globalAlpha=dotOpacity;
+    pts.forEach((p,i)=>{
+      const h=(p.lum*360+t*0.01+i*0.1)%360;
+      const r=p.size*(ord===0?2:1);
+      Metal.dot(ctx, p.x, p.y, r, hsl(h,0.8,0.5,p.edge>0.1?0.8:0.4));
+    });
+  }
+
+  // ORDER 1: WIRE — connect nearby points
+  if(ord>=1){
+    ctx.globalAlpha=opacity*(ord===1?0.7:0.2);
+    const maxDist=ord>=5?80:50;
+    // Use Map-based spatial lookup (avoids prototype pollution, better perf)
+    const cellSize=maxDist;
+    const grid=new Map();
+    pts.forEach((p,i)=>{
+      const gx=Math.floor(p.x/cellSize), gy=Math.floor(p.y/cellSize);
+      const key=gx+','+gy;
+      if(!grid.has(key))grid.set(key,[]);
+      grid.get(key).push(i);
+    });
+    const drawn=new Set();
+    pts.forEach((p,i)=>{
+      if(i%Math.max(1,3-Math.floor(ord/2))!==0) return;
+      const gx=Math.floor(p.x/cellSize), gy=Math.floor(p.y/cellSize);
+      for(let dx=-1;dx<=1;dx++){
+        for(let dy=-1;dy<=1;dy++){
+          const nbrs=grid.get((gx+dx)+','+(gy+dy));
+          if(!nbrs) continue;
+          for(const j of nbrs){
+            if(j<=i) continue;
+            const key=i<j?i+':'+j:j+':'+i;
+            if(drawn.has(key)) continue;
+            const q=pts[j];
+            const dist=Math.hypot(p.x-q.x,p.y-q.y);
+            if(dist>maxDist) continue;
+            drawn.add(key);
+            const h=((p.lum+q.lum)*180+t*0.01)%360;
+            const a=1-dist/maxDist;
+            Metal.line(ctx,p.x,p.y,q.x,q.y,hsl(h,0.7,0.5,a*0.6),0.5+a);
+          }
+        }
+      }
+    });
+  }
+
+  // ORDER 2: MESH — triangulate nearby triplets
+  if(ord>=2){
+    ctx.globalAlpha=opacity*(ord===2?0.6:0.15);
+    const stride=Math.max(1,Math.floor(pts.length/300));
+    for(let i=0;i<pts.length-2;i+=stride){
+      const a=pts[i], b=pts[Math.min(i+stride,pts.length-1)];
+      // Find nearest different point
+      let cIdx=Math.min(i+stride*2,pts.length-1);
+      const c=pts[cIdx];
+      const peri=Math.hypot(a.x-b.x,a.y-b.y)+Math.hypot(b.x-c.x,b.y-c.y)+Math.hypot(c.x-a.x,c.y-a.y);
+      if(peri>200||peri<10) continue;
+      const h=((a.lum+b.lum+c.lum)*120+t*0.005)%360;
+      Metal.tri(ctx,a.x,a.y,b.x,b.y,c.x,c.y,hsl(h,0.7,0.55,0.3),false);
+    }
+  }
+
+  // ORDER 3: FORM — filled shapes with sampled colors
+  if(ord>=3){
+    ctx.globalAlpha=opacity*(ord===3?0.7:0.3);
+    const stride=Math.max(1,Math.floor(pts.length/200));
+    for(let i=0;i<pts.length-2;i+=stride){
+      const a=pts[i], b=pts[Math.min(i+stride,pts.length-1)];
+      const cIdx=Math.min(i+stride*2,pts.length-1);
+      const c=pts[cIdx];
+      const peri=Math.hypot(a.x-b.x,a.y-b.y)+Math.hypot(b.x-c.x,b.y-c.y)+Math.hypot(c.x-a.x,c.y-a.y);
+      if(peri>250||peri<8) continue;
+      // Average color from the three source pixels
+      const ar=Math.round((a.r+b.r+c.r)/3), ag=Math.round((a.g+b.g+c.g)/3), ab=Math.round((a.b+b.b+c.b)/3);
+      Metal.tri(ctx,a.x,a.y,b.x,b.y,c.x,c.y,`rgba(${ar},${ag},${ab},0.6)`,true);
+    }
+    // Hexagonal accents at high-edge points
+    pts.forEach((p,i)=>{
+      if(p.edge<0.3||i%4!==0) return;
+      const h=(p.lum*360+t*0.02)%360;
+      Metal.hex(ctx,p.x,p.y,p.size*4,hsl(h,0.8,0.5,0.3),true);
+    });
+  }
+
+  // ORDER 4: BREATH — everything pulses
+  if(ord>=4){
+    ctx.globalAlpha=opacity*0.5;
+    const breath=Math.sin(t*0.002+S.breathPhase*Math.PI*2);
+    pts.forEach((p,i)=>{
+      if(i%3!==0) return;
+      const pulse=1+0.5*Math.sin(phase+p.x*0.01+p.y*0.01);
+      const r=p.size*3*pulse*(1+breath*0.3);
+      const h=(p.lum*360+t*0.02+i)%360;
+      Metal.arc(ctx,p.x,p.y,r,0,Math.PI*2*pulse,hsl(h,0.8,0.55,0.4*pulse),0.8);
+    });
+  }
+
+  // ORDER 5: FLOW — particle ribbons and streams
+  if(ord>=5){
+    ctx.globalAlpha=opacity*0.5;
+    ctx.lineWidth=1.5;
+    // Draw flowing curves through clusters of points
+    const ribbonCount=Math.min(20,Math.floor(pts.length/15));
+    for(let r=0;r<ribbonCount;r++){
+      const startIdx=Math.floor(r*pts.length/ribbonCount);
+      ctx.beginPath();
+      const h=(r*30+t*0.02)%360;
+      ctx.strokeStyle=hsl(h,0.8,0.55,0.4);
+      let prevX=pts[startIdx].x, prevY=pts[startIdx].y;
+      ctx.moveTo(prevX,prevY);
+      for(let s=1;s<12&&startIdx+s<pts.length;s++){
+        const p=pts[startIdx+s];
+        // Flow offset by time
+        const fx=p.x+Math.sin(phase+s*0.5)*10;
+        const fy=p.y+Math.cos(phase+s*0.3)*10;
+        const mx=(prevX+fx)/2+Math.sin(phase+r)*15;
+        const my=(prevY+fy)/2+Math.cos(phase+r)*15;
+        ctx.quadraticCurveTo(mx,my,fx,fy);
+        prevX=fx;prevY=fy;
+      }
+      ctx.stroke();
+    }
+  }
+
+  // ORDER 6: DREAM — kaleidoscopic mirrors
+  if(ord>=6){
+    ctx.globalAlpha=opacity*0.35;
+    const segments=6;
+    const cx=W/2, cy=H/2;
+    for(let seg=0;seg<segments;seg++){
+      ctx.save();
+      ctx.translate(cx,cy);
+      ctx.rotate(seg*Math.PI*2/segments+phase*0.1);
+      if(seg%2===1) ctx.scale(1,-1); // mirror alternate segments
+      ctx.translate(-cx,-cy);
+      // Draw a subset of shapes in this mirrored space
+      const subset=pts.filter((_,i)=>i%6===seg%3);
+      subset.forEach((p,i)=>{
+        if(i%2!==0) return;
+        const h=(p.lum*360+seg*60+t*0.01)%360;
+        Metal.hex(ctx,p.x,p.y,p.size*3,hsl(h,0.85,0.5,0.25),true);
+      });
+      ctx.restore();
+    }
+  }
+
+  // ORDER 7: CINEMA — zoom/pan, time distortion, narrative overlay
+  if(ord>=7){
+    // Automated slow zoom (simulated via scale)
+    const zoomCycle=(t%20000)/20000;
+    const zoom=1+0.15*Math.sin(zoomCycle*Math.PI*2);
+    const panX=Math.sin(t*0.0003)*W*0.05;
+    const panY=Math.cos(t*0.0004)*H*0.05;
+
+    ctx.save();
+    ctx.translate(W/2+panX,H/2+panY);
+    ctx.scale(zoom,zoom);
+    ctx.translate(-W/2,-H/2);
+    ctx.globalAlpha=opacity*0.6;
+
+    // Full scene repaint — forms + flow combined at max density
+    const stride=Math.max(1,Math.floor(pts.length/400));
+    for(let i=0;i<pts.length-2;i+=stride){
+      const a=pts[i], b=pts[Math.min(i+stride,pts.length-1)], c=pts[Math.min(i+stride*2,pts.length-1)];
+      const peri=Math.hypot(a.x-b.x,a.y-b.y)+Math.hypot(b.x-c.x,b.y-c.y);
+      if(peri>300) continue;
+      const ar=Math.round((a.r+b.r+c.r)/3), ag=Math.round((a.g+b.g+c.g)/3), ab=Math.round((a.b+b.b+c.b)/3);
+      Metal.tri(ctx,a.x,a.y,b.x,b.y,c.x,c.y,`rgba(${ar},${ag},${ab},0.5)`,true);
+    }
+
+    // Vignette frame
+    ctx.restore();
+    const vGrad=ctx.createRadialGradient(W/2,H/2,W*0.3,W/2,H/2,W*0.7);
+    vGrad.addColorStop(0,'transparent');
+    vGrad.addColorStop(1,'rgba(248,246,240,0.6)');
+    ctx.fillStyle=vGrad;
+    ctx.fillRect(0,0,W,H);
+
+    // Narrative text — shows order name and a rotating quote
+    ctx.globalAlpha=0.4;
+    ctx.font='11px Cinzel, serif';
+    ctx.fillStyle='#1a1a2e';
+    ctx.textAlign='center';
+    const narratives=[
+      'THE DUST REMEMBERS ITS ORIGINS',
+      'EVERY LINE IS A RELATIONSHIP',
+      'THE MESH IS THE MIND OF THE SCENE',
+      'FORM IS EMPTINESS, EMPTINESS IS FORM',
+      'THE CANVAS BREATHES WITH YOU',
+      'FLOW IS THE ONLY CONSTANT',
+      'THE MIRROR DREAMS THE DREAMER',
+      'YOU ARE WATCHING YOURSELF WATCHING',
+    ];
+    const narIdx=Math.floor((t/5000)%narratives.length);
+    ctx.fillText(narratives[narIdx], W/2, 40);
+  }
+
+  ctx.restore();
+}
+
+// ── MAIN RENDER ──
+let lastSave=0;
+function render(t){
+  requestAnimationFrame(render);
+  S.frameCount++;
+
+  const W=overlay.width, H=overlay.height;
+  const ctx=oCtx;
+  const L=LAYERS[S.layer];
+  const traits=L.traits;
+
+  // Sample camera every 2 frames for performance
+  let imgData=null, edges=null, motion=null;
+  if(S.frameCount%2===0){
+    imgData = sampleCamera();
+    edges = detectEdges(imgData, traits.edgeThreshold);
+    motion = detectMotion(imgData, S.prevFrame);
+    S.motionLevel = S.motionLevel*0.8 + motion.level*0.2;
+    S.luminance = S.luminance*0.9 + avgLuminance(imgData)*0.1;
+    S.prevFrame = imgData;
+    // Extract feature points for the order system
+    if(S.order>0 || S.frameCount%4===0){
+      extractPoints(imgData, edges, W, H);
+    }
+  }
+
+  // Clear overlay
+  ctx.clearRect(0,0,W,H);
+  ctx.globalCompositeOperation = 'source-over';
+
+  // Calculate entanglement-based transparency
+  // As entanglement grows, the filter becomes more transparent
+  // At entanglement=1.0, the filter is barely visible — you've internalized the sight
+  const layerEntangle = Math.min(1, S.layerTimes[S.layer] / 600); // 10 minutes to fully entangle per layer
+  const globalEntangle = S.entanglement;
+  const filterOpacity = Math.max(0.05, 1 - layerEntangle * 0.7); // never fully transparent, but down to 30% opacity
+  const fieldMult = 1 + globalEntangle * 0.5; // field expands up to 1.5x
+
+  // ── LAYER-SPECIFIC FILTERS ──
+  ctx.globalCompositeOperation = L.blendMode;
+
+  if(edges && (S.controls.aura || L.filter==='edge-glow' || L.filter==='aura-colors')){
+    drawEdgeOverlay(ctx, edges, W, H, L, t, filterOpacity);
+  }
+
+  if(L.filter==='aura-colors' && edges){
+    drawAuraColors(ctx, edges, W, H, t, filterOpacity);
+  }
+
+  if(L.filter==='geometry' || S.controls.grid){
+    drawSacredGeometry(ctx, W, H, t, filterOpacity, fieldMult);
+  }
+
+  if(L.filter==='threads' && edges){
+    drawCausalThreads(ctx, edges, W, H, t, filterOpacity);
+  }
+
+  if(L.filter==='unity-field'){
+    drawUnityField(ctx, W, H, t, filterOpacity, fieldMult);
+  }
+
+  if(L.filter==='divine-sparks' && imgData){
+    drawDivineSparks(ctx, imgData, W, H, t, filterOpacity);
+  }
+
+  if(L.filter==='source'){
+    drawSourceField(ctx, W, H, t, filterOpacity, fieldMult);
+  }
+
+  // ── ORDER RENDERING (metal shapes) ──
+  if(S.order > 0){
+    renderOrder(ctx, W, H, t, filterOpacity);
+  }
+
+  // ── UNIVERSAL OVERLAYS ──
+  ctx.globalCompositeOperation = 'multiply';
+
+  // Wave interference
+  if(S.controls.wave){
+    drawWaveInterference(ctx, W, H, t, filterOpacity);
+  }
+
+  // Motion trails
+  if(S.controls.trail && motion && motion.hotspots.length>0){
+    drawMotionTrails(ctx, motion.hotspots, W, H, t, filterOpacity);
+  }
+
+  // Invert (applied as a full-screen difference blend)
+  if(S.controls.invert){
+    ctx.globalCompositeOperation = 'difference';
+    ctx.fillStyle = `rgba(255,255,255,${0.7*filterOpacity})`;
+    ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation = 'multiply';
+  }
+
+  // Focus reticle
+  if(S.controls.focus){
+    drawFocusReticle(ctx, W, H, t, filterOpacity);
+  }
+
+  // Scrying engine — reads light as language
+  if(S.controls.scry){
+    scryRender(ctx, W, H, t, imgData, edges);
+  } else {
+    updateScryVisibility();
+  }
+
+  // Center eye (on its own canvas)
+  drawEye(t, layerEntangle, filterOpacity);
+
+  // ── BREATH GUIDE ──
+  S.breathPhase = (S.breathPhase + 0.0003) % 1;
+  const breathCycle = Math.sin(S.breathPhase * Math.PI * 2);
+  const breathText = breathCycle > 0.3 ? 'INHALE' : (breathCycle < -0.3 ? 'EXHALE' : 'HOLD');
+  const breathEl = $('breathGuide');
+  breathEl.textContent = breathText;
+  breathEl.style.opacity = 0.3 + 0.3 * Math.abs(breathCycle);
+
+  // ── UPDATE HUD ──
+  const elapsed = (t - S.sessionStart) / 1000;
+  const mins = Math.floor(elapsed/60).toString().padStart(2,'0');
+  const secs = Math.floor(elapsed%60).toString().padStart(2,'0');
+  $('hudTime').textContent = mins+':'+secs;
+  $('hudPhase').textContent = Math.round(S.phase)+'\u00B0';
+  $('hudOrder').textContent = S.order+' '+ORDERS[S.order].name;
+  $('hudEntangle').textContent = Math.round(layerEntangle*100)+'%';
+  $('hudField').textContent = fieldMult.toFixed(2)+'x';
+  $('entangleFill').style.height = (layerEntangle*100)+'%';
+
+  // ── ACCUMULATE TIME & ENTANGLEMENT ──
+  if(S.frameCount%30===0){
+    S.layerTimes[S.layer] += 0.5;
+    S.totalTime += 0.5;
+    S.entanglement = Math.min(1, S.totalTime / 3600); // 1 hour to full global entanglement
+    S.fieldExpansion = 1 + S.entanglement * 0.5;
+    S.phase = (S.phase + 5/60) % 366; // 5 degrees per minute
+    $('hudAlpha').textContent = S.alpha.toFixed(2);
+  }
+
+  // Save every 30 seconds
+  if(t - lastSave > 30000){ lastSave=t; saveState(); }
+}
+
+// ═══════════════════════════════════════════════════
+// FILTER RENDERERS
+// ═══════════════════════════════════════════════════
+
+// Iridescent colors for renderers
+const IRIS=['#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e','#f59e0b','#84cc16','#22c55e','#10b981','#06b6d4','#3b82f6','#6366f1'];
+function irisColor(t,i){return IRIS[Math.floor((t*0.001+i)%IRIS.length)];}
+
+function drawEdgeOverlay(ctx, edges, W, H, L, t, opacity){
+  const eW=PROC_W, eH=PROC_H;
+  const scaleX=W/eW, scaleY=H/eH;
+  const hue=L.traits.hue;
+  const glow=L.traits.glowRadius;
+  const phase=t*0.001+S.phase*Math.PI/180;
+
+  ctx.save();
+  ctx.globalAlpha = opacity * 0.8;
+  ctx.globalCompositeOperation = 'source-over';
+
+  for(let y=0;y<eH;y+=2){
+    for(let x=0;x<eW;x+=2){
+      const e=edges[y*eW+x];
+      if(e<20) continue;
+      const intensity=e/255;
+      const px=x*scaleX, py=y*scaleY;
+      // Rainbow hue shift — like holographic foil catching light
+      const h=(hue + Math.sin(phase+x*0.1)*60 + y*1.5 + t*0.02) % 360;
+      const r=glow*intensity*(1+0.3*Math.sin(phase*2+x*0.2));
+      const grad=ctx.createRadialGradient(px,py,0,px,py,r*scaleX);
+      grad.addColorStop(0,hsl(h,0.9,0.55,intensity*0.7));
+      grad.addColorStop(0.5,hsl((h+60)%360,0.8,0.65,intensity*0.3));
+      grad.addColorStop(1,'transparent');
+      ctx.fillStyle=grad;
+      ctx.fillRect(px-r*scaleX,py-r*scaleY,r*scaleX*2,r*scaleY*2);
+    }
+  }
+  ctx.restore();
+}
+
+function drawAuraColors(ctx, edges, W, H, t, opacity){
+  const eW=PROC_W, eH=PROC_H;
+  const scaleX=W/eW, scaleY=H/eH;
+  const phase=t*0.0008;
+
+  ctx.save();
+  ctx.globalAlpha = opacity * 0.6;
+  ctx.globalCompositeOperation = 'source-over';
+
+  // Multiple aura layers — iridescent rainbow halos near edges
+  for(let layer=0;layer<3;layer++){
+    const offset=(layer+1)*4;
+    for(let y=offset;y<eH-offset;y+=3){
+      for(let x=offset;x<eW-offset;x+=3){
+        const e=edges[y*eW+x];
+        if(e>30) continue;
+        let nearEdge=false;
+        for(let dy=-offset;dy<=offset;dy+=offset){
+          for(let dx=-offset;dx<=offset;dx+=offset){
+            const ny=y+dy, nx=x+dx;
+            if(ny>=0&&ny<eH&&nx>=0&&nx<eW && edges[ny*eW+nx]>40) nearEdge=true;
+          }
+        }
+        if(!nearEdge) continue;
+        const px=x*scaleX, py=y*scaleY;
+        // Full rainbow cycle per layer — currency holographic sheen
+        const h=(phase*80+layer*120+x*2+y*2) % 360;
+        ctx.fillStyle=hsl(h,0.85,0.6,0.18);
+        ctx.fillRect(px,py,scaleX*3,scaleY*3);
+      }
+    }
+  }
+  ctx.restore();
+}
+
+function drawSacredGeometry(ctx, W, H, t, opacity, fieldMult){
+  ctx.save();
+  ctx.globalAlpha = opacity * 0.35;
+  ctx.globalCompositeOperation = 'source-over';
+  const cx=W/2, cy=H/2;
+  const phase=t*0.0003+S.phase*Math.PI/180;
+  const maxR=Math.min(W,H)*0.45*fieldMult;
+
+  // Flower of Life — each circle a different iridescent color
+  ctx.lineWidth = 0.7;
+  const r=maxR/4;
+  // Center
+  ctx.strokeStyle=irisColor(t,0);
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+  // 6 surrounding
+  for(let i=0;i<6;i++){
+    const a=phase+i*Math.PI/3;
+    ctx.strokeStyle=IRIS[(i+2)%IRIS.length];
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*r, cy+Math.sin(a)*r, r, 0, Math.PI*2);
+    ctx.stroke();
+  }
+  // Second ring of 12
+  for(let i=0;i<12;i++){
+    const a=phase+i*Math.PI/6;
+    ctx.strokeStyle=IRIS[(i+4)%IRIS.length]+'88';
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(a)*r*1.73, cy+Math.sin(a)*r*1.73, r, 0, Math.PI*2);
+    ctx.stroke();
+  }
+
+  // Metatron's Cube — rainbow thread connections
+  const pts=[{x:cx,y:cy}];
+  for(let i=0;i<6;i++){
+    const a=phase+i*Math.PI/3;
+    pts.push({x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r});
+    pts.push({x:cx+Math.cos(a)*r*2, y:cy+Math.sin(a)*r*2});
+  }
+  ctx.lineWidth=0.4;
+  let ci=0;
+  for(let i=0;i<pts.length;i++){
+    for(let j=i+1;j<pts.length;j++){
+      ctx.strokeStyle=IRIS[ci%IRIS.length]+'44';
+      ctx.beginPath();
+      ctx.moveTo(pts[i].x,pts[i].y);
+      ctx.lineTo(pts[j].x,pts[j].y);
+      ctx.stroke();
+      ci++;
+    }
+  }
+  ctx.restore();
+}
+
+function drawCausalThreads(ctx, edges, W, H, t, opacity){
+  const eW=PROC_W, eH=PROC_H;
+  const scaleX=W/eW, scaleY=H/eH;
+
+  const clusters=[];
+  for(let y=0;y<eH;y+=8){
+    for(let x=0;x<eW;x+=8){
+      let sum=0, sx=0, sy=0, cnt=0;
+      for(let dy=0;dy<8&&y+dy<eH;dy++){
+        for(let dx=0;dx<8&&x+dx<eW;dx++){
+          const e=edges[(y+dy)*eW+(x+dx)];
+          if(e>30){sum+=e;sx+=x+dx;sy+=y+dy;cnt++;}
+        }
+      }
+      if(cnt>3) clusters.push({x:sx/cnt*scaleX, y:sy/cnt*scaleY, w:sum/cnt/255});
+    }
+  }
+
+  // Iridescent threads between clusters — like security ink threads on currency
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.lineWidth = 1;
+  const phase=t*0.001;
+  for(let i=0;i<clusters.length;i++){
+    for(let j=i+1;j<clusters.length;j++){
+      const a=clusters[i], b=clusters[j];
+      const dist=Math.hypot(a.x-b.x,a.y-b.y);
+      if(dist>300) continue;
+      const strength=(1-dist/300)*Math.min(a.w,b.w);
+      if(strength<0.1) continue;
+      ctx.globalAlpha = opacity * strength * 0.7;
+      // Each thread gets a different rainbow color
+      ctx.strokeStyle = IRIS[(i+j)%IRIS.length];
+      ctx.beginPath();
+      const mx=(a.x+b.x)/2+Math.sin(phase+i)*20;
+      const my=(a.y+b.y)/2+Math.cos(phase+j)*20;
+      ctx.moveTo(a.x,a.y);
+      ctx.quadraticCurveTo(mx,my,b.x,b.y);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawUnityField(ctx, W, H, t, opacity, fieldMult){
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  const phase=t*0.0008;
+  const cx=W/2, cy=H/2;
+
+  // Breathing radial field — iridescent concentric wash
+  const breathAmp=0.3+0.2*Math.sin(S.breathPhase*Math.PI*2);
+  const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*0.6*fieldMult);
+  grad.addColorStop(0,`rgba(139,92,246,${0.08*opacity*breathAmp})`);
+  grad.addColorStop(0.25,`rgba(236,72,153,${0.06*opacity*breathAmp})`);
+  grad.addColorStop(0.5,`rgba(245,158,11,${0.04*opacity*breathAmp})`);
+  grad.addColorStop(0.75,`rgba(16,185,129,${0.03*opacity*breathAmp})`);
+  grad.addColorStop(1,'transparent');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W,H);
+
+  // Rainbow concentric ripples
+  ctx.lineWidth = 1;
+  for(let i=0;i<8;i++){
+    const r=((phase*50+i*60)%(Math.max(W,H)*0.7));
+    ctx.globalAlpha = (1-r/(Math.max(W,H)*0.7))*opacity*0.25;
+    ctx.strokeStyle=IRIS[(i+Math.floor(phase))%IRIS.length];
+    ctx.beginPath();
+    ctx.arc(cx,cy,r*fieldMult,0,Math.PI*2);
+    ctx.stroke();
+  }
+
+  // Meridian lines — rainbow spokes
+  ctx.lineWidth=0.5;
+  for(let i=0;i<12;i++){
+    ctx.globalAlpha = opacity*0.05;
+    ctx.strokeStyle = IRIS[i];
+    const a=phase+i*Math.PI/6;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*W,cy+Math.sin(a)*H);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawDivineSparks(ctx, imgData, W, H, t, opacity){
+  const d=imgData.data, eW=imgData.width, eH=imgData.height;
+  const scaleX=W/eW, scaleY=H/eH;
+  const phase=t*0.002;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  for(let y=0;y<eH;y+=3){
+    for(let x=0;x<eW;x+=3){
+      const i=(y*eW+x)*4;
+      const lum=(d[i]+d[i+1]+d[i+2])/3;
+      if(lum<180) continue;
+      const intensity=(lum-180)/75;
+      const px=x*scaleX, py=y*scaleY;
+      const pulse=0.5+0.5*Math.sin(phase+x*0.3+y*0.2);
+      const r=4+intensity*8*pulse;
+      // Rainbow sparks — each bright point catches a different hue like gemstones
+      const sparkHue=(phase*30+x*3+y*3) % 360;
+      const grad=ctx.createRadialGradient(px,py,0,px,py,r);
+      grad.addColorStop(0,hsl(sparkHue,0.9,0.55,intensity*opacity*0.8*pulse));
+      grad.addColorStop(0.4,hsl((sparkHue+120)%360,0.8,0.65,intensity*opacity*0.3*pulse));
+      grad.addColorStop(1,'transparent');
+      ctx.fillStyle=grad;
+      ctx.fillRect(px-r,py-r,r*2,r*2);
+
+      // Tiny iridescent cross
+      if(intensity>0.5){
+        ctx.strokeStyle=IRIS[Math.floor(x+y)%IRIS.length]+'88';
+        ctx.lineWidth=0.5;
+        ctx.beginPath();ctx.moveTo(px-3,py);ctx.lineTo(px+3,py);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(px,py-3);ctx.lineTo(px,py+3);ctx.stroke();
+      }
+    }
+  }
+  ctx.restore();
+}
+
+function drawSourceField(ctx, W, H, t, opacity, fieldMult){
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  const phase=t*0.0004;
+  const cx=W/2, cy=H/2;
+
+  // Dissolving rainbow static — like looking at currency under UV light
+  for(let y=0;y<H;y+=6){
+    for(let x=0;x<W;x+=6){
+      const dist=Math.hypot(x-cx,y-cy)/Math.max(W,H);
+      const noise=Math.sin(x*0.03+phase*3)*Math.cos(y*0.03+phase*2)*Math.sin(phase+dist*10);
+      if(noise<0.3) continue;
+      const intensity=(noise-0.3)/0.7;
+      const h=(phase*60+x*0.5+y*0.5) % 360;
+      ctx.fillStyle=hsl(h,0.8,0.6,intensity*opacity*0.12);
+      ctx.fillRect(x,y,6,6);
+    }
+  }
+
+  // Central prismatic radiance
+  const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*0.5*fieldMult);
+  grad.addColorStop(0,`rgba(139,92,246,${0.06*opacity})`);
+  grad.addColorStop(0.3,`rgba(236,72,153,${0.04*opacity})`);
+  grad.addColorStop(0.6,`rgba(245,158,11,${0.03*opacity})`);
+  grad.addColorStop(1,'transparent');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W,H);
+  ctx.restore();
+}
+
+function drawWaveInterference(ctx, W, H, t, opacity){
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = opacity * 0.2;
+  const phase=t*0.001+S.phase*Math.PI/180;
+  const cx=W/2, cy=H/2;
+
+  for(let y=0;y<H;y+=4){
+    for(let x=0;x<W;x+=4){
+      const d1=Math.hypot(x-cx,y-cy);
+      const d2=Math.hypot(x,y);
+      const d3=Math.hypot(x-W,y-H);
+      const wave=Math.sin(d1*0.03+phase)+Math.sin(d2*0.02-phase*0.7)+Math.sin(d3*0.025+phase*1.3);
+      if(wave>1.5){
+        const intensity=(wave-1.5)/1.5;
+        // Interference creates rainbow moire — like tilting a hologram
+        const h=(x*0.5+y*0.5+t*0.02) % 360;
+        ctx.fillStyle=hsl(h,0.8,0.55,intensity*0.4);
+        ctx.fillRect(x,y,4,4);
+      }
+    }
+  }
+  ctx.restore();
+}
+
+function drawMotionTrails(ctx, hotspots, W, H, t, opacity){
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = opacity * 0.6;
+  hotspots.forEach((h,i)=>{
+    const px=h.x*W, py=h.y*H;
+    const r=30+h.intensity*80;
+    const grad=ctx.createRadialGradient(px,py,0,px,py,r);
+    const color=IRIS[(i+Math.floor(t*0.01))%IRIS.length];
+    grad.addColorStop(0,color+'88');
+    grad.addColorStop(0.5,color+'33');
+    grad.addColorStop(1,'transparent');
+    ctx.fillStyle=grad;
+    ctx.fillRect(px-r,py-r,r*2,r*2);
+  });
+  ctx.restore();
+}
+
+function drawFocusReticle(ctx, W, H, t, opacity){
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  const cx=W/2, cy=H/2;
+  const phase=t*0.001;
+  ctx.globalAlpha = opacity * 0.5;
+  ctx.lineWidth = 0.7;
+
+  // Rotating cross — each arm a different color
+  const r=30;
+  for(let i=0;i<4;i++){
+    const a=phase*0.5+i*Math.PI/2;
+    ctx.strokeStyle=IRIS[i*3];
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*10, cy+Math.sin(a)*10);
+    ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+    ctx.stroke();
+  }
+  // Inner circle — gradient sweep
+  ctx.strokeStyle=IRIS[Math.floor(phase)%IRIS.length];
+  ctx.beginPath();
+  ctx.arc(cx,cy,8,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ── EYE OF PROVIDENCE (center indicator) ──
+function drawEye(t, entangle, opacity){
+  const ctx=eyeCtx;
+  const W=200, H=200, cx=100, cy=100;
+  ctx.clearRect(0,0,W,H);
+
+  const eyeOpen = 0.3 + entangle * 0.7;
+  const eyeAlpha = Math.max(0.05, (1 - entangle) * 0.5);
+
+  ctx.save();
+  ctx.globalAlpha = eyeAlpha;
+
+  const phase=t*0.001;
+  const L=LAYERS[S.layer];
+
+  // Outer almond shape — iridescent gradient stroke
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 60, 25*eyeOpen, 0, 0, Math.PI*2);
+  ctx.strokeStyle = L.color+'88';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Iris — rainbow gradient
+  const irisR = 15*eyeOpen;
+  const irisGrad = ctx.createRadialGradient(cx,cy,0,cx,cy,irisR);
+  irisGrad.addColorStop(0, '#8b5cf688');
+  irisGrad.addColorStop(0.3, '#ec489944');
+  irisGrad.addColorStop(0.6, '#f59e0b33');
+  irisGrad.addColorStop(1, '#10b98111');
+  ctx.fillStyle=irisGrad;
+  ctx.beginPath();
+  ctx.arc(cx,cy,irisR,0,Math.PI*2);
+  ctx.fill();
+
+  // Pupil
+  ctx.fillStyle='#1a1a2e';
+  ctx.beginPath();
+  ctx.arc(cx,cy,5*eyeOpen,0,Math.PI*2);
+  ctx.fill();
+
+  // Light glint
+  ctx.fillStyle=`rgba(255,255,255,${0.7*eyeOpen})`;
+  ctx.beginPath();
+  ctx.arc(cx-3,cy-3,2,0,Math.PI*2);
+  ctx.fill();
+
+  // Rainbow radiating lines
+  ctx.lineWidth=0.5;
+  for(let i=0;i<12;i++){
+    ctx.strokeStyle = IRIS[i]+'44';
+    const a=phase*0.3+i*Math.PI/6;
+    const inner=30*eyeOpen;
+    const outer=50+10*Math.sin(phase+i);
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*inner, cy+Math.sin(a)*inner*0.5);
+    ctx.lineTo(cx+Math.cos(a)*outer, cy+Math.sin(a)*outer*0.5);
+    ctx.stroke();
+  }
+
+  // Entanglement progress ring — iridescent arc
+  const arcGrad=ctx.createConicGradient(-Math.PI/2, cx, cy);
+  IRIS.forEach((c,i)=>arcGrad.addColorStop(i/IRIS.length, c+'88'));
+  arcGrad.addColorStop(1, IRIS[0]+'88');
+  ctx.strokeStyle=arcGrad;
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(cx,cy,70,-Math.PI/2,-Math.PI/2+entangle*Math.PI*2);
+  ctx.stroke();
+
+  // At high entanglement, show text
+  if(entangle>0.5){
+    ctx.globalAlpha = (entangle-0.5)*2*eyeAlpha;
+    ctx.font='9px Cinzel, serif';
+    ctx.fillStyle='#1a1a2e';
+    ctx.textAlign='center';
+    ctx.fillText('YOU ARE THE LENS', cx, cy+55);
+  }
+
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════════
+// THE SCRYING ENGINE — Reading Light as Language
+// ═══════════════════════════════════════════════════════════
+// The environment communicates through:
+// 1. Luminance bands → 6 hexagram lines (bright=yang, dark=yin)
+// 2. Edge density → structural meaning (complexity, intention)
+// 3. Color dominance → elemental/sephirotic channel
+// 4. Bilateral symmetry → coherence of the message
+// 5. Motion → urgency and direction
+// 6. Temporal pattern → the message evolves with breath and phase
+//
+// The pixel IS the letter. Light IS the word. Shape IS the sentence.
+// ═══════════════════════════════════════════════════════════
+
+// Vocabulary: hexagram → oracle (environment-aware, maps the 64 to messages from the light)
+const SCRY_ORACLE = [
+  // 0-7: lower trigram = Earth (Kun)
+  'The light gathers at the center. Something is forming.',
+  'The shadows are listening. Be still.',
+  'A threshold appears in the pattern. Step through.',
+  'The dark spaces between objects hold the message. Read the gaps.',
+  'The light asks you to wait. Not yet.',
+  'Two forces meet in the frame. Which do you follow?',
+  'The shapes are marching. Order emerges from chaos.',
+  'The environment yields. It is ready to receive your intention.',
+  // 8-15: lower = Water (Kan)
+  'Fluid patterns. The message is changing as you read it.',
+  'Small movements carry the deepest truths. Watch the edges.',
+  'Peace radiates from the brightest point. Go there.',
+  'The scene resists. Something blocks the channel.',
+  'Fellowship of light. Multiple bright points are in conversation.',
+  'Abundance is visible. The field overflows.',
+  'The lower regions speak of humility. Look down.',
+  'Joy hides in the warm tones. Can you feel it?',
+  // 16-23: lower = Mountain (Gen)
+  'The still points are the message. Find what does not move.',
+  'Something decays in the dim areas. Let it go.',
+  'The bright edge approaches. Receive it.',
+  'Contemplation: the scene reflects you more than you know.',
+  'Sharp edges bite through. A decisive message.',
+  'Beauty in the gradient. The transition IS the teaching.',
+  'The structure is splitting. Two paths revealed.',
+  'Return. The pattern repeats from the beginning.',
+  // 24-31: lower = Thunder (Zhen)
+  'Innocence in the raw light. No filter needed.',
+  'Great power accumulates in the brightest zone.',
+  'The mouth of the image — where light enters dark — nourishes.',
+  'Excess light. The message overwhelms. Soften your gaze.',
+  'Danger in the deep shadows. Acknowledge it, do not enter.',
+  'Fire clings to surfaces. The message is written on every edge.',
+  'Influence: what you see is already changing because you see it.',
+  'Duration. This pattern has been here longer than you think.',
+  // 32-39: lower = Wind (Xun)
+  'Retreat. The light withdraws. Follow it inward.',
+  'Great strength gathers at the horizon. Look to the edges.',
+  'Progress. The bright region grows. You are advancing.',
+  'Injury to the light. The darkening carries wisdom.',
+  'Family: clusters of similar luminance. They belong together.',
+  'Opposition: light and dark refuse to blend. Honor the boundary.',
+  'Obstruction. The pattern says: another way exists.',
+  'Liberation. The tension in the frame releases. Exhale.',
+  // 40-47: lower = Fire (Li)
+  'Decrease in the lower field. Something is being taken to be given.',
+  'Increase in the upper field. The gift arrives from above.',
+  'Breakthrough. A bright line cuts through darkness.',
+  'Encounter. Something unexpected enters the frame. Receive it.',
+  'Gathering. The brightest points converge. A council forms.',
+  'Pushing upward. Vertical light. The message rises.',
+  'Exhaustion. The light is dim. Rest. Conserve.',
+  'The well. A single bright point in darkness. Draw from it.',
+  // 48-55: lower = Lake (Dui)
+  'Revolution. The colors shift. A new order arrives.',
+  'The cauldron. Heat and light combine. Transformation.',
+  'Thunder in the pattern. Sudden shifts. Stay centered.',
+  'Stillness. The mountain holds. Do not move.',
+  'Gradual progress. The light creeps. Patience.',
+  'The maiden. Delicate patterns. Handle with gentleness.',
+  'Abundance. The frame is full. Celebrate.',
+  'The wanderer. Moving light. Follow but do not chase.',
+  // 56-63: lower = Heaven (Qian)
+  'Gentle penetration. The light enters softly. Let it.',
+  'Joy. The warm regions smile. Smile back.',
+  'Dispersion. The pattern scatters. Let the wind take it.',
+  'Limitation. Edges define. Boundaries are gifts.',
+  'Inner truth. The center glows. Trust what you see.',
+  'Small exceeding. Tiny bright details carry the largest meaning.',
+  'Completion. The pattern is whole. Breathe.',
+  'Before completion. Almost. The last shadow yields to the first light.',
+];
+
+// Elemental vocabulary from dominant color
+const COLOR_CHANNEL = [
+  {name:'FIRE',  range:[0,30],    msg:'Mars speaks. Act.'},
+  {name:'EARTH', range:[30,60],   msg:'Venus speaks. Feel.'},
+  {name:'AIR',   range:[60,150],  msg:'Mercury speaks. Think.'},
+  {name:'WATER', range:[150,250], msg:'Moon speaks. Dream.'},
+  {name:'SPIRIT',range:[250,330], msg:'Jupiter speaks. Expand.'},
+  {name:'VOID',  range:[330,360], msg:'Saturn speaks. Structure.'},
+];
+
+// Symmetry messages
+const SYMMETRY_MSG = [
+  'The field is chaotic. Raw creative potential.',           // <0.2
+  'Partial symmetry. A question is forming.',                // 0.2-0.4
+  'The mirror begins to clear. Listen more carefully.',      // 0.4-0.6
+  'Strong bilateral coherence. The message crystallizes.',   // 0.6-0.8
+  'Perfect mirror. What you see outside IS your inside.',    // >0.8
+];
+
+// Motion messages
+const MOTION_MSG = [
+  'Absolute stillness. The deepest channel is open.',
+  'Subtle movement. A whisper from the field.',
+  'Moderate flow. The current carries meaning.',
+  'Active turbulence. Many voices speak at once.',
+  'Storm. Close the scrying. Wait for calm.',
+];
+
+// ── SCRY FUNCTIONS ──
+
+function scryReadFrame(imgData, edges){
+  if(!imgData) return;
+  const w=imgData.width, h=imgData.height, d=imgData.data;
+  const bandH = Math.floor(h/6);
+
+  // 1. Read 6 horizontal bands as hexagram lines
+  for(let line=0; line<6; line++){
+    let lumSum=0, count=0;
+    const yStart = (5-line) * bandH; // bottom to top (line 0 = bottom)
+    for(let y=yStart; y<yStart+bandH && y<h; y+=2){
+      for(let x=0; x<w; x+=2){
+        const i=(y*w+x)*4;
+        lumSum += d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114;
+        count++;
+      }
+    }
+    const avg = lumSum / count / 255;
+    S.scryRegionLum[line] = avg;
+
+    // Threshold: above median = yang (1), below = yin (0)
+    // Use adaptive threshold based on global luminance
+    S.scryLines[line] = avg > S.luminance ? 1 : 0;
+
+    // Edge density per band
+    if(edges){
+      let edgeSum=0, eCnt=0;
+      for(let y=yStart; y<yStart+bandH && y<h; y+=2){
+        for(let x=0; x<w; x+=2){
+          if(edges[y*w+x]>20) edgeSum++;
+          eCnt++;
+        }
+      }
+      S.scryEdgeDensity[line] = edgeSum / eCnt;
+    }
+  }
+
+  // 2. Dominant color (hue from center region)
+  let rSum=0, gSum=0, bSum=0, cCount=0;
+  const cx=Math.floor(w/2), cy=Math.floor(h/2), rad=Math.floor(Math.min(w,h)/4);
+  for(let y=cy-rad; y<cy+rad; y+=3){
+    for(let x=cx-rad; x<cx+rad; x+=3){
+      if(x<0||x>=w||y<0||y>=h) continue;
+      const i=(y*w+x)*4;
+      rSum+=d[i]; gSum+=d[i+1]; bSum+=d[i+2]; cCount++;
+    }
+  }
+  if(cCount>0){
+    S.scryColorDom[0] = rSum/cCount;
+    S.scryColorDom[1] = gSum/cCount;
+    S.scryColorDom[2] = bSum/cCount;
+  }
+
+  // 3. Bilateral symmetry score
+  let symMatch=0, symTotal=0;
+  for(let y=0; y<h; y+=4){
+    for(let x=0; x<Math.floor(w/2); x+=4){
+      const i1=(y*w+x)*4;
+      const mirrorX=w-1-x;
+      const i2=(y*w+mirrorX)*4;
+      const diff=Math.abs(d[i1]-d[i2])+Math.abs(d[i1+1]-d[i2+1])+Math.abs(d[i1+2]-d[i2+2]);
+      if(diff < 80) symMatch++;
+      symTotal++;
+    }
+  }
+  S.scrySymmetry = symTotal>0 ? symMatch/symTotal : 0;
+}
+
+function scryInterpret(t){
+  // Build the hexagram number from scry lines
+  const hexN = S.scryLines.reduce((v,b,i)=>v|(b<<i),0);
+
+  // Get the oracle message for this hexagram
+  const oracleMsg = SCRY_ORACLE[hexN] || 'The pattern is beyond known forms.';
+
+  // Get color channel
+  const r=S.scryColorDom[0], g=S.scryColorDom[1], b=S.scryColorDom[2];
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let hue=0;
+  if(max!==min){
+    if(max===r) hue=60*((g-b)/(max-min))%360;
+    else if(max===g) hue=60*((b-r)/(max-min)+2);
+    else hue=60*((r-g)/(max-min)+4);
+    if(hue<0) hue+=360;
+  }
+  const colorCh = COLOR_CHANNEL.find(c=>hue>=c.range[0]&&hue<c.range[1]) || COLOR_CHANNEL[0];
+
+  // Symmetry message
+  const symIdx = Math.min(4, Math.floor(S.scrySymmetry * 5));
+  const symMsg = SYMMETRY_MSG[symIdx];
+
+  // Motion message
+  const motIdx = Math.min(4, Math.floor(S.motionLevel * 5));
+  const motMsg = MOTION_MSG[motIdx];
+
+  // Edge complexity: average edge density
+  const avgEdge = Array.from(S.scryEdgeDensity).reduce((a,b)=>a+b,0)/6;
+  const complexMsg = avgEdge > 0.15 ? 'Complex structure. Many voices.' :
+                     avgEdge > 0.05 ? 'Clear patterns. The message is legible.' :
+                     'Simple field. One voice, one truth.';
+
+  // Compose the full scrying message
+  // Alternate between different aspects based on phase
+  const aspect = Math.floor((S.phase / 5) % 5);
+  let mainMsg;
+  switch(aspect){
+    case 0: mainMsg = oracleMsg; break;
+    case 1: mainMsg = `${colorCh.name} channel active. ${colorCh.msg}`; break;
+    case 2: mainMsg = symMsg; break;
+    case 3: mainMsg = motMsg; break;
+    case 4: mainMsg = complexMsg; break;
+    default: mainMsg = oracleMsg;
+  }
+
+  return {hexN, mainMsg, oracleMsg, colorCh, symMsg, motMsg, complexMsg, hue};
+}
+
+function scryRender(ctx, W, H, t, imgData, edges){
+  if(!S.controls.scry) return;
+
+  const scryOvl = $('scryOverlay');
+  scryOvl.classList.add('active');
+
+  // Read the frame (every 4th call for performance)
+  if(S.frameCount%4===0 && imgData){
+    scryReadFrame(imgData, edges);
+  }
+
+  // Interpret and display message every ~3 seconds
+  S.scryCooldown--;
+  if(S.scryCooldown <= 0 && imgData){
+    S.scryCooldown = 180; // ~3 seconds at 60fps
+    const reading = scryInterpret(t);
+
+    // Update hexagram display
+    $('scryHex').textContent = String.fromCodePoint(0x4DC0 + reading.hexN);
+    $('scryHex').classList.add('pulse');
+    setTimeout(()=>$('scryHex').classList.remove('pulse'), 2000);
+
+    // Update message
+    const msgEl = $('scryMessage');
+    msgEl.textContent = reading.mainMsg;
+    msgEl.classList.add('visible');
+    S.scryLastMessage = reading.mainMsg;
+
+    // Add to history
+    S.scryHistory.unshift({
+      hex: String.fromCodePoint(0x4DC0 + reading.hexN),
+      msg: reading.oracleMsg,
+      channel: reading.colorCh.name,
+      time: new Date().toLocaleTimeString(),
+    });
+    if(S.scryHistory.length > 20) S.scryHistory.pop();
+
+    // Update log display — safe DOM construction (no raw innerHTML with data)
+    const logEl = $('scryLog');
+    while(logEl.firstChild) logEl.removeChild(logEl.firstChild);
+    S.scryHistory.slice(0,8).forEach(h=>{
+      const entry = document.createElement('div');
+      entry.className = 'scry-log-entry';
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'scry-time';
+      timeSpan.textContent = h.time;
+      const hexSpan = document.createElement('span');
+      hexSpan.className = 'scry-hex-sm';
+      hexSpan.textContent = h.hex;
+      entry.appendChild(timeSpan);
+      entry.appendChild(document.createTextNode(' '));
+      entry.appendChild(hexSpan);
+      entry.appendChild(document.createTextNode(h.msg));
+      logEl.appendChild(entry);
+    });
+
+    // Update status
+    const symPct = Math.round(S.scrySymmetry*100);
+    $('scryStatus').textContent =
+      `SCRYING \u00B7 ${reading.colorCh.name} CHANNEL \u00B7 SYM ${symPct}% \u00B7 HEX ${reading.hexN}`;
+  }
+
+  // Draw the 6 luminance bands (subtle overlay showing what the scry engine reads)
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  const bandH = H/6;
+  for(let i=0; i<6; i++){
+    const yPos = (5-i) * bandH;
+    const lum = S.scryRegionLum[i];
+    const isYang = S.scryLines[i];
+    const edgeDens = S.scryEdgeDensity[i];
+
+    // Subtle band highlight — iridescent per-line coloring
+    const bandColor = IRIS[i*2 % IRIS.length];
+    ctx.fillStyle = isYang
+      ? bandColor+'0A'
+      : IRIS[(i*2+6) % IRIS.length]+'08';
+    ctx.fillRect(0, yPos, W, bandH);
+
+    // Line indicator on the right edge
+    const lineY = yPos + bandH/2;
+    ctx.strokeStyle = isYang ? bandColor+'77' : IRIS[(i*2+6)%IRIS.length]+'55';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    if(isYang){
+      ctx.moveTo(W-40, lineY);
+      ctx.lineTo(W-8, lineY);
+    } else {
+      ctx.moveTo(W-40, lineY);
+      ctx.lineTo(W-28, lineY);
+      ctx.moveTo(W-20, lineY);
+      ctx.lineTo(W-8, lineY);
+    }
+    ctx.stroke();
+
+    // Luminance value
+    ctx.font = '8px Cinzel, serif';
+    ctx.fillStyle = '#1a1a2e33';
+    ctx.textAlign = 'right';
+    ctx.fillText((lum*100).toFixed(0)+'%', W-44, lineY+3);
+  }
+
+  // Draw symmetry axis — iridescent dashed line
+  ctx.strokeStyle = `rgba(139,92,246,${S.scrySymmetry*0.25})`;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4,8]);
+  ctx.beginPath();
+  ctx.moveTo(W/2, 0);
+  ctx.lineTo(W/2, H);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Color dominance indicator
+  const r=S.scryColorDom[0], g=S.scryColorDom[1], b=S.scryColorDom[2];
+  ctx.fillStyle = `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},0.4)`;
+  ctx.beginPath();
+  ctx.arc(W-25, 80, 12, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#1a1a2e22';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ── TOGGLE SCRY VISIBILITY ──
+function updateScryVisibility(){
+  const scryOvl = $('scryOverlay');
+  if(!S.controls.scry){
+    scryOvl.classList.remove('active');
+    $('scryMessage').classList.remove('visible');
+  }
+}
+
+// ── CLEANUP: Release camera & save state on page unload ──
+window.addEventListener('beforeunload', ()=>{
+  NIS.collect('LIFECYCLE', { action: 'unload', sessionSeconds: Math.round((performance.now()-S.sessionStart)/1000), brief: NIS.brief() }, NIS.LEVEL.NOTICE);
+  saveState();
+  if(cam.srcObject){
+    cam.srcObject.getTracks().forEach(t=>t.stop());
+    cam.srcObject = null;
+  }
+});
+window.addEventListener('pagehide', ()=>{
+  if(cam.srcObject){
+    cam.srcObject.getTracks().forEach(t=>t.stop());
+    cam.srcObject = null;
+  }
+});
+</script>
+</body>
+</html>

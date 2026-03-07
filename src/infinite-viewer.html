@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -296,6 +298,10 @@
   let enhancedCanvas = null;
   let enhancedCtx = null;
 
+  // Image progressive refinement state
+  let imgRefineGen = 0;
+  let imgRefinePending = null;
+
   // --- Resize ---
   function resize() {
     dpr = window.devicePixelRatio || 1;
@@ -530,8 +536,18 @@
   }
 
   // --- Image rendering with infinite-resolution enhancement ---
+  // Two-pass: instant preview (ctx.drawImage), then async strip-by-strip enhancement
+  // Top-to-bottom, left-to-right — reading order maintained always
+
   function renderImage() {
     if (!loadedImage || !enhancedCtx) return;
+
+    // Cancel any pending refinement from previous frame
+    imgRefineGen++;
+    if (imgRefinePending) {
+      cancelAnimationFrame(imgRefinePending);
+      imgRefinePending = null;
+    }
 
     ctx.save();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -546,226 +562,202 @@
     const drawX = (W - drawW) / 2 + viewX;
     const drawY = (H - drawH) / 2 + viewY;
 
-    // If zoomed within native resolution or below, just draw normally with smoothing
-    const effectiveZoom = zoom;
-    const nativePixelRatio = effectiveZoom; // pixels per source pixel on screen
+    const nativePixelRatio = zoom; // screen pixels per source pixel
 
-    if (nativePixelRatio <= 2) {
-      // At or below 2x — standard rendering is fine
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
-    } else {
-      // Beyond native resolution — activate detail synthesis
+    // Pass 1: INSTANT — draw with browser's built-in high-quality interpolation
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
+    ctx.restore();
 
-      // Determine visible region in source image coordinates
-      const srcX0 = Math.max(0, (-drawX) / zoom);
-      const srcY0 = Math.max(0, (-drawY) / zoom);
-      const srcX1 = Math.min(imgW, (W - drawX) / zoom);
-      const srcY1 = Math.min(imgH, (H - drawY) / zoom);
+    // If zoom is within native range, the browser's rendering is sufficient
+    if (nativePixelRatio <= 2) return;
 
-      if (srcX1 <= srcX0 || srcY1 <= srcY0) {
-        ctx.restore();
-        return;
-      }
+    // Pass 2: ASYNC PROGRESSIVE — enhance in strips, top-to-bottom
+    // Each animation frame processes a batch of rows, keeping UI responsive
+    const gen = imgRefineGen;
 
-      // Get source pixel data for visible region (with 3px padding for kernels)
-      const pad = 4;
-      const sx0 = Math.max(0, Math.floor(srcX0) - pad);
-      const sy0 = Math.max(0, Math.floor(srcY0) - pad);
-      const sx1 = Math.min(imgW, Math.ceil(srcX1) + pad);
-      const sy1 = Math.min(imgH, Math.ceil(srcY1) + pad);
-      const sW = sx1 - sx0;
-      const sH = sy1 - sy0;
+    // Capture all parameters for the async closure
+    const capDrawX = drawX, capDrawY = drawY;
+    const capDrawW = drawW, capDrawH = drawH;
+    const capZoom = zoom;
+    const capNPR = nativePixelRatio;
 
-      if (sW <= 0 || sH <= 0) { ctx.restore(); return; }
+    // Visible output region in logical pixels
+    const outX0 = Math.max(0, Math.floor(capDrawX));
+    const outY0 = Math.max(0, Math.floor(capDrawY));
+    const outX1 = Math.min(W, Math.ceil(capDrawX + capDrawW));
+    const outY1 = Math.min(H, Math.ceil(capDrawY + capDrawH));
+    const outW = outX1 - outX0;
+    const outH = outY1 - outY0;
 
-      let srcData;
-      try {
-        srcData = enhancedCtx.getImageData(sx0, sy0, sW, sH);
-      } catch (e) {
-        // Fallback: draw normally
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(loadedImage, drawX, drawY, drawW, drawH);
-        ctx.restore();
-        return;
-      }
-      const src = srcData.data;
+    if (outW <= 0 || outH <= 0) return;
 
-      // Determine output tile size — render visible portion
-      const outX0 = Math.max(0, Math.floor(drawX));
-      const outY0 = Math.max(0, Math.floor(drawY));
-      const outX1 = Math.min(W, Math.ceil(drawX + drawW));
-      const outY1 = Math.min(H, Math.ceil(drawY + drawH));
-      const outW = outX1 - outX0;
-      const outH = outY1 - outY0;
+    // Source region with padding for kernels
+    const srcX0 = Math.max(0, (-capDrawX) / capZoom);
+    const srcY0 = Math.max(0, (-capDrawY) / capZoom);
+    const srcX1 = Math.min(imgW, (W - capDrawX) / capZoom);
+    const srcY1 = Math.min(imgH, (H - capDrawY) / capZoom);
 
-      if (outW <= 0 || outH <= 0) { ctx.restore(); return; }
+    if (srcX1 <= srcX0 || srcY1 <= srcY0) return;
 
-      // Limit render size for performance
-      const maxTile = 1200;
-      const tileScale = Math.min(1, maxTile / Math.max(outW, outH));
-      const tW = Math.ceil(outW * tileScale);
-      const tH = Math.ceil(outH * tileScale);
+    const pad = 4;
+    const sx0 = Math.max(0, Math.floor(srcX0) - pad);
+    const sy0 = Math.max(0, Math.floor(srcY0) - pad);
+    const sx1 = Math.min(imgW, Math.ceil(srcX1) + pad);
+    const sy1 = Math.min(imgH, Math.ceil(srcY1) + pad);
+    const sW = sx1 - sx0;
+    const sH = sy1 - sy0;
 
-      // Create output imagedata at tile resolution
-      const tileCanvas = document.createElement('canvas');
-      tileCanvas.width = tW;
-      tileCanvas.height = tH;
-      const tileCtx = tileCanvas.getContext('2d', { willReadFrequently: true });
-      const outData = tileCtx.createImageData(tW, tH);
-      const out = outData.data;
+    if (sW <= 0 || sH <= 0) return;
 
-      // Helper to sample source with Lanczos interpolation
-      function sampleSrc(fx, fy) {
-        // fx, fy in source image local coordinates (relative to sx0, sy0)
-        const ix = Math.floor(fx);
-        const iy = Math.floor(fy);
+    let srcData;
+    try {
+      srcData = enhancedCtx.getImageData(sx0, sy0, sW, sH);
+    } catch (e) {
+      return; // Preview is already drawn, good enough
+    }
+    const src = srcData.data;
 
-        // Fast path: bilinear for speed when tile is large
-        if (tW * tH > 600 * 600) {
-          const dx = fx - ix;
-          const dy = fy - iy;
-          const x0 = Math.max(0, Math.min(sW - 1, ix));
-          const y0 = Math.max(0, Math.min(sH - 1, iy));
-          const x1 = Math.min(sW - 1, x0 + 1);
-          const y1 = Math.min(sH - 1, y0 + 1);
-          const i00 = (y0 * sW + x0) * 4;
-          const i10 = (y0 * sW + x1) * 4;
-          const i01 = (y1 * sW + x0) * 4;
-          const i11 = (y1 * sW + x1) * 4;
-          const r = (src[i00] * (1-dx)*(1-dy) + src[i10]*dx*(1-dy) + src[i01]*(1-dx)*dy + src[i11]*dx*dy);
-          const g = (src[i00+1]*(1-dx)*(1-dy) + src[i10+1]*dx*(1-dy) + src[i01+1]*(1-dx)*dy + src[i11+1]*dx*dy);
-          const b = (src[i00+2]*(1-dx)*(1-dy) + src[i10+2]*dx*(1-dy) + src[i01+2]*(1-dx)*dy + src[i11+2]*dx*dy);
-          return [r, g, b];
-        }
-
-        // Lanczos-3
-        let rr = 0, gg = 0, bb = 0, ww = 0;
-        for (let jj = -2; jj <= 2; jj++) {
-          const sy = Math.max(0, Math.min(sH - 1, iy + jj));
-          const wy = lanczos3(fy - (iy + jj));
-          for (let ii = -2; ii <= 2; ii++) {
-            const sx = Math.max(0, Math.min(sW - 1, ix + ii));
-            const wx = lanczos3(fx - (ix + ii));
-            const w = wx * wy;
-            const idx = (sy * sW + sx) * 4;
-            rr += src[idx] * w;
-            gg += src[idx + 1] * w;
-            bb += src[idx + 2] * w;
-            ww += w;
-          }
-        }
-        if (ww > 0) { rr /= ww; gg /= ww; bb /= ww; }
-        return [rr, gg, bb];
-      }
-
-      // Compute Laplacian (edge) magnitude at a source point
-      function edgeMagnitude(fx, fy) {
-        const d = 1.0; // 1 source pixel
-        const c = sampleSrc(fx, fy);
-        const l = sampleSrc(fx - d, fy);
-        const r = sampleSrc(fx + d, fy);
-        const u = sampleSrc(fx, fy - d);
-        const dd = sampleSrc(fx, fy + d);
-        // Laplacian per channel
-        const lap0 = (l[0] + r[0] + u[0] + dd[0]) - 4 * c[0];
-        const lap1 = (l[1] + r[1] + u[1] + dd[1]) - 4 * c[1];
-        const lap2 = (l[2] + r[2] + u[2] + dd[2]) - 4 * c[2];
-        return Math.sqrt(lap0*lap0 + lap1*lap1 + lap2*lap2) / 255;
-      }
-
-      // Procedural micro-detail: generates subtle texture based on position and local gradient
-      function microDetail(fx, fy, color, edgeStr) {
-        // Hash function for deterministic noise
-        const h1 = Math.sin(fx * 127.1 + fy * 311.7) * 43758.5453;
-        const n1 = h1 - Math.floor(h1);
-        const h2 = Math.sin(fx * 269.5 + fy * 183.3) * 28001.8384;
-        const n2 = h2 - Math.floor(h2);
-
-        // Multi-octave noise
-        const h3 = Math.sin(fx * 12.9898 + fy * 78.233) * 43758.5453;
-        const n3 = (h3 - Math.floor(h3)) - 0.5;
-
-        // Blend noise strength based on zoom beyond native
-        const overZoom = Math.log2(Math.max(1, nativePixelRatio / 2));
-        const noiseAmp = Math.min(12, 2 + overZoom * 1.5);
-
-        // Edge-aware: strengthen detail near edges, soften in flat areas
-        const edgeFactor = Math.min(1, edgeStr * 3);
-
-        // Detail signal
-        const detail = n3 * noiseAmp * (0.3 + 0.7 * edgeFactor);
-
-        // Local luminance affects detail visibility
-        const lum = (color[0] * 0.299 + color[1] * 0.587 + color[2] * 0.114) / 255;
-        const lumFactor = 0.5 + 0.5 * (1 - Math.abs(lum - 0.5) * 2); // more detail in midtones
-
-        return detail * lumFactor;
-      }
-
-      // Sharpen kernel boost for edges
-      function sharpen(color, fx, fy, strength) {
-        const d = 0.5;
-        const l = sampleSrc(fx - d, fy);
-        const r = sampleSrc(fx + d, fy);
-        const u = sampleSrc(fx, fy - d);
-        const dd = sampleSrc(fx, fy + d);
-        const s = strength;
-        return [
-          color[0] + s * (4 * color[0] - l[0] - r[0] - u[0] - dd[0]),
-          color[1] + s * (4 * color[1] - l[1] - r[1] - u[1] - dd[1]),
-          color[2] + s * (4 * color[2] - l[2] - r[2] - u[2] - dd[2])
-        ];
-      }
-
-      // Render each output pixel
-      for (let ty = 0; ty < tH; ty++) {
-        for (let tx = 0; tx < tW; tx++) {
-          // Map tile pixel to screen pixel
-          const screenX = outX0 + tx / tileScale;
-          const screenY = outY0 + ty / tileScale;
-
-          // Map screen pixel to source image coordinate
-          const srcFx = (screenX - drawX) / zoom - sx0;
-          const srcFy = (screenY - drawY) / zoom - sy0;
-
-          // Sample with Lanczos
-          let color = sampleSrc(srcFx, srcFy);
-
-          // Beyond native res: apply edge enhancement and micro-detail
-          if (nativePixelRatio > 2) {
-            // Edge detection
-            const edge = edgeMagnitude(srcFx, srcFy);
-
-            // Sharpen edges (Laplacian enhancement)
-            const sharpStr = Math.min(0.4, 0.1 + 0.05 * Math.log2(nativePixelRatio));
-            color = sharpen(color, srcFx, srcFy, sharpStr * (0.5 + edge));
-
-            // Synthesize micro-detail
-            const detail = microDetail(srcFx * zoom, srcFy * zoom, color, edge);
-            color[0] += detail;
-            color[1] += detail;
-            color[2] += detail;
-          }
-
-          const oi = (ty * tW + tx) * 4;
-          out[oi]     = Math.max(0, Math.min(255, Math.round(color[0])));
-          out[oi + 1] = Math.max(0, Math.min(255, Math.round(color[1])));
-          out[oi + 2] = Math.max(0, Math.min(255, Math.round(color[2])));
-          out[oi + 3] = 255;
-        }
-      }
-
-      tileCtx.putImageData(outData, 0, 0);
-
-      // Draw tile to main canvas
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(tileCanvas, outX0, outY0, outW, outH);
+    // Bilinear sample from source data
+    function sampleBilinear(fx, fy) {
+      const ix = Math.floor(fx);
+      const iy = Math.floor(fy);
+      const dx = fx - ix;
+      const dy = fy - iy;
+      const x0 = Math.max(0, Math.min(sW - 1, ix));
+      const y0 = Math.max(0, Math.min(sH - 1, iy));
+      const x1 = Math.min(sW - 1, x0 + 1);
+      const y1 = Math.min(sH - 1, y0 + 1);
+      const i00 = (y0 * sW + x0) * 4;
+      const i10 = (y0 * sW + x1) * 4;
+      const i01 = (y1 * sW + x0) * 4;
+      const i11 = (y1 * sW + x1) * 4;
+      return [
+        src[i00]*(1-dx)*(1-dy) + src[i10]*dx*(1-dy) + src[i01]*(1-dx)*dy + src[i11]*dx*dy,
+        src[i00+1]*(1-dx)*(1-dy) + src[i10+1]*dx*(1-dy) + src[i01+1]*(1-dx)*dy + src[i11+1]*dx*dy,
+        src[i00+2]*(1-dx)*(1-dy) + src[i10+2]*dx*(1-dy) + src[i01+2]*(1-dx)*dy + src[i11+2]*dx*dy
+      ];
     }
 
-    ctx.restore();
+    // Edge magnitude via Laplacian
+    function edgeMag(fx, fy) {
+      const c = sampleBilinear(fx, fy);
+      const l = sampleBilinear(fx - 1, fy);
+      const r = sampleBilinear(fx + 1, fy);
+      const u = sampleBilinear(fx, fy - 1);
+      const d = sampleBilinear(fx, fy + 1);
+      const lap0 = (l[0]+r[0]+u[0]+d[0]) - 4*c[0];
+      const lap1 = (l[1]+r[1]+u[1]+d[1]) - 4*c[1];
+      const lap2 = (l[2]+r[2]+u[2]+d[2]) - 4*c[2];
+      return Math.sqrt(lap0*lap0 + lap1*lap1 + lap2*lap2) / 255;
+    }
+
+    // Sharpen around edges
+    function sharpen(color, fx, fy, s) {
+      const l = sampleBilinear(fx - 0.5, fy);
+      const r = sampleBilinear(fx + 0.5, fy);
+      const u = sampleBilinear(fx, fy - 0.5);
+      const d = sampleBilinear(fx, fy + 0.5);
+      return [
+        color[0] + s*(4*color[0] - l[0]-r[0]-u[0]-d[0]),
+        color[1] + s*(4*color[1] - l[1]-r[1]-u[1]-d[1]),
+        color[2] + s*(4*color[2] - l[2]-r[2]-u[2]-d[2])
+      ];
+    }
+
+    // Gradient-following micro-detail
+    function microDetail(fx, fy, color, edgeStr) {
+      const subX = fx - Math.floor(fx);
+      const subY = fy - Math.floor(fy);
+      const right = sampleBilinear(fx + 0.5, fy);
+      const down = sampleBilinear(fx, fy + 0.5);
+      const gradX = (right[0]-color[0] + right[1]-color[1] + right[2]-color[2]) / 3;
+      const gradY = (down[0]-color[0] + down[1]-color[1] + down[2]-color[2]) / 3;
+      const detail = (gradX*(subX-0.5) + gradY*(subY-0.5)) * 0.4;
+      const overZoom = Math.log2(Math.max(1, capNPR / 2));
+      const amp = Math.min(8, 1 + overZoom * 0.8);
+      const edgeFactor = Math.min(1, edgeStr * 2.5);
+      const lum = (color[0]*0.299 + color[1]*0.587 + color[2]*0.114) / 255;
+      const lumFactor = 0.5 + 0.5*(1 - Math.abs(lum - 0.5)*2);
+      return detail * amp * (0.3 + 0.7*edgeFactor) * lumFactor;
+    }
+
+    const sharpStr = Math.min(0.4, 0.1 + 0.05 * Math.log2(capNPR));
+
+    // 64x64 tile grid — the fundamental matrix unit
+    // Each tile is a self-contained world. Grid of grids.
+    // Tiles processed in reading order: top-to-bottom, left-to-right
+    const TILE = 64;
+    const tilesX = Math.ceil(outW / TILE);
+    const tilesY = Math.ceil(outH / TILE);
+    const totalTiles = tilesX * tilesY;
+    let tileIndex = 0;
+
+    // Reusable tile canvas — one 64x64 canvas for all tiles
+    const tileCanvas = document.createElement('canvas');
+    tileCanvas.width = TILE;
+    tileCanvas.height = TILE;
+    const tileCtx = tileCanvas.getContext('2d');
+
+    // Process 2 tiles per frame — keeps 60fps at 4096 px/tile
+    const TILES_PER_FRAME = 2;
+
+    function refineTile() {
+      if (gen !== imgRefineGen) return; // User zoomed/panned — discard
+
+      const frameEnd = Math.min(totalTiles, tileIndex + TILES_PER_FRAME);
+
+      for (; tileIndex < frameEnd; tileIndex++) {
+        // Reading order: left-to-right within row, top-to-bottom across rows
+        const tCol = tileIndex % tilesX;
+        const tRow = Math.floor(tileIndex / tilesX);
+        const tx0 = tCol * TILE;
+        const ty0 = tRow * TILE;
+        const tw = Math.min(TILE, outW - tx0);
+        const th = Math.min(TILE, outH - ty0);
+
+        const tileData = tileCtx.createImageData(tw, th);
+        const out = tileData.data;
+
+        // Each pixel within tile: top-to-bottom, left-to-right
+        for (let py = 0; py < th; py++) {
+          const screenY = outY0 + ty0 + py;
+          for (let px = 0; px < tw; px++) {
+            const screenX = outX0 + tx0 + px;
+            const srcFx = (screenX - capDrawX) / capZoom - sx0;
+            const srcFy = (screenY - capDrawY) / capZoom - sy0;
+
+            let color = sampleBilinear(srcFx, srcFy);
+            const edge = edgeMag(srcFx, srcFy);
+            color = sharpen(color, srcFx, srcFy, sharpStr * (0.5 + edge));
+            const dt = microDetail(srcFx, srcFy, color, edge);
+            color[0] += dt;
+            color[1] += dt;
+            color[2] += dt;
+
+            const oi = (py * tw + px) * 4;
+            out[oi]     = Math.max(0, Math.min(255, Math.round(color[0])));
+            out[oi + 1] = Math.max(0, Math.min(255, Math.round(color[1])));
+            out[oi + 2] = Math.max(0, Math.min(255, Math.round(color[2])));
+            out[oi + 3] = 255;
+          }
+        }
+
+        // Paint this 64x64 tile onto the main canvas
+        tileCtx.putImageData(tileData, 0, 0);
+        ctx.save();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.drawImage(tileCanvas, 0, 0, tw, th, outX0 + tx0, outY0 + ty0, tw, th);
+        ctx.restore();
+      }
+
+      if (tileIndex < totalTiles) {
+        imgRefinePending = requestAnimationFrame(refineTile);
+      }
+    }
+
+    imgRefinePending = requestAnimationFrame(refineTile);
   }
 
   // --- Main render ---
@@ -1103,3 +1095,11 @@
 </script>
 </body>
 </html>
+
+<!-- L7:PROVENANCE
+  Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+  File: src/infinite-viewer.html | Body-Hash: SHA-256:e8513507ab29882b13cef0a5b7a8e50de51a0c1ce82ba93a32be58b9b1cb82a3
+  Chain-Hash: SHA-256:1afbe9374bcf5aa0ebfb26b02597e6e4acbddd7d27625befa1ee69b0c228faf1 | Signed: 2026-03-01T15:09:56.453849+00:00
+  This work is the intellectual property of Alberto Valido Delgado.
+  Chain: 37 works linked. Verify: python3 provenance.py verify src/infinite-viewer.html
+L7:PROVENANCE -->

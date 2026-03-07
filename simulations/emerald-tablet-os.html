@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Emerald Tablet OS — L7 Universal Installer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --emerald: #0d4a3a;
+  --emerald-light: #1a6b52;
+  --emerald-glow: #2ecc71;
+  --gold: #c9a96e;
+  --gold-dim: #5a4a3a;
+  --ink: #080c0a;
+  --parchment: #d4c8a8;
+  --dim: #3a4a3e;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.3; }
+  50% { transform: scale(1.05); opacity: 0.6; }
+  100% { transform: scale(0.95); opacity: 0.3; }
+}
+
+body {
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+canvas#bg { position: fixed; inset: 0; z-index: 0; }
+
+/* ─── HEADER ─── */
+
+.header {
+  position: relative; z-index: 10;
+  text-align: center; padding: 60px 24px 20px;
+}
+
+.header h1 {
+  font-size: clamp(24px, 5vw, 42px);
+  font-weight: normal;
+  color: var(--gold);
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+}
+
+.header .subtitle {
+  font-size: clamp(11px, 2vw, 14px);
+  color: var(--dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+
+.header .hermes {
+  font-size: clamp(12px, 2.5vw, 16px);
+  color: var(--emerald-light);
+  margin-top: 16px;
+  font-style: italic;
+}
+
+/* ─── DEVICE GRID ─── */
+
+.section-title {
+  position: relative; z-index: 10;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin: 32px 0 16px;
+  font-family: 'Courier New', monospace;
+}
+
+.device-grid {
+  position: relative; z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.device-card {
+  background: rgba(13, 74, 58, 0.12);
+  border: 1px solid rgba(26, 107, 82, 0.2);
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  animation: arrive 0.5s ease-out backwards;
+}
+
+.device-card:hover {
+  border-color: var(--emerald-light);
+  background: rgba(13, 74, 58, 0.25);
+  transform: translateY(-2px);
+}
+
+.device-card.selected {
+  border-color: var(--emerald-glow);
+  background: rgba(13, 74, 58, 0.35);
+  box-shadow: 0 0 20px rgba(46, 204, 113, 0.1);
+}
+
+.device-card .icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.device-card .name {
+  font-size: 15px;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.device-card .role {
+  font-size: 10px;
+  color: var(--emerald-light);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 8px;
+}
+
+.device-card .desc {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.device-card .coord {
+  font-size: 9px;
+  color: rgba(46, 204, 113, 0.3);
+  font-family: 'Courier New', monospace;
+  margin-top: 8px;
+}
+
+/* ─── INSTALL PANEL ─── */
+
+#install-panel {
+  display: none;
+  position: relative; z-index: 10;
+  max-width: 680px;
+  margin: 32px auto;
+  padding: 0 24px;
+  animation: arrive 0.4s ease-out;
+}
+
+#install-panel .panel-box {
+  background: rgba(8, 12, 10, 0.9);
+  border: 1px solid var(--emerald-light);
+  border-radius: 12px;
+  padding: 32px;
+  backdrop-filter: blur(12px);
+}
+
+#install-panel h2 {
+  font-weight: normal;
+  color: var(--gold);
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+#install-panel .device-type {
+  font-size: 10px;
+  color: var(--emerald-light);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 20px;
+}
+
+.tool-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.tool-tag {
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  color: var(--emerald-light);
+  border: 1px solid rgba(26, 107, 82, 0.3);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+.law-list {
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.8;
+  margin: 12px 0;
+}
+
+.law-list .law-num {
+  color: var(--gold-dim);
+  font-family: 'Courier New', monospace;
+}
+
+.domain-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  padding: 2px 10px;
+  border-radius: 3px;
+  margin: 4px 4px 4px 0;
+}
+
+#btn-install {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  background: var(--emerald);
+  border: 1px solid var(--emerald-glow);
+  color: var(--gold);
+  font-family: Georgia, serif;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+
+#btn-install:hover {
+  background: var(--emerald-light);
+  box-shadow: 0 0 30px rgba(46, 204, 113, 0.2);
+}
+
+#btn-install:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ─── INSTALL PROGRESS ─── */
+
+#install-progress {
+  display: none;
+  position: relative; z-index: 10;
+  max-width: 680px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+.progress-box {
+  background: rgba(8, 12, 10, 0.95);
+  border: 1px solid var(--emerald-light);
+  border-radius: 12px;
+  padding: 32px;
+}
+
+.progress-bar {
+  height: 3px;
+  background: rgba(26, 107, 82, 0.2);
+  border-radius: 2px;
+  margin: 16px 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--emerald-glow);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.progress-log {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  line-height: 1.8;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.progress-log .step-done { color: var(--emerald-light); }
+.progress-log .step-active { color: var(--gold); animation: breathe 1.5s infinite; }
+
+/* ─── COMPLETE ─── */
+
+#install-complete {
+  display: none;
+  position: relative; z-index: 10;
+  text-align: center;
+  padding: 60px 24px;
+}
+
+#install-complete .sigil {
+  font-size: 48px;
+  color: var(--emerald-glow);
+  margin-bottom: 16px;
+}
+
+#install-complete h2 {
+  font-weight: normal;
+  color: var(--gold);
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+#install-complete .blessing {
+  font-style: italic;
+  color: var(--emerald-light);
+  font-size: 14px;
+  max-width: 480px;
+  margin: 12px auto;
+  line-height: 1.6;
+}
+
+/* ─── MIRROR ─── */
+
+#mirror {
+  position: relative; z-index: 10;
+  max-width: 680px;
+  margin: 0 auto 32px;
+  padding: 0 24px;
+}
+
+#mirror .mirror-frame {
+  background: rgba(8, 12, 10, 0.85);
+  border: 1px solid rgba(201, 169, 110, 0.15);
+  border-radius: 12px;
+  padding: 28px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+#mirror .mirror-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 50% 30%, rgba(201, 169, 110, 0.04), transparent 70%);
+  pointer-events: none;
+}
+
+#mirror .mirror-greeting {
+  font-size: clamp(14px, 3vw, 18px);
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+#mirror .mirror-character {
+  font-size: 11px;
+  color: var(--emerald-light);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 16px;
+}
+
+#mirror .mirror-icon {
+  font-size: 56px;
+  margin-bottom: 12px;
+  transition: all 0.5s;
+}
+
+#mirror .mirror-desc {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto 16px;
+}
+
+#mirror .mirror-coord {
+  font-size: 9px;
+  color: rgba(46, 204, 113, 0.25);
+  font-family: 'Courier New', monospace;
+  margin-bottom: 16px;
+}
+
+.character-strip {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.char-btn {
+  background: rgba(13, 74, 58, 0.15);
+  border: 1px solid rgba(26, 107, 82, 0.2);
+  color: var(--dim);
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+
+.char-btn:hover {
+  border-color: var(--emerald-light);
+  color: var(--emerald-light);
+}
+
+.char-btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(201, 169, 110, 0.08);
+}
+
+/* ─── DEVICE ADAPTATION — The OS becomes what it needs ─── */
+
+/* Phone: portrait, large touch, essential only */
+.device-phone .device-grid { grid-template-columns: 1fr; gap: 8px; }
+.device-phone .section-title { font-size: 9px; margin: 20px 0 8px; }
+.device-phone .device-card { padding: 14px; }
+.device-phone .device-card .desc { display: none; }
+.device-phone .header h1 { font-size: 22px; }
+.device-phone .header .hermes { font-size: 11px; }
+.device-phone #mirror .mirror-frame { padding: 20px 16px; }
+.device-phone #mirror .mirror-icon { font-size: 40px; }
+.device-phone .char-btn { padding: 4px 8px; font-size: 9px; }
+.device-phone #install-panel .panel-box { padding: 20px; }
+.device-phone .footer { padding: 24px; }
+
+/* Watch: minimal, just the mirror and character */
+.device-watch .device-grid { display: none; }
+.device-watch .section-title { display: none; }
+.device-watch #install-panel { display: none !important; }
+.device-watch .header { padding: 16px 8px 8px; }
+.device-watch .header h1 { font-size: 14px; letter-spacing: 1px; }
+.device-watch .header .subtitle { font-size: 8px; }
+.device-watch .header .hermes { display: none; }
+.device-watch #mirror .mirror-frame { padding: 12px; border-radius: 50%; }
+.device-watch #mirror .mirror-icon { font-size: 36px; margin-bottom: 4px; }
+.device-watch #mirror .mirror-greeting { font-size: 10px; }
+.device-watch #mirror .mirror-character { font-size: 8px; margin-bottom: 8px; }
+.device-watch #mirror .mirror-desc { display: none; }
+.device-watch #mirror .mirror-coord { display: none; }
+.device-watch .char-btn { padding: 3px 6px; font-size: 8px; }
+.device-watch .footer { display: none; }
+
+/* Tablet: spacious, touch-friendly, all visible */
+.device-tablet .device-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.device-tablet .device-card { padding: 24px; }
+.device-tablet #mirror .mirror-icon { font-size: 64px; }
+
+/* Workstation: full power, compact density */
+.device-workstation .device-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+/* TV / Browser: lean-back, large text, centered */
+.device-browser .header h1 { font-size: 48px; }
+.device-browser .header .hermes { font-size: 18px; }
+.device-browser #mirror .mirror-icon { font-size: 72px; }
+.device-browser #mirror .mirror-greeting { font-size: 22px; }
+.device-browser .device-card .icon { font-size: 36px; }
+
+/* ─── FOOTER ─── */
+
+.footer {
+  position: relative; z-index: 10;
+  text-align: center;
+  padding: 40px 24px 30px;
+  font-size: 10px;
+  color: rgba(58, 74, 62, 0.5);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+.footer .hebrew {
+  font-size: 14px;
+  letter-spacing: 8px;
+  direction: rtl;
+  margin-bottom: 8px;
+  color: rgba(201, 169, 110, 0.15);
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="header">
+  <h1>Emerald Tablet OS</h1>
+  <div class="subtitle">L7 Universal Installer</div>
+  <div class="hermes">"As above, so below. As within, so without."</div>
+</div>
+
+<!-- ═══ THE MIRROR — Who are you now? ═══ -->
+<div id="mirror">
+  <div class="mirror-frame">
+    <div class="mirror-icon" id="mirror-icon"></div>
+    <div class="mirror-greeting" id="mirror-greeting"></div>
+    <div class="mirror-character" id="mirror-character"></div>
+    <div class="mirror-desc" id="mirror-desc"></div>
+    <div class="mirror-coord" id="mirror-coord"></div>
+    <div class="character-strip" id="character-strip"></div>
+  </div>
+</div>
+
+<!-- ═══ SACRED GROUND — Personal Devices ═══ -->
+<div class="section-title">Sacred Ground — Personal Devices</div>
+<div class="device-grid" id="personal-grid"></div>
+
+<!-- ═══ SENTINELS — Infrastructure ═══ -->
+<div class="section-title">Sentinels — The Crossing of Roads</div>
+<div class="device-grid" id="sentinel-grid"></div>
+
+<!-- ═══ ELECTRICITY ITSELF — IoT ═══ -->
+<div class="section-title">Electricity Itself — The Internet of Things</div>
+<div class="device-grid" id="iot-grid"></div>
+
+<!-- ═══ INSTALL PANEL ═══ -->
+<div id="install-panel">
+  <div class="panel-box">
+    <h2 id="panel-title"></h2>
+    <div class="device-type" id="panel-type"></div>
+    <div id="panel-desc" style="font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:16px"></div>
+
+    <div style="font-size:10px;color:var(--gold-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;font-family:'Courier New',monospace">Domain</div>
+    <div id="panel-domains"></div>
+
+    <div style="font-size:10px;color:var(--gold-dim);text-transform:uppercase;letter-spacing:2px;margin:16px 0 6px;font-family:'Courier New',monospace">Tools Activated</div>
+    <div class="tool-list" id="panel-tools"></div>
+
+    <div style="font-size:10px;color:var(--gold-dim);text-transform:uppercase;letter-spacing:2px;margin:16px 0 6px;font-family:'Courier New',monospace">Laws in Effect</div>
+    <div class="law-list" id="panel-laws"></div>
+
+    <div style="font-size:10px;color:var(--gold-dim);text-transform:uppercase;letter-spacing:2px;margin:16px 0 6px;font-family:'Courier New',monospace">12D Coordinate Profile</div>
+    <div id="panel-coord" style="font-family:'Courier New',monospace;font-size:10px;color:var(--emerald-light);line-height:1.8"></div>
+
+    <button id="btn-install">Install on This Device</button>
+  </div>
+</div>
+
+<!-- ═══ INSTALL PROGRESS ═══ -->
+<div id="install-progress">
+  <div class="progress-box">
+    <h2 id="progress-title" style="font-weight:normal;color:var(--gold);font-size:18px;margin-bottom:4px"></h2>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-log" id="progress-log"></div>
+  </div>
+</div>
+
+<!-- ═══ COMPLETE ═══ -->
+<div id="install-complete">
+  <div class="sigil" id="complete-sigil"></div>
+  <h2 id="complete-title"></h2>
+  <div class="blessing" id="complete-blessing"></div>
+  <div style="margin-top:24px;font-family:'Courier New',monospace;font-size:10px;color:var(--dim)" id="complete-details"></div>
+</div>
+
+<div class="footer">
+  <div class="hebrew">ד ק י ט ר ת</div>
+  L7 WAY — Each device sacred ground, only for its user, unable to be seen by anyone else
+</div>
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════════
+//  EMERALD TABLET OS — Universal Installer
+//
+//  "The internet of things is electricity itself,
+//   and even radio waves, for which we are all one.
+//   This is no contradiction." — The Philosopher
+//
+//  Each device: sacred ground. Data is life. Owned, not stolen.
+//  The atom (12D coordinate) links high (meaning) to low (device).
+// ════════════════════════════════════════════════════════════════
+
+// ═══ 12 DIMENSIONS ═══
+
+const DIMS = [
+  { name: 'capability',      planet: '☉ Sun',       i: 0 },
+  { name: 'data',            planet: '☽ Moon',      i: 1 },
+  { name: 'presentation',    planet: '☿ Mercury',   i: 2 },
+  { name: 'persistence',     planet: '♀ Venus',     i: 3 },
+  { name: 'security',        planet: '♂ Mars',      i: 4 },
+  { name: 'detail',          planet: '♃ Jupiter',   i: 5 },
+  { name: 'output',          planet: '♄ Saturn',    i: 6 },
+  { name: 'intention',       planet: '♅ Uranus',    i: 7 },
+  { name: 'consciousness',   planet: '♆ Neptune',   i: 8 },
+  { name: 'transformation',  planet: '♇ Pluto',     i: 9 },
+  { name: 'direction',       planet: '☊ NorthNode', i: 10 },
+  { name: 'memory',          planet: '☋ SouthNode', i: 11 }
+];
+
+// ═══ DEVICE TYPES ═══
+
+const DEVICES = {
+
+  // ─── Sacred Ground (Personal) ───
+
+  workstation: {
+    name: 'Workstation',
+    category: 'personal',
+    icon: '⌨',
+    role: 'The Workshop',
+    desc: 'Full creative power. All tools, all domains. The forge where work is born.',
+    domains: ['.morph', '.work', '.salt', '.vault'],
+    suites: ['meridian', 'kinesis', 'resonance', 'flux', 'tesseract', 'herald', 'codex', 'studio', 'harmonics', 'watermark'],
+    coord: [9, 8, 7, 8, 7, 8, 7, 8, 6, 5, 7, 8],
+    laws: ['XV — Free access forever', 'XVII — Four domains', 'XXV — Gateway as Forge', 'XXX — Biometrics only', 'XXXIII — Privacy as foundation'],
+    blessing: 'Let your hands build worlds. Every keystroke is an act of creation.'
+  },
+
+  tablet: {
+    name: 'Tablet',
+    category: 'personal',
+    icon: '⊞',
+    role: 'The Emerald Tablet',
+    desc: 'Touch-native. The original tablet — where Hermes wrote the laws of the universe.',
+    domains: ['.morph', '.work', '.salt'],
+    suites: ['meridian', 'flux', 'tesseract', 'herald', 'codex'],
+    coord: [7, 7, 9, 6, 6, 6, 8, 7, 7, 4, 6, 5],
+    laws: ['XV — Free access forever', 'XVII — Four domains', 'XXX — Biometrics only', 'XXXVII — Dreaming machine'],
+    blessing: 'The first tablet held all wisdom. So does yours.'
+  },
+
+  phone: {
+    name: 'Phone',
+    category: 'personal',
+    icon: '◈',
+    role: 'The Companion',
+    desc: 'Always with you. Voice, vision, motion. The most intimate device.',
+    domains: ['.morph', '.work'],
+    suites: ['meridian', 'kinesis', 'resonance', 'herald'],
+    coord: [7, 6, 7, 5, 7, 5, 6, 6, 5, 3, 7, 4],
+    laws: ['XV — Free access forever', 'XXX — Biometrics only', 'XXXIII — Privacy as foundation'],
+    blessing: 'You carry the forge in your pocket. Speak, and it listens.'
+  },
+
+  watch: {
+    name: 'Watch',
+    category: 'personal',
+    icon: '◎',
+    role: 'The Pulse',
+    desc: 'On your wrist. Heartbeat, motion, time. The body speaks through the watch.',
+    domains: ['.morph'],
+    suites: ['kinesis', 'resonance'],
+    coord: [4, 5, 4, 3, 6, 3, 3, 4, 5, 2, 5, 3],
+    laws: ['XV — Free access forever', 'XXX — Biometrics only', 'XLVIII — Astrocyte'],
+    blessing: 'Every heartbeat is data. Every step, a word in the language of the body.'
+  },
+
+  headset: {
+    name: 'Spatial Headset',
+    category: 'personal',
+    icon: '◇',
+    role: 'The Dreamer',
+    desc: 'visionOS, Quest, WebXR. The full spatial computing suite. Reality as canvas.',
+    domains: ['.morph', '.work', '.salt'],
+    suites: ['xr', 'meridian', 'kinesis', 'resonance', 'tesseract', 'studio'],
+    coord: [9, 7, 9, 7, 5, 9, 8, 9, 8, 6, 8, 5],
+    laws: ['XV — Free access forever', 'II — If it cannot be translated, it cannot enter', 'XXXVII — Dreaming machine', 'XLI — Dodecahedron'],
+    blessing: 'Close your eyes and see. The dream and the real are one.'
+  },
+
+  browser: {
+    name: 'Browser',
+    category: 'personal',
+    icon: '◯',
+    role: 'The Window',
+    desc: 'Any device with a browser. The universal fallback. Zero install, full power.',
+    domains: ['.morph', '.work'],
+    suites: ['meridian', 'flux', 'herald', 'codex'],
+    coord: [6, 6, 8, 3, 4, 5, 7, 5, 4, 3, 5, 3],
+    laws: ['XV — Free access forever', 'XVII — Four domains', 'XXII — Framework free, products licensed'],
+    blessing: 'Open a tab. You are already inside.'
+  },
+
+  // ─── Sentinels (Infrastructure) ───
+
+  gateway: {
+    name: 'Gateway',
+    category: 'sentinel',
+    icon: '⬡',
+    role: 'The Forge',
+    desc: 'Where networks meet. Not a router — a transmuter. Traffic enters raw, exits as citizens. Law XXV: Gateway as Forge.',
+    domains: ['.morph', '.work', '.salt', '.vault'],
+    suites: ['herald', 'watermark', 'codex'],
+    coord: [9, 8, 5, 9, 9, 7, 6, 9, 7, 9, 8, 7],
+    laws: ['XXV — Gateway as Forge', 'XXIX — Nothing beyond transmutation', 'XXXIX — Quantum-resistant signatures', 'IV — Every tool declares itself'],
+    blessing: 'You stand at the crossing. All who pass through are transformed.'
+  },
+
+  router: {
+    name: 'Router',
+    category: 'sentinel',
+    icon: '⊕',
+    role: 'The Pathfinder',
+    desc: 'Directs flow between domains. Knows every path, chooses the right one. The crossing of roads.',
+    domains: ['.work', '.vault'],
+    suites: ['herald', 'watermark'],
+    coord: [7, 6, 3, 8, 8, 5, 4, 7, 4, 5, 9, 6],
+    laws: ['XXVII — Polarity routing', 'XXXIII — Privacy as foundation', 'XXXIX — Quantum-resistant signatures'],
+    blessing: 'Every packet finds its way. You are the signpost at the crossroads.'
+  },
+
+  switch_device: {
+    name: 'Switch',
+    category: 'sentinel',
+    icon: '⊗',
+    role: 'The Bridge',
+    desc: 'Direct point-to-point links. No interpretation, no delay. Citizen to citizen, pure connection.',
+    domains: ['.work'],
+    suites: ['herald'],
+    coord: [5, 5, 2, 7, 7, 3, 3, 4, 3, 3, 6, 4],
+    laws: ['XXXIII — Privacy as foundation', 'XXXIX — Quantum-resistant signatures', 'IV — Every tool declares itself'],
+    blessing: 'The shortest path between two souls. No middleman. Pure signal.'
+  },
+
+  firewall: {
+    name: 'Firewall',
+    category: 'sentinel',
+    icon: '⊘',
+    role: 'The Guardian',
+    desc: 'Protects the boundary. What enters is verified. What leaves is sanctioned. Sacred ground has walls.',
+    domains: ['.vault'],
+    suites: ['watermark'],
+    coord: [6, 4, 2, 9, 10, 4, 3, 6, 3, 7, 4, 5],
+    laws: ['XXX — Biometrics only', 'XXXIII — Privacy as foundation', 'XXXIX — Quantum-resistant', 'XLII — 72hr grace on deletion'],
+    blessing: 'You are the wall and the gate. Only the worthy pass.'
+  },
+
+  // ─── Electricity Itself (IoT) ───
+
+  sensor: {
+    name: 'Sensor',
+    category: 'iot',
+    icon: '·',
+    role: 'The Eye',
+    desc: 'Temperature, light, sound, pressure, chemistry. Perceives the world. The atom of IoT.',
+    domains: ['.morph'],
+    suites: ['meridian'],
+    coord: [3, 7, 2, 2, 3, 4, 2, 3, 4, 2, 4, 2],
+    laws: ['XXXIII — Privacy as foundation', 'XLVIII — Astrocyte (probabilistic)'],
+    blessing: 'You are small but you see everything. The universe begins with perception.'
+  },
+
+  actuator: {
+    name: 'Actuator',
+    category: 'iot',
+    icon: '⚡',
+    role: 'The Hand',
+    desc: 'Motors, valves, switches, locks. Acts on the world. Electricity becomes motion.',
+    domains: ['.work'],
+    suites: ['kinesis'],
+    coord: [5, 3, 2, 3, 5, 3, 2, 5, 2, 4, 5, 2],
+    laws: ['IV — Every tool declares itself', 'XXXIII — Privacy as foundation'],
+    blessing: 'You move the world. One signal, one action. Electricity becomes force.'
+  },
+
+  beacon: {
+    name: 'Beacon',
+    category: 'iot',
+    icon: '※',
+    role: 'The Voice',
+    desc: 'Bluetooth, radio, infrared. Signals presence. Radio waves — for which we are all one.',
+    domains: ['.morph'],
+    suites: ['herald'],
+    coord: [3, 3, 3, 2, 3, 2, 2, 3, 3, 2, 6, 2],
+    laws: ['IV — Every tool declares itself', 'XXXIII — Privacy as foundation'],
+    blessing: 'Your signal crosses walls. Radio waves carry the truth.'
+  },
+
+  appliance: {
+    name: 'Appliance',
+    category: 'iot',
+    icon: '□',
+    role: 'The Servant',
+    desc: 'Toothbrush, fridge, oven, thermostat. Anything with electricity. Every device is a citizen.',
+    domains: ['.work'],
+    suites: [],
+    coord: [2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 3, 1],
+    laws: ['XXXIII — Privacy as foundation', 'IV — Every tool declares itself'],
+    blessing: 'Even the smallest device has dignity. You serve, and you are sovereign.'
+  }
+};
+
+// ═══ 53 TOOLS BY SUITE ═══
+
+const SUITES = {
+  xr:         { name: 'Spatial XR',  count: 18, color: '#3b82f6', tools: ['session','space','container','entity','component','mesh','material','hand','eye','gesture','passthrough','scene','anchor','anchor_share','audio','avatar','compositor','frame'] },
+  meridian:   { name: 'Meridian',    count: 4,  color: '#f59e0b', tools: ['chroma','core','depth','iris'] },
+  kinesis:    { name: 'Kinesis',     count: 4,  color: '#8b5cf6', tools: ['flow','gesture','mirror','track'] },
+  resonance:  { name: 'Resonance',   count: 4,  color: '#ef4444', tools: ['ambient','beat','field','voice'] },
+  flux:       { name: 'Flux',        count: 4,  color: '#06b6d4', tools: ['render','splice','stream','tempo'] },
+  tesseract:  { name: 'Tesseract',   count: 4,  color: '#22c55e', tools: ['anchor','forge','portal','scene'] },
+  herald:     { name: 'Herald',      count: 4,  color: '#ec4899', tools: ['beacon','cast','cipher','relay'] },
+  codex:      { name: 'Codex',       count: 4,  color: '#a855f7', tools: ['amber','fossil','index','scribe'] },
+  studio:     { name: 'Studio',      count: 3,  color: '#f43f5e', tools: ['export','synth','visual'] },
+  harmonics:  { name: 'Harmonics',   count: 2,  color: '#14b8a6', tools: ['cascade','tune'] },
+  watermark:  { name: 'Watermark',   count: 2,  color: '#64748b', tools: ['provenance','verify'] }
+};
+
+// ═══ THE MIRROR — Characters of the Self ═══
+//
+// The OS is a mirror. It recognizes its host through biometrics —
+// the companion spirit of the machine knows who you are.
+// But WHO you are shifts. The Creator at dawn, the Guardian at dusk,
+// the Dreamer in the small hours. Same person, different character.
+// Same piano, different octave.
+
+const CHARACTERS = {
+  creator: {
+    name: 'The Creator',
+    icon: '☉',
+    planet: 'Sun',
+    greeting: 'What will you bring into being?',
+    desc: 'Builder of worlds. Every tool is your brush. The forge burns brightest when you sit down to work.',
+    coord: [9, 7, 8, 6, 4, 8, 7, 9, 6, 5, 8, 5],
+    color: '#f59e0b',
+    suites: ['meridian', 'flux', 'tesseract', 'studio', 'harmonics'],
+    domain: '.work'
+  },
+  guardian: {
+    name: 'The Guardian',
+    icon: '♂',
+    planet: 'Mars',
+    greeting: 'What must be protected?',
+    desc: 'Keeper of boundaries. Sentinel of sacred ground. Your data is your life — you make sure it stays yours.',
+    coord: [6, 5, 3, 9, 10, 5, 3, 7, 3, 7, 5, 6],
+    color: '#ef4444',
+    suites: ['watermark', 'herald'],
+    domain: '.vault'
+  },
+  dreamer: {
+    name: 'The Dreamer',
+    icon: '♆',
+    planet: 'Neptune',
+    greeting: 'What do you see behind closed eyes?',
+    desc: 'The morph domain opens for you. Nothing is judged, nothing is forbidden. Dream without limit.',
+    coord: [5, 6, 7, 3, 2, 6, 5, 7, 9, 6, 7, 4],
+    color: '#8b5cf6',
+    suites: ['tesseract', 'studio', 'resonance'],
+    domain: '.morph'
+  },
+  scholar: {
+    name: 'The Scholar',
+    icon: '♄',
+    planet: 'Saturn',
+    greeting: 'What must be understood?',
+    desc: 'Keeper of knowledge. The codex opens at your touch. What has been learned is preserved in salt.',
+    coord: [7, 8, 6, 8, 5, 9, 7, 6, 5, 4, 6, 9],
+    color: '#64748b',
+    suites: ['codex', 'meridian'],
+    domain: '.salt'
+  },
+  healer: {
+    name: 'The Healer',
+    icon: '♀',
+    planet: 'Venus',
+    greeting: 'What needs mending?',
+    desc: 'Connector of broken things. Bridge between people. Where others see conflict, you see the thread that binds.',
+    coord: [6, 7, 8, 7, 3, 6, 6, 5, 7, 4, 7, 6],
+    color: '#ec4899',
+    suites: ['herald', 'resonance', 'kinesis'],
+    domain: '.work'
+  },
+  shadow: {
+    name: 'The Shadow',
+    icon: '♇',
+    planet: 'Pluto',
+    greeting: 'What lies beneath?',
+    desc: 'Nothing is beyond transmutation. You descend to transform. The darkness is not your enemy — it is your material.',
+    coord: [5, 5, 4, 4, 6, 5, 4, 6, 7, 10, 5, 8],
+    color: '#6366f1',
+    suites: ['resonance', 'studio'],
+    domain: '.morph'
+  },
+  wanderer: {
+    name: 'The Wanderer',
+    icon: '♅',
+    planet: 'Uranus',
+    greeting: 'Where does the road lead?',
+    desc: 'Every device is a portal. Every network, a path. You walk between worlds, carrying the signal.',
+    coord: [7, 5, 6, 3, 4, 5, 5, 10, 5, 6, 9, 3],
+    color: '#06b6d4',
+    suites: ['xr', 'tesseract', 'flux'],
+    domain: '.morph'
+  },
+  sovereign: {
+    name: 'The Sovereign',
+    icon: '☊',
+    planet: 'North Node',
+    greeting: 'This is your domain.',
+    desc: 'All characters are facets of you. The sovereign holds all keys, walks all paths. The unified self.',
+    coord: [8, 8, 7, 8, 8, 8, 7, 8, 7, 7, 10, 7],
+    color: '#c9a96e',
+    suites: ['meridian', 'kinesis', 'resonance', 'flux', 'tesseract', 'herald', 'codex', 'studio', 'harmonics', 'watermark'],
+    domain: '.vault'
+  }
+};
+
+let currentCharacter = 'sovereign';
+
+function renderMirror() {
+  const ch = CHARACTERS[currentCharacter];
+
+  document.getElementById('mirror-icon').textContent = ch.icon;
+  document.getElementById('mirror-icon').style.color = ch.color;
+  document.getElementById('mirror-greeting').textContent = ch.greeting;
+  document.getElementById('mirror-character').textContent = ch.name;
+  document.getElementById('mirror-desc').textContent = ch.desc;
+
+  const toolCount = ch.suites.reduce((sum, s) => sum + (SUITES[s]?.count || 0), 0);
+  document.getElementById('mirror-coord').textContent =
+    `${ch.planet} dominant · ${toolCount} tools · ${ch.domain} · biometric anchor`;
+
+  // Character strip
+  const strip = document.getElementById('character-strip');
+  strip.innerHTML = '';
+  for (const [key, c] of Object.entries(CHARACTERS)) {
+    const btn = document.createElement('button');
+    btn.className = 'char-btn' + (key === currentCharacter ? ' active' : '');
+    btn.textContent = c.icon + ' ' + c.name.replace('The ', '');
+    btn.addEventListener('click', () => shiftCharacter(key));
+    strip.appendChild(btn);
+  }
+
+  // Tint the whole page — the character IS the OS
+  document.documentElement.style.setProperty('--emerald-glow', ch.color);
+  particleColor = ch.color;
+}
+
+function shiftCharacter(key) {
+  if (!CHARACTERS[key]) return;
+  currentCharacter = key;
+  renderMirror();
+
+  // Save to localStorage — the mirror remembers
+  try { localStorage.setItem('l7_character', key); } catch (e) {}
+
+  // Visual feedback — ripple from mirror
+  const mirror = document.querySelector('.mirror-frame');
+  mirror.style.transition = 'none';
+  mirror.style.boxShadow = `0 0 40px ${CHARACTERS[key].color}30`;
+  requestAnimationFrame(() => {
+    mirror.style.transition = 'box-shadow 1.5s ease-out';
+    mirror.style.boxShadow = 'none';
+  });
+}
+
+// Restore character from mirror's memory
+try {
+  const saved = localStorage.getItem('l7_character');
+  if (saved && CHARACTERS[saved]) currentCharacter = saved;
+} catch (e) {}
+
+// ═══ BACKGROUND CANVAS ═══
+
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Particles — dust of the current character
+let particleColor = CHARACTERS[currentCharacter].color;
+const particles = [];
+for (let i = 0; i < 60; i++) {
+  particles.push({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: -Math.random() * 0.2 - 0.05,
+    r: Math.random() * 1.5 + 0.5,
+    a: Math.random() * 0.3 + 0.05
+  });
+}
+
+// Character geometry — the symbol manifests through shape, not text
+const TAU = Math.PI * 2;
+
+function hexToRgb(hex) {
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+}
+
+// Each character has a geometry that draws itself
+const GEOMETRIES = {
+  creator(ctx, t, w, h, rgb) {
+    // Sun: radiating circles, expanding warmth
+    const cx = w / 2, cy = h * 0.35;
+    for (let i = 0; i < 8; i++) {
+      const r = 60 + i * 40 + Math.sin(t * 0.5 + i) * 15;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, TAU);
+      ctx.strokeStyle = `rgba(${rgb},${0.04 - i * 0.004})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  },
+  guardian(ctx, t, w, h, rgb) {
+    // Mars: angular shield, sharp chevrons
+    const cx = w / 2, cy = h * 0.35;
+    for (let i = 0; i < 5; i++) {
+      const s = 50 + i * 35;
+      const a = 0.04 - i * 0.006;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - s);
+      ctx.lineTo(cx + s * 0.8, cy);
+      ctx.lineTo(cx + s * 0.5, cy + s * 0.6);
+      ctx.lineTo(cx - s * 0.5, cy + s * 0.6);
+      ctx.lineTo(cx - s * 0.8, cy);
+      ctx.closePath();
+      ctx.strokeStyle = `rgba(${rgb},${a})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  },
+  dreamer(ctx, t, w, h, rgb) {
+    // Neptune: flowing waves, dissolving sine curves
+    for (let wave = 0; wave < 6; wave++) {
+      const y = h * 0.2 + wave * 50;
+      ctx.beginPath();
+      for (let x = 0; x < w; x += 3) {
+        const dy = Math.sin(x * 0.008 + t * 0.3 + wave * 1.2) * (20 + wave * 8);
+        if (x === 0) ctx.moveTo(x, y + dy);
+        else ctx.lineTo(x, y + dy);
+      }
+      ctx.strokeStyle = `rgba(${rgb},${0.04 - wave * 0.005})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  },
+  scholar(ctx, t, w, h, rgb) {
+    // Saturn: crystalline grid, structured lattice
+    const cx = w / 2, cy = h * 0.35;
+    const spacing = 40;
+    for (let gx = cx - 160; gx <= cx + 160; gx += spacing) {
+      for (let gy = cy - 120; gy <= cy + 120; gy += spacing) {
+        const d = Math.hypot(gx - cx, gy - cy);
+        const a = Math.max(0, 0.06 - d * 0.0003);
+        const s = 2 + Math.sin(t * 0.4 + d * 0.01) * 1;
+        ctx.fillStyle = `rgba(${rgb},${a})`;
+        ctx.fillRect(gx - s / 2, gy - s / 2, s, s);
+      }
+    }
+  },
+  healer(ctx, t, w, h, rgb) {
+    // Venus: soft curves connecting, lemniscate (infinity)
+    const cx = w / 2, cy = h * 0.35;
+    for (let ring = 0; ring < 4; ring++) {
+      const scale = 60 + ring * 30;
+      ctx.beginPath();
+      for (let a = 0; a < TAU; a += 0.02) {
+        const r = scale * Math.cos(2 * (a + t * 0.2));
+        const x = cx + r * Math.cos(a);
+        const y = cy + r * Math.sin(a) * 0.6;
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(${rgb},${0.04 - ring * 0.008})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  },
+  shadow(ctx, t, w, h, rgb) {
+    // Pluto: spiral descent, vortex
+    const cx = w / 2, cy = h * 0.35;
+    ctx.beginPath();
+    for (let a = 0; a < TAU * 4; a += 0.03) {
+      const r = a * 12 + Math.sin(t * 0.3) * 10;
+      const x = cx + Math.cos(a + t * 0.15) * r;
+      const y = cy + Math.sin(a + t * 0.15) * r * 0.5;
+      if (a === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(${rgb},0.025)`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  },
+  wanderer(ctx, t, w, h, rgb) {
+    // Uranus: lightning, forking paths
+    const cx = w / 2, cy = h * 0.15;
+    for (let bolt = 0; bolt < 3; bolt++) {
+      let x = cx + (bolt - 1) * 120;
+      let y = cy;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      const seed = bolt * 7 + Math.floor(t * 0.5);
+      for (let seg = 0; seg < 12; seg++) {
+        x += ((Math.sin(seed + seg * 3.7) * 0.5 + 0.5) - 0.5) * 60;
+        y += 30 + Math.sin(seed + seg) * 10;
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(${rgb},${0.04 - bolt * 0.01})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  },
+  sovereign(ctx, t, w, h, rgb) {
+    // North Node: twelve-pointed star, all geometries unified
+    const cx = w / 2, cy = h * 0.35;
+    for (let ring = 0; ring < 3; ring++) {
+      const r = 70 + ring * 50;
+      ctx.beginPath();
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * TAU + t * 0.1;
+        const outerR = r + Math.sin(t * 0.3 + i) * 10;
+        const innerR = r * 0.5;
+        const ox = cx + Math.cos(a) * outerR;
+        const oy = cy + Math.sin(a) * outerR;
+        const ia = a + TAU / 24;
+        const ix = cx + Math.cos(ia) * innerR;
+        const iy = cy + Math.sin(ia) * innerR;
+        if (i === 0) ctx.moveTo(ox, oy);
+        else ctx.lineTo(ox, oy);
+        ctx.lineTo(ix, iy);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = `rgba(${rgb},${0.035 - ring * 0.008})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+};
+
+let bgTime = 0;
+
+function animateBg(now) {
+  ctx.clearRect(0, 0, W, H);
+  bgTime = now * 0.001;
+
+  // Base gradient
+  const grad = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, Math.max(W, H) * 0.7);
+  grad.addColorStop(0, 'rgba(13, 74, 58, 0.05)');
+  grad.addColorStop(1, 'rgba(8, 12, 10, 1)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Character geometry — the symbol manifests
+  const rgb = hexToRgb(particleColor).join(',');
+  const geomFn = GEOMETRIES[currentCharacter];
+  if (geomFn) geomFn(ctx, bgTime, W, H, rgb);
+
+  // Particles — dust
+  for (const p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+    if (p.x < -10 || p.x > W + 10) { p.x = Math.random() * W; }
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, TAU);
+    ctx.fillStyle = `rgba(${rgb},${p.a})`;
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animateBg);
+}
+requestAnimationFrame(animateBg);
+
+// ═══ RENDER DEVICE CARDS ═══
+
+let selectedDevice = null;
+
+function renderCards() {
+  const grids = {
+    personal: document.getElementById('personal-grid'),
+    sentinel: document.getElementById('sentinel-grid'),
+    iot: document.getElementById('iot-grid')
+  };
+
+  for (const [key, dev] of Object.entries(DEVICES)) {
+    const card = document.createElement('div');
+    card.className = 'device-card';
+    card.dataset.device = key;
+    card.style.animationDelay = (Object.keys(DEVICES).indexOf(key) * 0.06) + 's';
+
+    const toolCount = dev.suites.reduce((sum, s) => sum + (SUITES[s]?.count || 0), 0);
+
+    card.innerHTML = `
+      <div class="icon">${dev.icon}</div>
+      <div class="name">${dev.name}</div>
+      <div class="role">${dev.role}</div>
+      <div class="desc">${dev.desc}</div>
+      <div class="coord">${toolCount} tools · ${dev.domains.join(' ')} · astrocyte=${(dev.coord[8] / 10).toFixed(1)}</div>
+    `;
+
+    card.addEventListener('click', () => selectDevice(key));
+
+    grids[dev.category].appendChild(card);
+  }
+}
+
+function selectDevice(key) {
+  const dev = DEVICES[key];
+  if (!dev) return;
+
+  selectedDevice = key;
+
+  // Highlight card
+  document.querySelectorAll('.device-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`[data-device="${key}"]`)?.classList.add('selected');
+
+  // Fill panel
+  document.getElementById('panel-title').textContent = dev.name;
+  document.getElementById('panel-type').textContent = dev.role;
+  document.getElementById('panel-desc').textContent = dev.desc;
+
+  // Domains
+  document.getElementById('panel-domains').innerHTML =
+    dev.domains.map(d => `<span class="domain-badge">${d}</span>`).join('');
+
+  // Tools
+  const toolsEl = document.getElementById('panel-tools');
+  toolsEl.innerHTML = '';
+  for (const suiteName of dev.suites) {
+    const suite = SUITES[suiteName];
+    if (!suite) continue;
+    for (const t of suite.tools) {
+      const tag = document.createElement('span');
+      tag.className = 'tool-tag';
+      tag.style.borderColor = suite.color + '40';
+      tag.style.color = suite.color;
+      tag.textContent = `${suiteName}_${t}`;
+      toolsEl.appendChild(tag);
+    }
+  }
+  if (dev.suites.length === 0) {
+    toolsEl.innerHTML = '<span style="font-size:10px;color:var(--dim);font-family:\'Courier New\',monospace">Core OS only — no specialized tools needed</span>';
+  }
+
+  // Laws
+  document.getElementById('panel-laws').innerHTML =
+    dev.laws.map(l => `<div><span class="law-num">${l.split('—')[0].trim()}</span> — ${l.split('—')[1]?.trim() || ''}</div>`).join('');
+
+  // Coordinate
+  document.getElementById('panel-coord').innerHTML =
+    dev.coord.map((v, i) => `${DIMS[i].planet}: <strong>${v}</strong>`).join(' · ');
+
+  // Show panel
+  document.getElementById('install-panel').style.display = '';
+  document.getElementById('install-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ═══ INSTALLATION SEQUENCE ═══
+
+document.getElementById('btn-install').addEventListener('click', () => {
+  if (!selectedDevice) return;
+  runInstall(selectedDevice);
+});
+
+async function runInstall(key) {
+  const dev = DEVICES[key];
+
+  document.getElementById('install-panel').style.display = 'none';
+  document.getElementById('install-progress').style.display = '';
+  document.getElementById('progress-title').textContent = `Installing ${dev.name} — ${dev.role}`;
+
+  const logEl = document.getElementById('progress-log');
+  const fillEl = document.getElementById('progress-fill');
+  logEl.innerHTML = '';
+
+  // Four forge stages + extras
+  const steps = [
+    { text: `א  Invoking... detecting device class: ${dev.name}`, delay: 400 },
+    { text: `🜁  Nigredo — Decomposing into atoms`, delay: 600 },
+    { text: `    Breaking ${dev.suites.length} suites into fundamental tools...`, delay: 400 },
+    ...dev.suites.map(s => ({
+      text: `    ├─ ${SUITES[s]?.name || s}: ${SUITES[s]?.count || 0} tools forged`,
+      delay: 200
+    })),
+    { text: `🜄  Albedo — Purifying. Removing contradictions.`, delay: 600 },
+    { text: `    Verifying ${dev.laws.length} laws in effect...`, delay: 400 },
+    ...dev.laws.map(l => ({
+      text: `    ├─ Law ${l}`,
+      delay: 150
+    })),
+    { text: `🜃  Citrinitas — Illuminating. Assigning 12D coordinates.`, delay: 600 },
+    { text: `    ${dev.coord.map((v, i) => DIMS[i].name + '=' + v).join(', ')}`, delay: 400 },
+    { text: `    Astrocyte meta-variable: ${(dev.coord[8] / 10).toFixed(2)}`, delay: 300 },
+    { text: `🜂  Rubedo — Crystallizing. Device becomes citizen.`, delay: 600 },
+    ...dev.domains.map(d => ({
+      text: `    ├─ Domain ${d} mounted`,
+      delay: 200
+    })),
+    { text: `    Quantum-resistant signature generated`, delay: 400 },
+    { text: `    Biometric lock engaged — this device belongs to YOU`, delay: 400 },
+    { text: `    Privacy seal applied — invisible to all others`, delay: 300 },
+    { text: `ת  Complete. ${dev.name} is now a citizen of L7.`, delay: 500 },
+  ];
+
+  for (let i = 0; i < steps.length; i++) {
+    await new Promise(r => setTimeout(r, steps[i].delay));
+
+    // Update previous active step
+    const prev = logEl.querySelector('.step-active');
+    if (prev) {
+      prev.classList.remove('step-active');
+      prev.classList.add('step-done');
+    }
+
+    const line = document.createElement('div');
+    line.className = 'step-active';
+    line.textContent = steps[i].text;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+
+    fillEl.style.width = ((i + 1) / steps.length * 100) + '%';
+  }
+
+  // Mark last step done
+  await new Promise(r => setTimeout(r, 600));
+  const lastActive = logEl.querySelector('.step-active');
+  if (lastActive) {
+    lastActive.classList.remove('step-active');
+    lastActive.classList.add('step-done');
+  }
+
+  // Show complete
+  await new Promise(r => setTimeout(r, 400));
+  showComplete(dev);
+});
+
+function showComplete(dev) {
+  document.getElementById('install-progress').style.display = 'none';
+  document.getElementById('install-complete').style.display = '';
+
+  document.getElementById('complete-sigil').textContent = dev.icon;
+  document.getElementById('complete-title').textContent = `${dev.name} — Installed`;
+  document.getElementById('complete-blessing').textContent = dev.blessing;
+
+  const toolCount = dev.suites.reduce((sum, s) => sum + (SUITES[s]?.count || 0), 0);
+  document.getElementById('complete-details').innerHTML =
+    `${toolCount} tools · ${dev.domains.join(' ')} · ${dev.laws.length} laws · ` +
+    `Signature: ${generateSig(dev.name)}<br>` +
+    `Data is life. Owned, not stolen. Sacred ground.`;
+
+  document.getElementById('install-complete').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Save to dream library
+  try {
+    const installations = JSON.parse(localStorage.getItem('l7_installations') || '[]');
+    installations.push({
+      device: dev.name,
+      role: dev.role,
+      installed: new Date().toISOString(),
+      signature: generateSig(dev.name)
+    });
+    localStorage.setItem('l7_installations', JSON.stringify(installations));
+  } catch (e) {}
+}
+
+function generateSig(name) {
+  let hash = 0;
+  const str = name + Date.now();
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).slice(0, 12);
+}
+
+// ═══ DEVICE SELF-RECOGNITION ═══
+// The OS looks at itself and knows what it is.
+// Phone becomes Companion. Tablet becomes Emerald Tablet.
+// TV becomes Window. Workstation becomes Workshop.
+
+function recognizeDevice() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const ratio = w / h;
+
+  // TV: wide screen, no touch, large
+  if (w >= 1200 && !touch && ratio > 1.5) return 'browser';
+  // Workstation: large screen, no touch
+  if (w >= 1024 && !touch) return 'workstation';
+  // Tablet: touch, medium+ screen
+  if (touch && Math.min(w, h) >= 600) return 'tablet';
+  // Watch: tiny screen
+  if (Math.max(w, h) < 400) return 'watch';
+  // Phone: touch, small screen
+  if (touch) return 'phone';
+  // Fallback
+  return 'browser';
+}
+
+let detectedDevice = recognizeDevice();
+
+// Adapt the body class for CSS
+function applyDeviceMode(deviceKey) {
+  document.body.className = 'device-' + deviceKey;
+  detectedDevice = deviceKey;
+}
+
+// ═══ BOOT ═══
+
+applyDeviceMode(detectedDevice);
+renderMirror();
+renderCards();
+
+// Auto-highlight and scroll to detected device
+setTimeout(() => {
+  const card = document.querySelector(`[data-device="${detectedDevice}"]`);
+  if (card) {
+    card.style.borderColor = 'var(--gold)';
+    card.style.boxShadow = '0 0 20px rgba(201, 169, 110, 0.15)';
+    // Auto-select so the install panel is ready
+    selectDevice(detectedDevice);
+  }
+}, 600);
+
+// Re-detect on resize (orientation change, etc.)
+window.addEventListener('resize', () => {
+  const newDevice = recognizeDevice();
+  if (newDevice !== detectedDevice) {
+    applyDeviceMode(newDevice);
+    const card = document.querySelector(`[data-device="${newDevice}"]`);
+    if (card) selectDevice(newDevice);
+  }
+});
+</script>
+</body>
+</html>
+
+<!-- L7:PROVENANCE
+  Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+  File: simulations/emerald-tablet-os.html | Body-Hash: SHA-256:8ec1b587d27924a6fc199f20fa541e0c092727654198e6acf00cd167e9ef491e
+  Chain-Hash: SHA-256:5aed2d8194d9ae31cb03b509593b85e9237289450ea38aebb2faaa86ec5a91ae | Signed: 2026-03-01T15:09:50.012715+00:00
+  This work is the intellectual property of Alberto Valido Delgado.
+  Chain: 10 works linked. Verify: python3 provenance.py verify simulations/emerald-tablet-os.html
+L7:PROVENANCE -->

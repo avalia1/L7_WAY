@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -503,10 +501,53 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // ─── Satellite: Signal endpoints ───
+  // One endpoint. Any device anywhere can connect.
+  // Know one person. Reach the world.
+  const autopoiesis = require('../lib/autopoiesis-2');
+
+  if (parsed.pathname === '/api/signal' && req.method === 'GET') {
+    // Return the latest emitted signal
+    const signal = autopoiesis.emit();
+    sendJson(res, 200, signal);
+    return;
+  }
+
+  if (parsed.pathname === '/api/signal' && req.method === 'POST') {
+    // Receive a signal from another node
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const signal = JSON.parse(body);
+        const result = autopoiesis.receive(signal);
+        sendJson(res, 200, result);
+      } catch (err) {
+        sendJson(res, 400, { error: 'Invalid signal' });
+      }
+    });
+    return;
+  }
+
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not found');
 });
 
-server.listen(PORT, () => {
-  console.log(`Empire server running at http://localhost:${PORT}`);
+server.listen(PORT, async () => {
+  console.log(`\n  \x1b[93mEmpire server running at http://localhost:${PORT}\x1b[0m\n`);
+  // Boot the Forge — the Unified Self awakens
+  try {
+    await gateway.boot();
+  } catch (err) {
+    console.error(`\x1b[91m  Boot error: ${err.message}\x1b[0m`);
+    console.error(err.stack);
+  }
 });
+
+// L7:PROVENANCE
+// Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+// File: empire/server.js | Body-Hash: SHA-256:6c989d61b7e38e14d854401062b705bfe7eacbba47ea2defd3bedddd63b8eb29
+// Chain-Hash: SHA-256:3cce44c28084fe233daa4954b27951d70e9dd26e5cbf0088d4cd81b48353811e | Signed: 2026-03-01T15:09:56.451346+00:00
+// This work is the intellectual property of Alberto Valido Delgado.
+// Chain: 34 works. Verify: python3 provenance.py verify empire/server.js
+// L7:PROVENANCE

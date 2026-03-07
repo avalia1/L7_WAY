@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env node
 /**
  * L7 TREE-SPLIT — Split the 566MB tree.json into hierarchical layers
@@ -172,3 +174,11 @@ async function splitTree() {
 }
 
 splitTree().catch(e => { console.error(e); process.exit(1); });
+
+// L7:PROVENANCE
+// Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+// File: l7tree-split.js | Body-Hash: SHA-256:1aae4cb20978f5dcdc95df1f100980028130988759d0f5f53cf0d3d0ef1b5f73
+// Chain-Hash: SHA-256:b272ebba0f8b8e5840262f024defbd5925735aacf8cea3d0b59a390a27ec2f2c | Signed: 2026-03-01T15:09:50.005568+00:00
+// This work is the intellectual property of Alberto Valido Delgado.
+// Chain: 4 works. Verify: python3 provenance.py verify l7tree-split.js
+// L7:PROVENANCE

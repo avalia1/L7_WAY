@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L7 WAY — The Telescope</title>
+<script src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js" charset="utf-8"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #000;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #c8b880;
+  overflow: hidden;
+}
+#aladin-lite-div {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Top bar */
+#top-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.8);
+  border-bottom: 1px solid #1a1508;
+}
+#top-bar h1 {
+  font-size: 14px; font-weight: normal;
+  letter-spacing: 3px; text-transform: uppercase;
+}
+#top-bar .sub { font-size: 10px; color: #5a5030; letter-spacing: 1px; }
+#top-bar a { color: #5a5030; text-decoration: none; font-size: 11px; letter-spacing: 1px; }
+#top-bar a:hover { color: #c8b880; }
+
+/* Survey selector */
+#survey-bar {
+  position: fixed; top: 48px; left: 12px;
+  z-index: 1000; display: flex; flex-direction: column; gap: 3px;
+}
+.survey-btn {
+  background: rgba(0,0,0,0.75); border: 1px solid #2a2010;
+  border-radius: 4px; color: #8a7d60; font-family: 'Georgia', serif;
+  font-size: 11px; padding: 4px 10px; cursor: pointer;
+  text-align: left; transition: all 0.2s; white-space: nowrap;
+}
+.survey-btn:hover { border-color: #5a5030; color: #c8b880; }
+.survey-btn.active { border-color: #c8b880; color: #c8b880; background: rgba(30,25,10,0.8); }
+.survey-btn .band {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 6px; vertical-align: middle;
+}
+
+/* Target panel */
+#target-panel {
+  position: fixed; top: 48px; right: 12px;
+  z-index: 1000; width: 240px;
+}
+#target-search {
+  width: 100%; background: rgba(0,0,0,0.85); border: 1px solid #2a2010;
+  border-radius: 4px; color: #c8b880; font-family: 'Georgia', serif;
+  font-size: 12px; padding: 6px 10px; outline: none;
+}
+#target-search::placeholder { color: #3a3020; }
+#target-search:focus { border-color: #5a5030; }
+#target-list {
+  margin-top: 4px; max-height: calc(100vh - 120px);
+  overflow-y: auto; scrollbar-width: thin; scrollbar-color: #2a2010 #000;
+}
+.target-group-label {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: #4a4020; padding: 8px 8px 2px; border-top: 1px solid #1a1508;
+}
+.target-item {
+  display: flex; align-items: center; padding: 4px 8px;
+  cursor: pointer; border-radius: 3px; transition: background 0.15s; font-size: 11px;
+}
+.target-item:hover { background: rgba(30,25,10,0.6); }
+.target-item .t-name { color: #c8b880; flex: 1; }
+.target-item .t-id { color: #4a4020; font-size: 9px; margin-left: 8px; }
+
+/* Info panel */
+#info-panel {
+  position: fixed; bottom: 12px; left: 12px; z-index: 1000;
+  background: rgba(0,0,0,0.8); border: 1px solid #1a1508;
+  border-radius: 6px; padding: 10px 14px; max-width: 340px;
+  font-size: 12px; line-height: 1.5;
+}
+#info-panel .info-name { font-size: 16px; color: #c8b880; margin-bottom: 2px; }
+#info-panel .info-type { font-size: 10px; color: #5a5030; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+#info-panel .info-desc { color: #8a7d60; font-size: 11px; }
+#info-panel .info-coords { color: #4a4020; font-size: 10px; margin-top: 6px; font-family: monospace; }
+
+/* APOD */
+#apod-panel {
+  position: fixed; bottom: 12px; right: 12px; z-index: 1000;
+  background: rgba(0,0,0,0.8); border: 1px solid #1a1508;
+  border-radius: 6px; padding: 8px; width: 200px; cursor: pointer;
+  transition: border-color 0.3s;
+}
+#apod-panel:hover { border-color: #3a3020; }
+#apod-panel img { width: 100%; border-radius: 4px; display: block; }
+.apod-label { font-size: 8px; color: #3a3020; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+.apod-title { font-size: 10px; color: #c8b880; margin-top: 6px; line-height: 1.3; }
+.apod-date { font-size: 9px; color: #4a4020; }
+
+/* FOV */
+#fov-display {
+  position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; background: rgba(0,0,0,0.6); border: 1px solid #1a1508;
+  border-radius: 4px; padding: 4px 12px; font-size: 10px; color: #5a5030;
+  font-family: monospace; pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <div>
+    <h1>The Telescope</h1>
+    <div class="sub">L7 WAY &mdash; Sky Archive</div>
+  </div>
+  <div><a href="world-map.html">&larr; Ancient Map</a></div>
+</div>
+
+<div id="survey-bar"></div>
+
+<div id="target-panel">
+  <input type="text" id="target-search" placeholder="Search sky objects... ( / )" />
+  <div id="target-list"></div>
+</div>
+
+<div id="info-panel">
+  <div class="info-name" id="info-name">Orion Nebula</div>
+  <div class="info-type" id="info-type">M42</div>
+  <div class="info-desc" id="info-desc">Loading sky...</div>
+  <div class="info-coords" id="info-coords"></div>
+</div>
+
+<div id="apod-panel" style="display:none;">
+  <div class="apod-label">NASA &mdash; Today</div>
+  <img id="apod-img" src="" alt="" />
+  <div class="apod-title" id="apod-title"></div>
+  <div class="apod-date" id="apod-date"></div>
+</div>
+
+<div id="fov-display">FOV: loading...</div>
+
+<div id="aladin-lite-div"></div>
+
+<script>
+// ============================================================
+// SURVEYS — corrected IDs for Aladin Lite v3
+// ============================================================
+const SURVEYS = [
+  { id: 'P/DSS2/color',           name: 'Optical (DSS2)',       band: '#88aaff', desc: 'Digitized Sky Survey 2 — full sky optical' },
+  { id: 'P/2MASS/color',          name: 'Infrared (2MASS)',     band: '#ff6644', desc: '2-Micron All Sky Survey — near-infrared' },
+  { id: 'P/allWISE/color',        name: 'Infrared (WISE)',      band: '#ff4422', desc: 'Wide-field Infrared Survey Explorer' },
+  { id: 'P/Mellinger/color',      name: 'Milky Way (Mellinger)',band: '#aaddff', desc: 'Optical panorama of the Milky Way' },
+  { id: 'P/Fermi/color',          name: 'Gamma Ray (Fermi)',    band: '#ffff44', desc: 'Fermi Gamma-ray Space Telescope' },
+  { id: 'P/GALEXGR6/AIS/color',   name: 'Ultraviolet (GALEX)', band: '#aa66ff', desc: 'Galaxy Evolution Explorer — UV' },
+  { id: 'P/IRIS/color',           name: 'Far IR (IRAS)',        band: '#ff8844', desc: 'IRAS infrared survey' },
+  { id: 'P/SDSS9/color',          name: 'Deep Optical (SDSS)',  band: '#66aaff', desc: 'Sloan Digital Sky Survey (partial sky)' },
+  { id: 'P/DES-DR2/color',        name: 'Deep South (DES)',     band: '#5588dd', desc: 'Dark Energy Survey — deep southern sky' },
+  { id: 'P/HST/EPO/color',        name: 'Hubble (HST)',         band: '#44ccff', desc: 'Hubble Space Telescope selected fields' },
+  { id: 'P/JWST/EPO/color',       name: 'Webb (JWST)',          band: '#ffaa22', desc: 'James Webb Space Telescope fields' },
+];
+
+// ============================================================
+// TARGETS
+// ============================================================
+const TARGETS = {
+  'Nebulae': [
+    { name: 'Orion Nebula',           id: 'M42',        fov: 1.0,  desc: 'Stellar nursery. 1,344 ly. Visible to the naked eye.' },
+    { name: 'Eagle Nebula',           id: 'M16',        fov: 0.5,  desc: 'Pillars of Creation. 7,000 ly. Hubble\'s most famous image.' },
+    { name: 'Crab Nebula',            id: 'M1',         fov: 0.15, desc: 'Supernova remnant from 1054 CE. Chinese astronomers recorded it.' },
+    { name: 'Ring Nebula',            id: 'M57',        fov: 0.08, desc: 'Planetary nebula in Lyra. Dying star. 2,300 ly.' },
+    { name: 'Carina Nebula',          id: 'NGC 3372',   fov: 2.0,  desc: 'Eta Carinae. JWST\'s Cosmic Cliffs. 8,500 ly.' },
+    { name: 'Helix Nebula',           id: 'NGC 7293',   fov: 0.4,  desc: '"Eye of God." Closest planetary nebula. 700 ly.' },
+    { name: 'Horsehead Nebula',       id: 'Horsehead',  fov: 0.5,  desc: 'Dark nebula in Orion. 1,500 ly. Iconic silhouette.' },
+    { name: 'Lagoon Nebula',          id: 'M8',         fov: 1.2,  desc: 'Star-forming region in Sagittarius. 4,100 ly.' },
+    { name: 'Trifid Nebula',          id: 'M20',        fov: 0.5,  desc: 'Three-lobed: emission + reflection + dark. 5,200 ly.' },
+    { name: 'Veil Nebula',            id: 'NGC 6960',   fov: 3.0,  desc: 'Supernova remnant. Exploded 8,000 years ago. Cygnus.' },
+    { name: 'Rosette Nebula',         id: 'NGC 2237',   fov: 1.5,  desc: 'Rose-shaped emission nebula. 5,000 ly.' },
+    { name: 'Cat\'s Eye Nebula',      id: 'NGC 6543',   fov: 0.05, desc: 'Complex planetary nebula. 11 concentric shells. 3,300 ly.' },
+    { name: 'Tarantula Nebula',       id: 'NGC 2070',   fov: 0.6,  desc: 'Largest star-forming region in the Local Group. LMC.' },
+    { name: 'Omega Nebula',           id: 'M17',        fov: 0.5,  desc: 'Swan Nebula. Star-forming region. 5,500 ly.' },
+    { name: 'Butterfly Nebula',       id: 'NGC 6302',   fov: 0.05, desc: 'Bipolar planetary nebula. One of the hottest dying stars.' },
+  ],
+
+  'Galaxies': [
+    { name: 'Andromeda Galaxy',       id: 'M31',        fov: 3.0,  desc: 'Nearest major galaxy. 2.5 Mly. Will merge with Milky Way.' },
+    { name: 'Whirlpool Galaxy',       id: 'M51',        fov: 0.3,  desc: 'Grand-design spiral. Interacting pair. 23 Mly.' },
+    { name: 'Sombrero Galaxy',        id: 'M104',       fov: 0.2,  desc: 'Edge-on spiral with dust lane. 29 Mly.' },
+    { name: 'Triangulum Galaxy',      id: 'M33',        fov: 1.2,  desc: 'Third largest in Local Group. 2.7 Mly. Face-on.' },
+    { name: 'Pinwheel Galaxy',        id: 'M101',       fov: 0.5,  desc: 'Face-on grand spiral. 21 Mly. Twice our diameter.' },
+    { name: 'Centaurus A',            id: 'NGC 5128',   fov: 0.4,  desc: 'Peculiar galaxy with radio jets. 12 Mly. Merger result.' },
+    { name: 'Large Magellanic Cloud', id: 'LMC',        fov: 8.0,  desc: 'Satellite galaxy. 160,000 ly. Southern sky.' },
+    { name: 'Antennae Galaxies',      id: 'NGC 4038',   fov: 0.12, desc: 'Colliding galaxies. 45 Mly. Future of Milky Way.' },
+    { name: 'Cigar Galaxy',           id: 'M82',        fov: 0.2,  desc: 'Starburst galaxy. Superwind. 12 Mly.' },
+    { name: 'Bode\'s Galaxy',         id: 'M81',        fov: 0.4,  desc: 'Grand design spiral near M82. 12 Mly. Interacting pair.' },
+    { name: 'NGC 1300',               id: 'NGC 1300',   fov: 0.1,  desc: 'Prototypical barred spiral. Hubble Heritage. 61 Mly.' },
+    { name: 'Sculptor Galaxy',        id: 'NGC 253',    fov: 0.5,  desc: 'Starburst galaxy. 11.4 Mly. Edge-on in Sculptor.' },
+  ],
+
+  'Star Clusters': [
+    { name: 'Pleiades',               id: 'M45',        fov: 2.0,  desc: 'Seven Sisters. 444 ly. Known since antiquity. Subaru.' },
+    { name: 'Omega Centauri',         id: 'NGC 5139',   fov: 0.8,  desc: 'Largest globular. 10 million stars. May be dwarf galaxy core.' },
+    { name: 'Hercules Cluster',       id: 'M13',        fov: 0.3,  desc: '300,000 stars. 22,000 ly. Target of Arecibo message.' },
+    { name: 'Hyades',                 id: 'Hyades',     fov: 5.0,  desc: 'Nearest open cluster. 153 ly. V-shape in Taurus.' },
+    { name: '47 Tucanae',             id: 'NGC 104',    fov: 0.5,  desc: 'Second brightest globular. 13,000 ly. Near SMC.' },
+    { name: 'Double Cluster',         id: 'NGC 869',    fov: 1.0,  desc: 'Twin open clusters in Perseus. 7,500 ly. Naked eye.' },
+    { name: 'Jewel Box',              id: 'NGC 4755',   fov: 0.15, desc: 'Young open cluster near Southern Cross. Multicolored stars.' },
+  ],
+
+  'Famous Stars': [
+    { name: 'Sirius',                 id: 'Sirius',     fov: 0.1,  desc: 'Brightest star. 8.6 ly. "Dog Star." Sacred to Egyptians.' },
+    { name: 'Betelgeuse',             id: 'Betelgeuse', fov: 0.1,  desc: 'Red supergiant. Will go supernova. 700 ly. Orion\'s shoulder.' },
+    { name: 'Polaris',                id: 'Polaris',    fov: 0.1,  desc: 'North Star. Cepheid variable. 323 ly.' },
+    { name: 'Vega',                   id: 'Vega',       fov: 0.1,  desc: 'Fifth brightest. 25 ly. Future North Star (12,000 yr).' },
+    { name: 'Antares',                id: 'Antares',    fov: 0.1,  desc: '"Rival of Mars." Red supergiant in Scorpius. 550 ly.' },
+    { name: 'Eta Carinae',            id: 'Eta Car',    fov: 0.1,  desc: 'Hypergiant. 100× solar mass. May go hypernova.' },
+    { name: 'Rigel',                  id: 'Rigel',      fov: 0.1,  desc: 'Blue supergiant. 860 ly. 120,000× solar luminosity.' },
+    { name: 'Aldebaran',              id: 'Aldebaran',  fov: 0.2,  desc: '"The Follower." Eye of Taurus. 65 ly. Orange giant.' },
+    { name: 'Deneb',                  id: 'Deneb',      fov: 0.1,  desc: 'Summer Triangle. 2,600 ly. One of the most luminous stars known.' },
+    { name: 'Fomalhaut',              id: 'Fomalhaut',  fov: 0.1,  desc: 'Debris disk with exoplanet. "Mouth of the Fish." 25 ly.' },
+  ],
+
+  'Deep Fields': [
+    { name: 'Hubble Deep Field',      id: 'HDF',        fov: 0.08, desc: '10-day exposure. 3,000 galaxies. 12 billion years back.' },
+    { name: 'Hubble Ultra Deep Field', id: 'HUDF',      fov: 0.06, desc: 'Deepest visible-light image. 10,000 galaxies. 13 Gyr.' },
+    { name: 'Stephan\'s Quintet',     id: 'HCG 92',     fov: 0.08, desc: 'Five galaxies, four interacting. JWST revealed shockwaves.' },
+    { name: 'Galactic Center',        id: 'Sgr A*',     fov: 2.0,  desc: 'Sagittarius A*. 4M solar mass black hole. 26,000 ly.' },
+    { name: 'Bullet Cluster',         id: '1E 0657-56', fov: 0.2,  desc: 'Direct evidence of dark matter. Colliding galaxy clusters.' },
+    { name: 'Abell 2218',             id: 'Abell 2218', fov: 0.12, desc: 'Gravitational lens. Arcs of magnified distant galaxies.' },
+    { name: 'Coma Cluster',           id: 'Abell 1656', fov: 2.0,  desc: 'Over 1,000 galaxies. 321 Mly. Dark matter evidence.' },
+  ],
+
+  'Constellations': [
+    { name: 'Orion (Belt)',           id: 'Alnitak',    fov: 8.0,  desc: 'The Hunter. Belt stars: Alnitak, Alnilam, Mintaka.' },
+    { name: 'Scorpius (Heart)',       id: 'Antares',    fov: 15.0, desc: 'The Scorpion. Antares at its heart. Zodiac.' },
+    { name: 'Southern Cross',         id: 'Acrux',      fov: 8.0,  desc: 'Crux. Navigator\'s guide. Smallest constellation.' },
+    { name: 'Cygnus (Deneb)',         id: 'Deneb',      fov: 15.0, desc: 'The Swan. Northern Cross. Cygnus X-1 black hole.' },
+    { name: 'Sagittarius (Center)',   id: 'Sgr A*',     fov: 20.0, desc: 'The Archer. Points toward galactic center.' },
+  ],
+};
+
+// ============================================================
+// INIT ALADIN LITE
+// ============================================================
+let aladin;
+
+A.init.then(() => {
+  aladin = A.aladin('#aladin-lite-div', {
+    survey: 'P/DSS2/color',
+    fov: 60,
+    target: 'M42',
+    cooFrame: 'equatorial',
+    projection: 'SIN',
+    showCooGridControl: true,
+    showSimbadPointerControl: true,
+    showCooGrid: false,
+    showProjectionControl: true,
+    showFrame: true,
+    backgroundColor: [0.0, 0.0, 0.02, 1.0],
+  });
+
+  buildSurveyBar();
+  buildTargetList();
+  loadAPOD();
+  updateInfo(TARGETS['Nebulae'][0]);
+
+  // FOV update
+  setInterval(() => {
+    try {
+      const fov = aladin.getFov();
+      if (fov && fov[0]) {
+        const f = fov[0];
+        const text = f >= 1 ? `FOV: ${f.toFixed(1)}°` : f >= 1/60 ? `FOV: ${(f*60).toFixed(1)}'` : `FOV: ${(f*3600).toFixed(1)}"`;
+        document.getElementById('fov-display').textContent = text;
+      }
+    } catch(e) {}
+  }, 500);
+});
+
+// ============================================================
+// SURVEY BAR
+// ============================================================
+function buildSurveyBar() {
+  const bar = document.getElementById('survey-bar');
+  SURVEYS.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'survey-btn' + (i === 0 ? ' active' : '');
+    btn.innerHTML = `<span class="band" style="background:${s.band};"></span>${s.name}`;
+    btn.title = s.desc;
+    btn.onclick = () => {
+      document.querySelectorAll('.survey-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      try {
+        aladin.setBaseImageLayer(s.id);
+      } catch(e) {
+        console.warn('Survey failed:', s.id, e);
+        // Try with CDS/ prefix
+        try { aladin.setBaseImageLayer('CDS/' + s.id); } catch(e2) {}
+      }
+    };
+    bar.appendChild(btn);
+  });
+}
+
+// ============================================================
+// TARGETS
+// ============================================================
+function buildTargetList() {
+  const list = document.getElementById('target-list');
+  const search = document.getElementById('target-search');
+
+  function render(filter) {
+    list.innerHTML = '';
+    for (const [group, items] of Object.entries(TARGETS)) {
+      const filtered = filter
+        ? items.filter(t => t.name.toLowerCase().includes(filter) || t.id.toLowerCase().includes(filter) || t.desc.toLowerCase().includes(filter))
+        : items;
+      if (filtered.length === 0) continue;
+
+      const label = document.createElement('div');
+      label.className = 'target-group-label';
+      label.textContent = group;
+      list.appendChild(label);
+
+      filtered.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'target-item';
+        item.innerHTML = `<span class="t-name">${t.name}</span><span class="t-id">${t.id}</span>`;
+        item.onclick = () => goToTarget(t);
+        list.appendChild(item);
+      });
+    }
+  }
+
+  render('');
+  search.addEventListener('input', () => render(search.value.toLowerCase().trim()));
+}
+
+function goToTarget(t) {
+  // Use gotoObject for Simbad name resolution — most reliable
+  aladin.gotoObject(t.id, {
+    success: () => {
+      aladin.setFoV(t.fov);
+      updateInfo(t);
+    },
+    error: () => {
+      // Fallback: try the full name
+      aladin.gotoObject(t.name, {
+        success: () => {
+          aladin.setFoV(t.fov);
+          updateInfo(t);
+        },
+        error: () => {
+          console.warn('Object not resolved:', t.id, t.name);
+          updateInfo(t);
+        }
+      });
+    }
+  });
+}
+
+function updateInfo(t) {
+  document.getElementById('info-name').textContent = t.name;
+  document.getElementById('info-type').textContent = t.id;
+  document.getElementById('info-desc').textContent = t.desc;
+  document.getElementById('info-coords').textContent = `FOV: ${t.fov}°`;
+}
+
+// ============================================================
+// NASA APOD
+// ============================================================
+async function loadAPOD() {
+  try {
+    const resp = await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY');
+    const data = await resp.json();
+    if (data.media_type === 'image' && data.url) {
+      document.getElementById('apod-img').src = data.url;
+      document.getElementById('apod-img').alt = data.title;
+      document.getElementById('apod-title').textContent = data.title;
+      document.getElementById('apod-date').textContent = data.date;
+      document.getElementById('apod-panel').style.display = 'block';
+      document.getElementById('apod-panel').onclick = () => window.open(data.hdurl || data.url, '_blank');
+    }
+  } catch(e) { console.warn('APOD failed:', e); }
+}
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  const search = document.getElementById('target-search');
+  if (e.key === '/' && document.activeElement !== search) {
+    e.preventDefault(); search.focus();
+  }
+  if (e.key === 'Escape') { search.blur(); }
+  if (e.key >= '1' && e.key <= '9' && document.activeElement !== search) {
+    const idx = parseInt(e.key) - 1;
+    const btns = document.querySelectorAll('.survey-btn');
+    if (btns[idx]) btns[idx].click();
+  }
+});
+</script>
+</body>
+</html>

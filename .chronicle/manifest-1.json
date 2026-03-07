@@ -1,0 +1,1475 @@
+{
+  "event": {
+    "seq": 1,
+    "phase": 1,
+    "berry": 5,
+    "ts": "2026-03-07T08:14:54.760Z",
+    "type": "snapshot",
+    "fileCount": 243,
+    "manifestHash": "6384b73ace9798882a9f151085706e8b63b03c175c5b582af542ba7bb1315d4f",
+    "totalBytes": 3749794,
+    "parent": 0,
+    "parentHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "selfHash": "6335da56d0cd62c91596e8e3aecbb3593c0bb90b118e484c58f2a5f1d04403d3"
+  },
+  "files": [
+    {
+      "path": ".vault/FOUNDERS_DIARY.md",
+      "hash": "e8422e20b622e3f1dcbe0281abe897ca10d703bd073994654395b4ef7e846348",
+      "size": 7203,
+      "mtime": "2026-02-28T06:22:26.280Z"
+    },
+    {
+      "path": ".vault/INVESTOR_BRIEF.md",
+      "hash": "538da3383f6c05f7f83ebb740c09c5828b1c84d85dd3d8cffde11d895e407fe6",
+      "size": 5033,
+      "mtime": "2026-02-28T07:08:08.444Z"
+    },
+    {
+      "path": ".vault/PATENT_PROVISIONALS.md",
+      "hash": "364ecee587c11348d0041676f06e45e57803f8853aa9072c30cac1229f541d05",
+      "size": 9001,
+      "mtime": "2026-03-01T04:46:05.840Z"
+    },
+    {
+      "path": ".vault/PRODUCT_STRATEGY.md",
+      "hash": "35659d5f67e61bf0c004243eecfcb862dd03a9d202a5c5306d449b53a5fd69ab",
+      "size": 2608,
+      "mtime": "2026-02-28T07:00:05.993Z"
+    },
+    {
+      "path": "APPRENTICE_PROTOCOL.md",
+      "hash": "eda5139e6c1be5909f137b787365183aa72673492ae0c81c20de1c55f195634e",
+      "size": 988,
+      "mtime": "2026-01-13T04:48:18.451Z"
+    },
+    {
+      "path": "ARCHITECTURE_FULL.md",
+      "hash": "65c58d54f5fa5462367c7945ca34dd205378936e3ed5b3917ecadbfbc8ec1cb2",
+      "size": 97605,
+      "mtime": "2026-02-28T10:15:04.808Z"
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "hash": "24f899e550118063338dcc799e87ab5829ad2c67fd9865b523390ef3a6b499ad",
+      "size": 3565,
+      "mtime": "2026-01-13T06:53:13.929Z"
+    },
+    {
+      "path": "avli_l7_databases.json",
+      "hash": "0183d2d46dd4cb931f31b468813e998602eddbcb1de82f7c640cb66223a86600",
+      "size": 6397,
+      "mtime": "2026-02-28T19:53:36.031Z"
+    },
+    {
+      "path": "BOOK_OF_LAW.md",
+      "hash": "881dd0a87cc64107bd4fb8c31839a4ee574c6e7c9f751c0ea75e55d05c4d0356",
+      "size": 12534,
+      "mtime": "2026-03-01T15:58:24.969Z"
+    },
+    {
+      "path": "BOOTSTRAP.md",
+      "hash": "088c003d9fb4dc4937b019a235bd9d7525bba01bc90b32f6ebcd782cd7d0b9f1",
+      "size": 14561,
+      "mtime": "2026-02-28T09:57:52.834Z"
+    },
+    {
+      "path": "COUNCIL_OF_10.md",
+      "hash": "3126cf5ffa26779dc6c625313e21e8e6060f313a4e13c1cd80c56a04917cb7bb",
+      "size": 7535,
+      "mtime": "2026-02-28T03:45:28.638Z"
+    },
+    {
+      "path": "daemon/INSTALL.md",
+      "hash": "ab361610c8ef8d47ce80f6449121b67448b6a922e4aacef639574bdeb68f426c",
+      "size": 1268,
+      "mtime": "2026-01-13T04:37:36.588Z"
+    },
+    {
+      "path": "daemon/mcp_gateway_enforcer.sh",
+      "hash": "4484c152d0f43b176fa6f74810ce9dfca50ef1b92521389ae19f767011027a0f",
+      "size": 1943,
+      "mtime": "2026-01-13T04:37:32.508Z"
+    },
+    {
+      "path": "DATABASE_ANALYSIS_INDEX.md",
+      "hash": "6cd250204d5a6979a7a5011a877d476501c3596828807ad5cebd4c13a6a2e2c2",
+      "size": 11337,
+      "mtime": "2026-02-28T19:55:23.691Z"
+    },
+    {
+      "path": "DATABASE_CLASSIFICATION_REPORT.md",
+      "hash": "2b3e8f7f233de2485a5caea51c7e59886a39c9947dab89fef940b51fcd153366",
+      "size": 10345,
+      "mtime": "2026-02-28T19:53:30.598Z"
+    },
+    {
+      "path": "DATABASE_INVENTORY.md",
+      "hash": "7545805b9b29feb1f5b237d8b24d8cf700f31f0016043589317238cb8482a2a3",
+      "size": 10586,
+      "mtime": "2026-02-28T19:54:07.904Z"
+    },
+    {
+      "path": "DATABASES_STATISTICS.md",
+      "hash": "5dd3efe1273f252adb527099d1ebb4b56a6dfd8f74fdc0783740922f927b275d",
+      "size": 12951,
+      "mtime": "2026-02-28T19:54:48.781Z"
+    },
+    {
+      "path": "dbexplorer/L7DBExplorer.swift",
+      "hash": "25d5f4980edc0b8ddeb78409f18b2b469453ed845719326cb523ef3aafda8142",
+      "size": 34720,
+      "mtime": "2026-02-28T19:50:27.174Z"
+    },
+    {
+      "path": "emerald-server.py",
+      "hash": "8b58429601db9679416818d7fd36f4ed5ed34b7770e8177986f30aea660590b9",
+      "size": 1134,
+      "mtime": "2026-03-01T15:01:55.910Z"
+    },
+    {
+      "path": "EMPIRE.md",
+      "hash": "543d0c46d6471b51d9759fa6a9f44dd83aa3612d1fc1751618c1f5c34bbf39a2",
+      "size": 2113,
+      "mtime": "2026-01-13T07:53:52.323Z"
+    },
+    {
+      "path": "empire/empire.sh",
+      "hash": "705e76322eac8fb0c0974ffd33288c007a12de6d82f40ad875b4a1d9d372c76a",
+      "size": 676,
+      "mtime": "2026-01-13T05:29:55.074Z"
+    },
+    {
+      "path": "empire/public/app.js",
+      "hash": "50904ff7cde1dac46889f6357a379375867421d8160a30f7681204128d89204e",
+      "size": 31629,
+      "mtime": "2026-03-01T15:09:56.452Z"
+    },
+    {
+      "path": "empire/public/index.html",
+      "hash": "a42d8dee026c37528e56097b386382e1edbb9d3361241e491148cbc4edbbbb7e",
+      "size": 3948,
+      "mtime": "2026-03-01T15:09:56.453Z"
+    },
+    {
+      "path": "empire/public/styles.css",
+      "hash": "845248fae36dd2a4ef9e43c25312c70f6271cd2312cc9d04ba9bd4c0d053e476",
+      "size": 8213,
+      "mtime": "2026-01-13T13:17:09.574Z"
+    },
+    {
+      "path": "empire/README.md",
+      "hash": "7c4e4db64cf2a5b2a46a20c4c50a648e79c7fff2934c857b59f5f725413beece",
+      "size": 447,
+      "mtime": "2026-01-13T05:30:00.260Z"
+    },
+    {
+      "path": "empire/server.js",
+      "hash": "1858f6f61accaae85a0486887d8491cef7639fc53f2cb03b2f0cf8fc4e2dc852",
+      "size": 15614,
+      "mtime": "2026-03-02T06:51:46.290Z"
+    },
+    {
+      "path": "ENFORCEMENT_TERMS.md",
+      "hash": "a5377fe2c19aca0fceaeefc49611897913e534d12d2ba239943a01530635624f",
+      "size": 2713,
+      "mtime": "2026-02-28T05:47:28.304Z"
+    },
+    {
+      "path": "ENFORCEMENT.md",
+      "hash": "429dd268051780b0609618c5524d5091b09f9d928d4ae95f44bd030617a51201",
+      "size": 1167,
+      "mtime": "2026-01-13T06:53:21.189Z"
+    },
+    {
+      "path": "ENTITY_REGISTRY.json",
+      "hash": "e4121e3df9b7a052c0f9273974567381f3209ae6bc5b1a85f1ab403480304ad5",
+      "size": 21,
+      "mtime": "2026-01-13T04:35:12.744Z"
+    },
+    {
+      "path": "ENTITY_REGISTRY.md",
+      "hash": "beae585cd0c6f5a4e0db938d560a8ff2cd51f36931f5c47cd3551173978716c2",
+      "size": 1013,
+      "mtime": "2026-01-13T04:42:40.256Z"
+    },
+    {
+      "path": "ENTITY_TEMPLATE.md",
+      "hash": "8b38e94ba6d8649296aaeea98f8ee46d2ec0b01446eacfbba4bab25be055b6ab",
+      "size": 367,
+      "mtime": "2026-01-13T04:35:11.919Z"
+    },
+    {
+      "path": "FOUNDERS_DRAFT.md",
+      "hash": "88b57bd191fb38bf0cbd369555164401165a1687dcfa0886995d5415854633af",
+      "size": 127375,
+      "mtime": "2026-03-02T06:06:23.484Z"
+    },
+    {
+      "path": "generate-appendix-pdf.py",
+      "hash": "15e6153bf62c588a8f8dfca4f3d21d5d39950c05d4a128b6913e629c8c61c2f6",
+      "size": 91155,
+      "mtime": "2026-02-28T13:13:18.513Z"
+    },
+    {
+      "path": "HERO_JOURNEY.md",
+      "hash": "a4272a10090a85f852c25d6778d3a06bc52e211ea51687db5787e6062c14babc",
+      "size": 824,
+      "mtime": "2026-01-13T04:31:00.640Z"
+    },
+    {
+      "path": "iconforge/IconApply.swift",
+      "hash": "b164b8f8725a246c435361b4705bd8bcc31a26731f0643cedd2b81719256cef7",
+      "size": 2304,
+      "mtime": "2026-02-28T20:09:45.124Z"
+    },
+    {
+      "path": "iconforge/IconForge.swift",
+      "hash": "402c2d9f997a7204eb0c43bcdf17b2e882a8a254dbebb2dc89106369c8fc9b0b",
+      "size": 43171,
+      "mtime": "2026-02-28T20:02:35.415Z"
+    },
+    {
+      "path": "iconforge/WallpaperForge.swift",
+      "hash": "a6671936700e4d169b1206d4aa52726665541be9d6d72a01388e77d1ab167c3b",
+      "size": 6833,
+      "mtime": "2026-02-28T20:10:24.153Z"
+    },
+    {
+      "path": "install-heart.sh",
+      "hash": "189c96755ff6995d615c815e1832a7855c6249ac9991ec150e8743f72f84756c",
+      "size": 5572,
+      "mtime": "2026-02-28T12:10:47.234Z"
+    },
+    {
+      "path": "INVENTORY.json",
+      "hash": "e6d01814e65527ee8b863b701e9c71f01960d455a947431477cea6878974ecc7",
+      "size": 53881,
+      "mtime": "2026-02-28T05:27:14.037Z"
+    },
+    {
+      "path": "IP_DOCKET.md",
+      "hash": "d53fd167ee89a147c22e5149794d6b85e01622b06c35f71f3c2061d65161dbe8",
+      "size": 11374,
+      "mtime": "2026-02-28T05:47:58.219Z"
+    },
+    {
+      "path": "L7_CLI_SPEC.md",
+      "hash": "fd2b6196efa9351467ea3292afd56d7831b21f191dedd2d4e504a7e3c8145881",
+      "size": 1175,
+      "mtime": "2026-01-13T05:05:37.008Z"
+    },
+    {
+      "path": "L7_CONTRACTS.md",
+      "hash": "1da1482e136cb9fc82c9f3bf1fda14bacba8f448ca4caa487a17bad22a5028ac",
+      "size": 2362,
+      "mtime": "2026-02-28T01:50:29.337Z"
+    },
+    {
+      "path": "L7_SCHEMA.json",
+      "hash": "e72d3f93252d3f417237d6c485f9026d787b279ac5c7da23b866e58578f0430c",
+      "size": 3007,
+      "mtime": "2026-01-13T04:10:37.256Z"
+    },
+    {
+      "path": "l7index.js",
+      "hash": "de5fa0bd526f06a0c8ababac4419f095350639c47efeeb128ef023a8db12088f",
+      "size": 9197,
+      "mtime": "2026-03-01T15:09:50.005Z"
+    },
+    {
+      "path": "L7OS_ARCHITECTURE.md",
+      "hash": "201663156cfcb4f878d673e70f6d90e2be7ad30d593c5b5aaf29ad96b36c4aab",
+      "size": 14869,
+      "mtime": "2026-02-28T20:13:18.628Z"
+    },
+    {
+      "path": "l7scan.js",
+      "hash": "4ce5593d9106d70ca7732ad7eef47edd0044e6176fc38a6c9c93aad1c7f3a2ce",
+      "size": 26910,
+      "mtime": "2026-03-01T15:09:50.005Z"
+    },
+    {
+      "path": "l7tree-split.js",
+      "hash": "e9c7564fb41a2725f94b84bf7550895ef5d93efedb4bac6be6e2d0e72a31d9ca",
+      "size": 6808,
+      "mtime": "2026-03-01T15:09:50.006Z"
+    },
+    {
+      "path": "legal/COUNCIL_REVIEW.md",
+      "hash": "516f3f0f0ef9eb2ed7520d6db0da2e0143dc603c4bc8296e3e94054f2cc91b4d",
+      "size": 6414,
+      "mtime": "2026-03-07T01:23:49.558Z"
+    },
+    {
+      "path": "legal/file_avli_cloud.py",
+      "hash": "2836ed7c2bbe8d1b0ae011a6d1aba18882eead7b0b92da710002f5cd9afacfe2",
+      "size": 5846,
+      "mtime": "2026-03-07T01:26:21.046Z"
+    },
+    {
+      "path": "legal/FILING_COMPLETE.md",
+      "hash": "c3abf6fe16edec951483995807b27ba18ef2e4c2fa7a9e48c860b7d1ded82542",
+      "size": 4983,
+      "mtime": "2026-03-07T01:23:06.537Z"
+    },
+    {
+      "path": "legal/FILING_FLORIDA_LLC.md",
+      "hash": "7e9fb88a01db559248f0e122a75a1a3b3c089706b09e0c1b9304ca1ac20b1d9a",
+      "size": 3508,
+      "mtime": "2026-03-07T00:23:05.179Z"
+    },
+    {
+      "path": "legal/FILING_MISSOURI_LLC.md",
+      "hash": "d34892dffab6ef6683ffe56c908a165ca5daee557ee408bdda7d6ada38a52f97",
+      "size": 3021,
+      "mtime": "2026-03-07T00:22:41.586Z"
+    },
+    {
+      "path": "legal/FILING_REVIEW.md",
+      "hash": "8208f88461bfa5e701f00ea32fcb8c6e98e76db78d96b401d15ca215468f7111",
+      "size": 8304,
+      "mtime": "2026-03-07T01:22:22.891Z"
+    },
+    {
+      "path": "legal/LLC_STATUS.md",
+      "hash": "6cccb8f7e54111410865ce622a778a30839df144daf0eeaea07252e2c45ae862",
+      "size": 4451,
+      "mtime": "2026-03-07T01:40:04.435Z"
+    },
+    {
+      "path": "legal/OPENCLAW_PROVENANCE.md",
+      "hash": "49a5d13f3d937bbe816fded92309dee716c6c64225fea22eafdf219678ad3535",
+      "size": 18000,
+      "mtime": "2026-03-07T01:41:00.941Z"
+    },
+    {
+      "path": "legal/OPERATING_AGREEMENT.md",
+      "hash": "f270f7daefbd926c6a98a9753eaead2c91eebd8cac0f0f250f371ed57c85fa8b",
+      "size": 11723,
+      "mtime": "2026-03-07T01:41:01.485Z"
+    },
+    {
+      "path": "legal/sos_missouri.py",
+      "hash": "07e980cd65873162e1541388476de004e38504c85a03398cb95c2ec179a3e2b7",
+      "size": 3134,
+      "mtime": "2026-03-07T01:15:41.175Z"
+    },
+    {
+      "path": "legal/sunbiz_amend.py",
+      "hash": "9d921fec59e2574abf987bbe11de8988f331798f23d19b1586aa7501f3e40087",
+      "size": 8568,
+      "mtime": "2026-03-07T01:43:31.187Z"
+    },
+    {
+      "path": "legal/sunbiz_annual_report.py",
+      "hash": "935d0dd78426f91e6d6285416733e00271c9418a4f4fc8810de7d43558cdb85e",
+      "size": 7579,
+      "mtime": "2026-03-07T01:45:43.376Z"
+    },
+    {
+      "path": "legal/sunbiz_ar_complete.py",
+      "hash": "957278c247b3b757a7e9e76ff98f636386d5698a7cb4cf150994734cdb520840",
+      "size": 7591,
+      "mtime": "2026-03-07T01:51:02.924Z"
+    },
+    {
+      "path": "legal/sunbiz_ar_edit.py",
+      "hash": "660933e169f61cd919c847678bf195b364b9b3e305cbc2cf3302574b9705093f",
+      "size": 10365,
+      "mtime": "2026-03-07T01:47:37.085Z"
+    },
+    {
+      "path": "legal/sunbiz_ar_fill.py",
+      "hash": "16d0318873e6dba6c8aca07f46117581b9cd0b8f8a0c5d3105fe980ff5ee51f3",
+      "size": 12652,
+      "mtime": "2026-03-07T01:46:39.103Z"
+    },
+    {
+      "path": "legal/sunbiz_ar_submit.py",
+      "hash": "3cde075419777fb80c57db924d8e3c3ace5e076af903edf7a9f354d4b6b9bf7e",
+      "size": 8967,
+      "mtime": "2026-03-07T01:49:07.855Z"
+    },
+    {
+      "path": "legal/sunbiz_avd.py",
+      "hash": "272278a5431d81a4649e900cd976b907b06c851261f9c1fc1ac7f1587bfc0a6b",
+      "size": 2870,
+      "mtime": "2026-03-07T01:26:53.405Z"
+    },
+    {
+      "path": "legal/sunbiz_deep.py",
+      "hash": "6f53b0985e8054c3bfe70009502fdae74549419d94cab72a436d42fd621d2d07",
+      "size": 5124,
+      "mtime": "2026-03-07T01:12:54.563Z"
+    },
+    {
+      "path": "legal/sunbiz_detail.py",
+      "hash": "c5fb53699e2c15e199ec607e20fe86c21ff4c2c549aab0b27ad093f5f7a3ae2a",
+      "size": 3415,
+      "mtime": "2026-03-07T01:14:35.750Z"
+    },
+    {
+      "path": "legal/sunbiz_exhaustive.py",
+      "hash": "c8e5c0910e97ceb4d9c9d80367186109e9b8b0a24bcd323087664bbb301e3838",
+      "size": 3834,
+      "mtime": "2026-03-07T01:29:08.502Z"
+    },
+    {
+      "path": "legal/sunbiz_fei.py",
+      "hash": "def59345a4850c9abb442a0d64e448128c47c52ec925695faba4b53afb89beaa",
+      "size": 4078,
+      "mtime": "2026-03-07T01:19:14.619Z"
+    },
+    {
+      "path": "legal/sunbiz_file.py",
+      "hash": "727faa765b4b5ce6a716368745306b4613ae8683315d3c3af097b48419b60767",
+      "size": 2792,
+      "mtime": "2026-03-07T01:19:57.521Z"
+    },
+    {
+      "path": "legal/sunbiz_final.py",
+      "hash": "7a92d4ec4dd3db1a8e83eeabbc4fd440bc03062b9f15d87298da309c12d6f0ab",
+      "size": 4244,
+      "mtime": "2026-03-07T01:30:52.069Z"
+    },
+    {
+      "path": "legal/sunbiz_form.py",
+      "hash": "4ae27d8343765177c25c6e6a9bf6b9f88c9667c97fa8dcbf0cd359a9d45c02a0",
+      "size": 3544,
+      "mtime": "2026-03-07T01:20:29.865Z"
+    },
+    {
+      "path": "legal/sunbiz_search.py",
+      "hash": "f33984f6ccf9aaee569c97c62fdcb27023d2864247fc8edfdf55f9d7f863e2f8",
+      "size": 5842,
+      "mtime": "2026-03-07T01:12:13.551Z"
+    },
+    {
+      "path": "legal/sunbiz_update.py",
+      "hash": "62191b02cf5631af08b4bbf591b3083b3bfbd618437eb26e8fecd5a1e2f1ce01",
+      "size": 7816,
+      "mtime": "2026-03-07T01:44:51.830Z"
+    },
+    {
+      "path": "legal/TRADE_SECRET_POLICY.md",
+      "hash": "e58d53cee8489662f7349fc29a03eef64f22379d56ab18499815b9bccfe15642",
+      "size": 2722,
+      "mtime": "2026-03-07T01:40:32.022Z"
+    },
+    {
+      "path": "lib/autopoiesis-2.js",
+      "hash": "d47458b49e1a810988d5a05236c0d09b47ffc675f6fbebe5f03aebb3beb38025",
+      "size": 32838,
+      "mtime": "2026-03-02T10:45:18.276Z"
+    },
+    {
+      "path": "lib/autopoiesis.js",
+      "hash": "799e4b6d9214312d1e9e781ab5fa004e55893dbbbc250e07dad5da4b4dc0f1ff",
+      "size": 21478,
+      "mtime": "2026-03-01T15:09:50.015Z"
+    },
+    {
+      "path": "lib/chronicle.js",
+      "hash": "ff53d8db2ea466f1dcfb979273efb9cafeb68005e5a51f00f207ff0ce356451b",
+      "size": 8018,
+      "mtime": "2026-03-07T08:14:43.390Z"
+    },
+    {
+      "path": "lib/dodecahedron.js",
+      "hash": "dbc8552bb9d333a58ca9eca3ffe232f7c8c948bf81a411e3ce3122adf65582dd",
+      "size": 26429,
+      "mtime": "2026-03-01T15:09:50.016Z"
+    },
+    {
+      "path": "lib/domains.js",
+      "hash": "4d991044a54753b25b59393d45d62e729d362e78415577b9c796e2bb8619bf02",
+      "size": 7779,
+      "mtime": "2026-03-01T15:09:50.017Z"
+    },
+    {
+      "path": "lib/executor.js",
+      "hash": "f18c0ed55d61367c8919ec19a4f5050ebc97b1d6c226ee3293c3144c81ff7cc7",
+      "size": 16430,
+      "mtime": "2026-03-02T06:53:37.657Z"
+    },
+    {
+      "path": "lib/field.js",
+      "hash": "7ae01c96aa3e89cd24c70d3a04778b58670cf3da682f4ed4497ca45c13f4ae48",
+      "size": 60133,
+      "mtime": "2026-03-01T15:09:50.018Z"
+    },
+    {
+      "path": "lib/forge.js",
+      "hash": "8cb8e9bbc22bc335300aa2d8fecde5ac34dd60581e2a5d4b7acf8397d17ab0ef",
+      "size": 13938,
+      "mtime": "2026-03-01T15:09:50.018Z"
+    },
+    {
+      "path": "lib/gateway.js",
+      "hash": "15e9c54e384f2b49124b9b995105d1ae15811ffdb653c4eb60c75d0aed0c7c6a",
+      "size": 25972,
+      "mtime": "2026-03-02T06:51:39.781Z"
+    },
+    {
+      "path": "lib/harmonics.js",
+      "hash": "295a13acc407c6c205f4648890a9b19b89064daf07176acaf50f2d8869aa4600",
+      "size": 38547,
+      "mtime": "2026-03-01T15:09:50.019Z"
+    },
+    {
+      "path": "lib/heart.js",
+      "hash": "6ee5690971ab9929255675b6724767bf4e34cea33ffc8b3b969edc8772fd85dc",
+      "size": 21409,
+      "mtime": "2026-03-01T15:09:50.019Z"
+    },
+    {
+      "path": "lib/hexagrams.js",
+      "hash": "6457d14850406b895bf12c7e518d9249b79b35a64ae2ab413d162811e3fd85f0",
+      "size": 48886,
+      "mtime": "2026-03-01T15:09:50.020Z"
+    },
+    {
+      "path": "lib/migrate.js",
+      "hash": "2aff5506665ddeeadab7a2319068b2741b2fbb53882ff4f1c859ae283b4385c0",
+      "size": 8342,
+      "mtime": "2026-03-02T06:53:40.943Z"
+    },
+    {
+      "path": "lib/nerve.js",
+      "hash": "7a58c5dac3b08f4723230f80acc81209d5f3605c929384ed9277151cbca8297b",
+      "size": 19108,
+      "mtime": "2026-03-01T15:09:50.021Z"
+    },
+    {
+      "path": "lib/parser.js",
+      "hash": "0c80b1fce493b0701bb7bf3758c8047f9259888fc7ca387cb3713626025bc39d",
+      "size": 9085,
+      "mtime": "2026-03-02T06:53:20.478Z"
+    },
+    {
+      "path": "lib/polarity.js",
+      "hash": "7e2f421e651fa8928a2b798a349a2c474b1bd42e883b680501aa806449cd1c96",
+      "size": 7814,
+      "mtime": "2026-03-01T15:09:50.022Z"
+    },
+    {
+      "path": "lib/prima.js",
+      "hash": "bca8bc90c6b4dec9cdef97fe8202f29a4057d64af55a27c76d1123932105c9d5",
+      "size": 11599,
+      "mtime": "2026-03-01T15:09:50.022Z"
+    },
+    {
+      "path": "lib/self.js",
+      "hash": "7e48a0ac8c24a478b356afa5c75f8d5cefcc45629c7b9ec8ead9a745af814838",
+      "size": 9203,
+      "mtime": "2026-03-01T15:09:50.023Z"
+    },
+    {
+      "path": "lib/soul.js",
+      "hash": "954b45c86c51ae45636d1ecbdd29f481fdc80f06fed870dcdf38cbd16e105587",
+      "size": 37028,
+      "mtime": "2026-03-07T04:07:43.453Z"
+    },
+    {
+      "path": "lib/state.js",
+      "hash": "e4c89737f0eaec221197477fef9048285fea987dd0c0e2eed3dd8473bfeec7d2",
+      "size": 4474,
+      "mtime": "2026-03-01T15:09:50.023Z"
+    },
+    {
+      "path": "lib/watermark.js",
+      "hash": "8e2d1d748ba86b1e6511919bdea5ff6a7d26ff5a799746d599ef8abf28b8e7f2",
+      "size": 33947,
+      "mtime": "2026-03-01T15:09:50.024Z"
+    },
+    {
+      "path": "LIBRARY.html",
+      "hash": "7271f1711b8152a699db07933759c9d8acf2e7c559ae7de024f854ae45847db0",
+      "size": 70097,
+      "mtime": "2026-03-01T15:09:50.004Z"
+    },
+    {
+      "path": "library/EMPIRE/01_THE_GREAT_WORK/COVER.md",
+      "hash": "8c6555db4f00997e7374ec657c22da30d27123ee9cdc6c3646ce7a76f48e756b",
+      "size": 1237,
+      "mtime": "2026-03-01T15:51:25.962Z"
+    },
+    {
+      "path": "library/EMPIRE/01_THE_GREAT_WORK/PRICE_SCHEDULE.md",
+      "hash": "4ba331cb12a08213b863253c82dd2c4936b8499e32607f5a8284ed91419cc57a",
+      "size": 1798,
+      "mtime": "2026-03-01T16:01:40.746Z"
+    },
+    {
+      "path": "library/EMPIRE/01_THE_GREAT_WORK/PROVENANCE.md",
+      "hash": "d82e97da8f71e90018b31c6972194204a12ae8efa1cb23d7cf15a01a88d40563",
+      "size": 2133,
+      "mtime": "2026-03-01T16:01:11.631Z"
+    },
+    {
+      "path": "library/EMPIRE/01_THE_GREAT_WORK/RELEASE_PLAN.md",
+      "hash": "2dd926f77fc8246a421c6ecbc715c7b68bba1f4dc20136f4d4eb64ec53cf588c",
+      "size": 2582,
+      "mtime": "2026-03-01T16:01:29.314Z"
+    },
+    {
+      "path": "library/EMPIRE/02_THE_LIVING_GRAPH/COVER.md",
+      "hash": "e38758d4573756dadf473a91836e25eee33f51c593c525af6f8d1c4aace5fe27",
+      "size": 1235,
+      "mtime": "2026-03-01T16:01:56.286Z"
+    },
+    {
+      "path": "library/EMPIRE/02_THE_LIVING_GRAPH/PRICE_SCHEDULE.md",
+      "hash": "b0f7ef5246150b1132f15624c076fd6a6dfd6cac81e6ff88ccc2a2151751caee",
+      "size": 1315,
+      "mtime": "2026-03-01T16:02:23.452Z"
+    },
+    {
+      "path": "library/EMPIRE/02_THE_LIVING_GRAPH/PROVENANCE.md",
+      "hash": "b9fc5f20bff64d8947c6fe08104d432493f7dcf471e2e57593d487bdb5be48bb",
+      "size": 1534,
+      "mtime": "2026-03-01T16:02:06.495Z"
+    },
+    {
+      "path": "library/EMPIRE/02_THE_LIVING_GRAPH/RELEASE_PLAN.md",
+      "hash": "337845d077a551c9037b83f3f7858a947f842a2855346e6d110e10ca7455c541",
+      "size": 1999,
+      "mtime": "2026-03-01T16:02:16.538Z"
+    },
+    {
+      "path": "library/EMPIRE/03_THE_COMMON_LINGUA/COVER.md",
+      "hash": "c3d4946a8676bbe0916b9882624ae77c2643ed7448afdd50298ea1cd408f851c",
+      "size": 1133,
+      "mtime": "2026-03-01T16:02:34.173Z"
+    },
+    {
+      "path": "library/EMPIRE/03_THE_COMMON_LINGUA/PRICE_SCHEDULE.md",
+      "hash": "cf557c17286018b0c722a60b39c17b4f87ccdbe8fe6bdd2c5b315fc4ee567752",
+      "size": 1539,
+      "mtime": "2026-03-01T16:03:06.858Z"
+    },
+    {
+      "path": "library/EMPIRE/03_THE_COMMON_LINGUA/PROVENANCE.md",
+      "hash": "a135bb598b83de293be8974171a90f417bf25b78704ee4d5fb845d24e312f8d8",
+      "size": 1944,
+      "mtime": "2026-03-01T16:02:44.697Z"
+    },
+    {
+      "path": "library/EMPIRE/03_THE_COMMON_LINGUA/RELEASE_PLAN.md",
+      "hash": "571c65c6fbc01e7642cdfdde15d1058faff00f69252f8384ad8b0f5e953e810d",
+      "size": 2036,
+      "mtime": "2026-03-01T16:02:57.085Z"
+    },
+    {
+      "path": "library/EMPIRE/04_EMERGENT_INTELLIGENCE/COVER.md",
+      "hash": "20a7380e78a08d8e1adbe66d2560fe90733bfcd1c4f11d15d224060c81b6f6c1",
+      "size": 1261,
+      "mtime": "2026-03-01T16:03:16.480Z"
+    },
+    {
+      "path": "library/EMPIRE/04_EMERGENT_INTELLIGENCE/PRICE_SCHEDULE.md",
+      "hash": "dd737b9583d69b341f4a9b10059daff09491546e69a398e717892f7953981495",
+      "size": 1236,
+      "mtime": "2026-03-01T16:03:41.660Z"
+    },
+    {
+      "path": "library/EMPIRE/04_EMERGENT_INTELLIGENCE/PROVENANCE.md",
+      "hash": "e583c6db485040aedc736c0af7ec1a2efef606c0bc67806c9307bb3241c0eee0",
+      "size": 1839,
+      "mtime": "2026-03-01T16:03:27.896Z"
+    },
+    {
+      "path": "library/EMPIRE/04_EMERGENT_INTELLIGENCE/RELEASE_PLAN.md",
+      "hash": "db44b12f62f31e1c8712d4af6b25056d0d9b3fecda1870b90961e42bf1b5eec2",
+      "size": 1714,
+      "mtime": "2026-03-01T16:03:36.527Z"
+    },
+    {
+      "path": "library/EMPIRE/05_GRAPH_BASED_TRACKING/COVER.md",
+      "hash": "5340bd7f0d8ba65577ee6456079009c276d763f97eb766db723c992da477b102",
+      "size": 1068,
+      "mtime": "2026-03-01T16:03:51.119Z"
+    },
+    {
+      "path": "library/EMPIRE/05_GRAPH_BASED_TRACKING/PRICE_SCHEDULE.md",
+      "hash": "03d6f5b12e4b1c510a4ed4ecc147a8183fc92711193e73d951a14d2554f3f039",
+      "size": 1423,
+      "mtime": "2026-03-01T16:04:17.797Z"
+    },
+    {
+      "path": "library/EMPIRE/05_GRAPH_BASED_TRACKING/PROVENANCE.md",
+      "hash": "4d27c569e24482582d7c2fd9531043ba36e584ec8523f38295776f95c80766bd",
+      "size": 1716,
+      "mtime": "2026-03-01T16:04:01.766Z"
+    },
+    {
+      "path": "library/EMPIRE/05_GRAPH_BASED_TRACKING/RELEASE_PLAN.md",
+      "hash": "58a8c34f4eda861f3e8ffe7487ac82659590eda15e03c49200b5bac339433a22",
+      "size": 1819,
+      "mtime": "2026-03-01T16:04:11.060Z"
+    },
+    {
+      "path": "library/EMPIRE/06_IQS888_QUANTUM_GRAVITY/COVER.md",
+      "hash": "729d2dd190d9602ebf71fff846c3b1a3f821894f67ca24cc16da5fe8d83338f8",
+      "size": 1230,
+      "mtime": "2026-03-01T16:04:42.186Z"
+    },
+    {
+      "path": "library/EMPIRE/06_IQS888_QUANTUM_GRAVITY/PRICE_SCHEDULE.md",
+      "hash": "be3216ded4a713958177be5464626740611c76c623e748ddf59ba68254c0265c",
+      "size": 1453,
+      "mtime": "2026-03-01T16:05:14.288Z"
+    },
+    {
+      "path": "library/EMPIRE/06_IQS888_QUANTUM_GRAVITY/PROVENANCE.md",
+      "hash": "70c4c5054b7fa20a67e9ffcd6480bf0100dfb3875c4e0df58e240b719282cac3",
+      "size": 1825,
+      "mtime": "2026-03-01T16:04:54.213Z"
+    },
+    {
+      "path": "library/EMPIRE/06_IQS888_QUANTUM_GRAVITY/RELEASE_PLAN.md",
+      "hash": "6a8a7b254851f197fc2b19251d7a48877fe53e9da1807b012eca4e38261e98ee",
+      "size": 2263,
+      "mtime": "2026-03-01T16:05:05.814Z"
+    },
+    {
+      "path": "library/EMPIRE/07_BOOK_OF_LAW/COVER.md",
+      "hash": "2fd46735d9f64443c063bde372be8f27ca98716acb725f1a35a22cbc67522c8b",
+      "size": 1082,
+      "mtime": "2026-03-01T16:05:25.454Z"
+    },
+    {
+      "path": "library/EMPIRE/07_BOOK_OF_LAW/PRICE_SCHEDULE.md",
+      "hash": "90d6b46791a07cd5d20449fa5164839bd2942bf78db3944e21838146a4a0a7b9",
+      "size": 990,
+      "mtime": "2026-03-01T16:05:54.861Z"
+    },
+    {
+      "path": "library/EMPIRE/07_BOOK_OF_LAW/PROVENANCE.md",
+      "hash": "477ed240c52082d946c9a3cd696ffea13c113f190a24306427e6f46c9e85fa67",
+      "size": 1651,
+      "mtime": "2026-03-01T16:05:40.037Z"
+    },
+    {
+      "path": "library/EMPIRE/07_BOOK_OF_LAW/RELEASE_PLAN.md",
+      "hash": "57bf596f333288b8f3303a3edd1805d639e8359da84345827b704aca1d3d023d",
+      "size": 1351,
+      "mtime": "2026-03-01T16:05:48.765Z"
+    },
+    {
+      "path": "library/EMPIRE/08_FOUNDERS_DRAFT/COVER.md",
+      "hash": "710ebac17e1c264e1699a89ac23d0fcff8a3ac8cbbe9ef5696c72997c604df16",
+      "size": 929,
+      "mtime": "2026-03-01T16:06:03.822Z"
+    },
+    {
+      "path": "library/EMPIRE/08_FOUNDERS_DRAFT/PRICE_SCHEDULE.md",
+      "hash": "fff6bb796c35297fdbd368000c15b123306599d3504001ddf11a3345977fca10",
+      "size": 884,
+      "mtime": "2026-03-01T16:06:24.077Z"
+    },
+    {
+      "path": "library/EMPIRE/08_FOUNDERS_DRAFT/PROVENANCE.md",
+      "hash": "fe2cabd3d500609283c3bfa3fb4b48948b03e6b6c4ef712f3547fcf2006a85b1",
+      "size": 1607,
+      "mtime": "2026-03-01T16:06:13.287Z"
+    },
+    {
+      "path": "library/EMPIRE/08_FOUNDERS_DRAFT/RELEASE_PLAN.md",
+      "hash": "223ec69ab704c84e21a63bd74951da24089a0a8d589cce8348d483c13ad8fefc",
+      "size": 1220,
+      "mtime": "2026-03-01T16:06:19.112Z"
+    },
+    {
+      "path": "library/EMPIRE/09_ARCHITECTURE_FULL/COVER.md",
+      "hash": "dc588c461f68f4f36c8678403bfa43b29829a59cb46de6ce146947e235035db1",
+      "size": 1105,
+      "mtime": "2026-03-01T16:06:34.012Z"
+    },
+    {
+      "path": "library/EMPIRE/09_ARCHITECTURE_FULL/PRICE_SCHEDULE.md",
+      "hash": "055873f50e3dd46c53dd0f8ceef5de4f054f0b4965a39dc078aff0dabd8705d6",
+      "size": 1148,
+      "mtime": "2026-03-01T16:06:59.771Z"
+    },
+    {
+      "path": "library/EMPIRE/09_ARCHITECTURE_FULL/PROVENANCE.md",
+      "hash": "c9652412e384a351c9146269462de42b3e50669b4234bc529edb2d4aeca4820d",
+      "size": 1712,
+      "mtime": "2026-03-01T16:06:43.419Z"
+    },
+    {
+      "path": "library/EMPIRE/09_ARCHITECTURE_FULL/RELEASE_PLAN.md",
+      "hash": "f297d961f6253f7463e200961a354027cc3a28bc28c8604bea8ec69e9b956d23",
+      "size": 1485,
+      "mtime": "2026-03-01T16:06:52.580Z"
+    },
+    {
+      "path": "library/EMPIRE/10_BOOK_OF_LIFE/COVER.md",
+      "hash": "ff8976cc12f9ab304a8bd805896ae52383bf9ceb12572d3d6105483cc8ed0dd4",
+      "size": 837,
+      "mtime": "2026-03-01T16:07:08.938Z"
+    },
+    {
+      "path": "library/EMPIRE/10_BOOK_OF_LIFE/PRICE_SCHEDULE.md",
+      "hash": "dcda16698b0deb9e58dce29f912c568061c43b7812f966b47e32ace26a0ee2e1",
+      "size": 644,
+      "mtime": "2026-03-01T16:07:23.054Z"
+    },
+    {
+      "path": "library/EMPIRE/10_BOOK_OF_LIFE/PROVENANCE.md",
+      "hash": "6140736a3b56f899600266a6a2c251f64ca5e4c9b66fecce4c04edd4d2127d47",
+      "size": 1023,
+      "mtime": "2026-03-01T16:07:14.487Z"
+    },
+    {
+      "path": "library/EMPIRE/10_BOOK_OF_LIFE/RELEASE_PLAN.md",
+      "hash": "de357f8fe42536e38d91b7558361a8b270ea704cb32b6c2c61f437262a64af47",
+      "size": 893,
+      "mtime": "2026-03-01T16:07:19.249Z"
+    },
+    {
+      "path": "library/EMPIRE/11_TRANSPARENT_MINDS/COVER.md",
+      "hash": "c1d6a1b802f5658cabf13893e92ef6b07e50f6c6e67e2bc33aeb76469afc399a",
+      "size": 871,
+      "mtime": "2026-03-02T12:15:06.734Z"
+    },
+    {
+      "path": "library/EMPIRE/11_TRANSPARENT_MINDS/PRICE_SCHEDULE.md",
+      "hash": "610da030dd2a265388e39640a94356c34790e954306fa919a31b1cbce29cb296",
+      "size": 251,
+      "mtime": "2026-03-02T12:15:17.550Z"
+    },
+    {
+      "path": "library/EMPIRE/11_TRANSPARENT_MINDS/PROVENANCE.md",
+      "hash": "5cea4026ffe3fc6f4130ca6571d89108262477e1932d06fe994b87150d7d1a0c",
+      "size": 884,
+      "mtime": "2026-03-02T12:15:10.180Z"
+    },
+    {
+      "path": "library/EMPIRE/11_TRANSPARENT_MINDS/RELEASE_PLAN.md",
+      "hash": "9728468bc8ad9988404a9e472ef6352e88bd1a29e94e04966ab1b7a615c347d9",
+      "size": 872,
+      "mtime": "2026-03-02T12:15:15.860Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/GATEWAY_FORGE/COVER.md",
+      "hash": "03073d9aa852698c5076dffa7e4ba31322a48837a17fe549f638b5bfcc5a724b",
+      "size": 1432,
+      "mtime": "2026-03-01T16:10:56.165Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/GATEWAY_FORGE/PRICE_SCHEDULE.md",
+      "hash": "f0e27271ded33343a49c42d119c7f02944294051f6c45cb4aea920c3f9fe6e18",
+      "size": 1210,
+      "mtime": "2026-03-01T16:11:18.043Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/GATEWAY_FORGE/PROVENANCE.md",
+      "hash": "72099a9f7784024804b9461f55a0bc27290746df59fc095f24c93eb95135f98e",
+      "size": 1921,
+      "mtime": "2026-03-01T16:11:06.681Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/GATEWAY_FORGE/RELEASE_PLAN.md",
+      "hash": "cd26b591bde564d5a4cd297f92c2a099e3aef0ed1d1659a7c9e49f2eb836c348",
+      "size": 1229,
+      "mtime": "2026-03-01T16:11:12.641Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/ICON_LIBRARY/COVER.md",
+      "hash": "6ef93bd1f3891966651c12972cfe47bae16b2b4435dddb61008083fc496acccd",
+      "size": 1507,
+      "mtime": "2026-03-01T16:13:04.815Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/ICON_LIBRARY/PRICE_SCHEDULE.md",
+      "hash": "e405058040974299ca2118e5145bd83b509c31e16b86fa02ede6abf33df92321",
+      "size": 1505,
+      "mtime": "2026-03-01T16:13:27.631Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/ICON_LIBRARY/PROVENANCE.md",
+      "hash": "f5bd732e6e615b30c245307a1a5903389571fa842dc344ff145218f5c0361340",
+      "size": 1771,
+      "mtime": "2026-03-01T16:13:11.847Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/ICON_LIBRARY/RELEASE_PLAN.md",
+      "hash": "0249e3d6ca80092d535717f7a81a5683dc70ca0501c29907db9d3240a5fe1220",
+      "size": 1275,
+      "mtime": "2026-03-01T16:13:19.183Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/KEYKEEPER/COVER.md",
+      "hash": "5656afe3796d708d9073f6ea717c70215cb855f39b36c0d48154bd703884ae77",
+      "size": 1450,
+      "mtime": "2026-03-01T16:11:29.088Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/KEYKEEPER/PRICE_SCHEDULE.md",
+      "hash": "af7c82a8db19eebc62405a2deb3560c9b084eab0120a8697d7834a8852642bff",
+      "size": 1433,
+      "mtime": "2026-03-01T16:11:49.587Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/KEYKEEPER/PROVENANCE.md",
+      "hash": "0f3fc64ccd82c40724b2bb6f493718a126b1d075a03a469e71acaf75e556f340",
+      "size": 1608,
+      "mtime": "2026-03-01T16:11:36.062Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/KEYKEEPER/RELEASE_PLAN.md",
+      "hash": "2ec9a23e01efc713a0bf3ea78dafd6e734b399bb977fdd6d7aebcd5a1b784290",
+      "size": 1362,
+      "mtime": "2026-03-01T16:11:43.619Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/L7_WAY_FRAMEWORK/COVER.md",
+      "hash": "5f3d82c70b6b67c56b40003b9cd16a1461f0ecde607ccdcd956f725b203e93f5",
+      "size": 1128,
+      "mtime": "2026-03-01T16:07:39.874Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/L7_WAY_FRAMEWORK/PRICE_SCHEDULE.md",
+      "hash": "796e1fdf7151cbce28beb4437aee36616e5a51e658ec6283c66c67a7fa0f7e48",
+      "size": 1441,
+      "mtime": "2026-03-01T16:08:06.451Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/L7_WAY_FRAMEWORK/PROVENANCE.md",
+      "hash": "a82d09f8a30a0596a15a67dd774417c7912b3305c51dbed529118f2ee61aab6c",
+      "size": 1925,
+      "mtime": "2026-03-01T16:07:52.221Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/L7_WAY_FRAMEWORK/RELEASE_PLAN.md",
+      "hash": "2d170b5212490d16a185100bdf442effc7d378ca74037db92594613689bf52b0",
+      "size": 1055,
+      "mtime": "2026-03-01T16:07:58.407Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/LIVING_ROSE/COVER.md",
+      "hash": "f1d6f4c693846f217a4dec25f32dd2d682bac3270cf7534254b7794d68f2443f",
+      "size": 1133,
+      "mtime": "2026-03-01T16:09:20.672Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/LIVING_ROSE/PRICE_SCHEDULE.md",
+      "hash": "b5e71b9aea0221e1c3ebf46bd661a8726a9fe60bd742593afeafae1426504818",
+      "size": 896,
+      "mtime": "2026-03-01T16:09:43.104Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/LIVING_ROSE/PROVENANCE.md",
+      "hash": "e1ccedb6584e514b5c65884c52a334537ef556b0b94132c4a81bc64b748408b0",
+      "size": 1357,
+      "mtime": "2026-03-01T16:09:30.712Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/LIVING_ROSE/RELEASE_PLAN.md",
+      "hash": "5cbb81b8f6d0d6b711d506be7d92426a8ab6a766e5ad7335f289be0bf178d1ca",
+      "size": 1138,
+      "mtime": "2026-03-01T16:09:37.021Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/PRIMA_LANGUAGE/COVER.md",
+      "hash": "3d492c34acb588468c4805f49607712c9dc3e6cd50f8eecbe074417006ce4363",
+      "size": 1324,
+      "mtime": "2026-03-01T16:10:22.530Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/PRIMA_LANGUAGE/PRICE_SCHEDULE.md",
+      "hash": "af4d032f053e8af6fc23a26a9ab4a59a6b906556ab44cbc3c28851ecbf425856",
+      "size": 1224,
+      "mtime": "2026-03-01T16:10:48.455Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/PRIMA_LANGUAGE/PROVENANCE.md",
+      "hash": "bf992ddb43fae5fa86976b8709ed91f0a01a96f3c2be40a43cc26b5fc0232a94",
+      "size": 1998,
+      "mtime": "2026-03-01T16:10:34.813Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/PRIMA_LANGUAGE/RELEASE_PLAN.md",
+      "hash": "dcfbcd3af631f31c997cc11ac7d1000819357723ac285412ac3d82d7d8a0d3cf",
+      "size": 1357,
+      "mtime": "2026-03-01T16:10:43.006Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/SIMULATIONS/COVER.md",
+      "hash": "8467486197f226f6c2a6693608d2957fa9e4c00a45e44ca202241e1c37d96db2",
+      "size": 1481,
+      "mtime": "2026-03-01T16:12:30.498Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/SIMULATIONS/PRICE_SCHEDULE.md",
+      "hash": "efb2a7c92df6ab70805ffbe5887a7a080cb5dd353a2f777980c73a71dc8ed8e5",
+      "size": 1698,
+      "mtime": "2026-03-01T16:12:55.732Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/SIMULATIONS/PROVENANCE.md",
+      "hash": "abf84c7ffa91e78b963b3f13a0672961c080b0219c42ec0d073a3c03293d3b95",
+      "size": 2280,
+      "mtime": "2026-03-01T16:12:40.140Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/SIMULATIONS/RELEASE_PLAN.md",
+      "hash": "c3b28d53b88b6a658503dc529d1057ee3fcc07729b2928767b04297a25272dc9",
+      "size": 1363,
+      "mtime": "2026-03-01T16:12:47.218Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/THE_EMPORIUM/COVER.md",
+      "hash": "985d71c85934639c50cb6546846b9e07087b5d0c012a9bc3f2d4c117cf007c96",
+      "size": 1366,
+      "mtime": "2026-03-01T16:09:50.872Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/THE_EMPORIUM/PRICE_SCHEDULE.md",
+      "hash": "7c1b4a0beffeee7e4d0ef3a5d21d419fd3f77c45794402ba99489d89e55b6646",
+      "size": 1176,
+      "mtime": "2026-03-01T16:10:09.344Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/THE_EMPORIUM/PROVENANCE.md",
+      "hash": "572938c69661a828a28c223c9548d59f62b274f8eb1a61651f6278b6ef0c540f",
+      "size": 1570,
+      "mtime": "2026-03-01T16:09:58.323Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/THE_EMPORIUM/RELEASE_PLAN.md",
+      "hash": "1b5e7c6ab3be34472271773b7e088c0a0a3b01813fbbb98142a61f0368941ce1",
+      "size": 1051,
+      "mtime": "2026-03-01T16:10:08.851Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/UNIVERSAL_OS/COVER.md",
+      "hash": "77ba81acd9354cf7f43fe90e93426b123db535abcd4c824b2e708b8f9387a35e",
+      "size": 1309,
+      "mtime": "2026-03-01T16:11:57.919Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/UNIVERSAL_OS/PRICE_SCHEDULE.md",
+      "hash": "3b8479aac64c006f7c6f97b8c57f20a6ace25cff18d9ea27bdfd822221a5a76c",
+      "size": 1366,
+      "mtime": "2026-03-01T16:12:19.160Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/UNIVERSAL_OS/PROVENANCE.md",
+      "hash": "4ba4ad967fcd2e21e82647af8ff73455866784e140f755c17c280346cdc7c2dd",
+      "size": 1840,
+      "mtime": "2026-03-01T16:12:05.898Z"
+    },
+    {
+      "path": "library/EMPIRE/PRODUCTS/UNIVERSAL_OS/RELEASE_PLAN.md",
+      "hash": "d7f2858871a22e6a659987c0cb0fce30a37d0d861731dbe76185fc61727bd61a",
+      "size": 1260,
+      "mtime": "2026-03-01T16:12:12.662Z"
+    },
+    {
+      "path": "library/EMPIRE/SIGN.md",
+      "hash": "c69dd9d12e1c32ed25125e1a6d06271767915ee2a5ba4f06852c2997f04de285",
+      "size": 705,
+      "mtime": "2026-03-01T16:24:30.555Z"
+    },
+    {
+      "path": "library/FOREIGN/CATALOGUE.md",
+      "hash": "95b4dd86aff84635ac53f991685bd614604a99711590f92a6996fa04aaa1ec44",
+      "size": 2085,
+      "mtime": "2026-03-01T16:26:08.895Z"
+    },
+    {
+      "path": "library/FOREIGN/SIGN.md",
+      "hash": "52a05a157020a32a5d97f80de4699460b3f20ea2dd403cedfac96b332b68b49f",
+      "size": 911,
+      "mtime": "2026-03-01T16:24:42.414Z"
+    },
+    {
+      "path": "library/FORGE/grok_video/RECORD.md",
+      "hash": "d43e6e2b051c84c0e45381cfd16584e8560c4012b9e89963e884fb8a00c89fd6",
+      "size": 1028,
+      "mtime": "2026-03-01T16:25:45.529Z"
+    },
+    {
+      "path": "library/FORGE/music_project/RECORD.md",
+      "hash": "2387200f18258bdc435fc1561a0ce495e4af28d088a20d1d27c5bcad77f877c6",
+      "size": 1076,
+      "mtime": "2026-03-01T16:25:51.292Z"
+    },
+    {
+      "path": "library/FORGE/SIGN.md",
+      "hash": "5af8926a275549cb61792919da780b24cdf2985e4af09c8aec4b95b5896dd8f1",
+      "size": 956,
+      "mtime": "2026-03-01T16:24:36.988Z"
+    },
+    {
+      "path": "library/FORGE/untitled_intention/RECORD.md",
+      "hash": "ef2c5b334babe8aabc1ca0e2f007989c8923573fbecd29f86968f774578ec808",
+      "size": 538,
+      "mtime": "2026-03-01T16:25:54.637Z"
+    },
+    {
+      "path": "library/MASTER_CATALOGUE_EXPANDED.md",
+      "hash": "a1dc4aecef5ed4e86baf1125a0f0ccf57ec5e05bef2c26e152f22454fc04abb5",
+      "size": 18512,
+      "mtime": "2026-03-02T11:58:54.046Z"
+    },
+    {
+      "path": "library/MASTER_CATALOGUE.md",
+      "hash": "e9f0c47e74b36468e577e66a983f36d5c7b9a8a273aa613dd52df92d18b13cba",
+      "size": 21756,
+      "mtime": "2026-03-01T16:18:53.344Z"
+    },
+    {
+      "path": "library/PROVENANCE_TREE.md",
+      "hash": "4275d727e8790b34e20de23e8ae9ec8e329a0512ebdf97fdd82d1d97d189e50d",
+      "size": 12330,
+      "mtime": "2026-03-07T01:38:26.556Z"
+    },
+    {
+      "path": "LICENSING_LETTER_TEMPLATE.md",
+      "hash": "4520b74701acb29effe1c0c72b799dfd00bab694f8f234347086be1f0ebfe8da",
+      "size": 2617,
+      "mtime": "2026-02-28T05:47:41.081Z"
+    },
+    {
+      "path": "MANIFESTO.md",
+      "hash": "5f8c9939005d6e14c2220f1049ca724e5edade8dafdab6e568a228b77c15af46",
+      "size": 791,
+      "mtime": "2026-01-13T07:00:34.295Z"
+    },
+    {
+      "path": "package-lock.json",
+      "hash": "98d82d37feda3b640336f8affcc2f1ac5c05c824e03ec2ffb502fd33179fc16e",
+      "size": 40482,
+      "mtime": "2026-01-13T13:10:28.235Z"
+    },
+    {
+      "path": "package.json",
+      "hash": "01dad1c74eba5d85478798a1770b802b168ba3716bdcba3770df622f0e0a1d25",
+      "size": 620,
+      "mtime": "2026-02-28T04:37:27.348Z"
+    },
+    {
+      "path": "PROJECT_LIFECYCLE.md",
+      "hash": "ec4738b9d26b85bd423b0809311cc6eb4858c12a564df557d1280f197de98454",
+      "size": 1201,
+      "mtime": "2026-01-13T04:32:02.445Z"
+    },
+    {
+      "path": "PROVENANCE_RECORD.md",
+      "hash": "2f8739a0a976b7c4382c73b9da55d2d4d60a6547f3e2b154f81867d8f47f2280",
+      "size": 10114,
+      "mtime": "2026-02-28T06:21:25.839Z"
+    },
+    {
+      "path": "provenance.py",
+      "hash": "e22a83b5d5b436a2d2371c1346c47c92269b61e9f137eb37c7855a57934d1029",
+      "size": 7616,
+      "mtime": "2026-03-01T15:09:25.605Z"
+    },
+    {
+      "path": "publications/APPENDIX_LVIII_BOOK_OF_LIFE.html",
+      "hash": "e367ad9db45e6b5d17738ae467d64f5a58d274866724858e23766ef5e30366da",
+      "size": 597883,
+      "mtime": "2026-03-01T15:09:50.009Z"
+    },
+    {
+      "path": "publications/APPENDIX_LVIII_SESSION_TRANSCRIPT.html",
+      "hash": "a24a6743cab511d2a72fef0e03b806de084c62f119f21de31d53caa2f0ec8110",
+      "size": 341024,
+      "mtime": "2026-03-01T15:09:50.011Z"
+    },
+    {
+      "path": "publications/BOOK_OUTLINE.md",
+      "hash": "cbaf394f5927b8b0f07048ae1bf01ece4f2265322c7711845e6f15feda331c0e",
+      "size": 4498,
+      "mtime": "2026-02-28T05:13:31.289Z"
+    },
+    {
+      "path": "publications/IDENTITY_CHAIN.md",
+      "hash": "a0633563f8f4ecfa7f55dab54aa5b2794dc6e7d4d4a457348b80cdbd73829263",
+      "size": 2878,
+      "mtime": "2026-03-07T01:37:58.191Z"
+    },
+    {
+      "path": "publications/IQS888_IMAGINARY_EXTENSION.tex",
+      "hash": "a3b55b137e64875761c930dfe5a45ab3a2db6fae8e3b5df093abe12a4d8bdb59",
+      "size": 23069,
+      "mtime": "2026-03-06T16:52:35.687Z"
+    },
+    {
+      "path": "publications/IQS888_UNIFIED_QUANTUM_GRAVITY.html",
+      "hash": "39d8f4458d247fde93305608b98a88de06533e01bd3d61823cddc57c82e36b81",
+      "size": 36813,
+      "mtime": "2026-03-01T15:09:50.011Z"
+    },
+    {
+      "path": "publications/IQS888_UNIFIED_QUANTUM_GRAVITY.tex",
+      "hash": "09286869ec9d2c1c3467eff48b41749438632fb73f69aa6bdbc6304d24efabd9",
+      "size": 58086,
+      "mtime": "2026-02-28T15:33:02.664Z"
+    },
+    {
+      "path": "publications/L7_WAY_ACADEMIC_PAPER.md",
+      "hash": "062946fb93cb6024bd452ee790c00499ebef4680d377754d34013a68300c0677",
+      "size": 51632,
+      "mtime": "2026-02-28T07:11:28.721Z"
+    },
+    {
+      "path": "publications/MANUSCRIPT_THE_GREAT_WORK.md",
+      "hash": "039c31d5c38be04c653a5bdeb089abe544c5b1c212556ac07b2d0ffc1ccd337e",
+      "size": 13241,
+      "mtime": "2026-02-28T05:13:31.279Z"
+    },
+    {
+      "path": "publications/PATENT_NOTES.md",
+      "hash": "008f4a73e4978283d8c74b9dce633f9cc683700cae70743116597067690f72fb",
+      "size": 5114,
+      "mtime": "2026-02-28T05:13:31.292Z"
+    },
+    {
+      "path": "publications/RESEARCH_PAPER.md",
+      "hash": "e0d5e30b51c97d84cb5c7208ce2605efe109d6900595e1fe87968e3e902f3eaa",
+      "size": 7185,
+      "mtime": "2026-02-28T05:13:31.286Z"
+    },
+    {
+      "path": "publications/SCIENTIFIC_PAPER_L7_EMERGENCE.md",
+      "hash": "6aa62658cf79412a9c459e675cda6c253c109eedb618e41cee6e5ca2151efdde",
+      "size": 16943,
+      "mtime": "2026-02-28T05:13:31.283Z"
+    },
+    {
+      "path": "publications/THE_EMERALD_TABLET.md",
+      "hash": "13ace12dc25a55dca295363a140c710ae04bd0c29834cdb9faa182c1bf19d944",
+      "size": 87929,
+      "mtime": "2026-03-06T19:10:40.239Z"
+    },
+    {
+      "path": "RAG_INTELLIGENCE.md",
+      "hash": "3a63017931b181ea469904fade6504786fc7955d583c2bc557ede811f4cdaf7e",
+      "size": 861,
+      "mtime": "2026-01-13T05:47:28.884Z"
+    },
+    {
+      "path": "README.md",
+      "hash": "3bbe0e81d92acc505837148abadfc3f912d2ef2119649901c93d43d3e21a63ac",
+      "size": 1790,
+      "mtime": "2026-01-13T08:13:01.127Z"
+    },
+    {
+      "path": "REGISTRY_SCHEMA.json",
+      "hash": "02f1a40ce4f5380e11e36e41c8720c9ca3671e4429ad3652749aefa172a7c369",
+      "size": 658,
+      "mtime": "2026-01-13T04:35:09.441Z"
+    },
+    {
+      "path": "restore.md",
+      "hash": "3dd246f495cb2eff6defc4500c4a08b61ae3136d4cdd0b03977eb9267663590c",
+      "size": 3214,
+      "mtime": "2026-02-28T10:06:54.967Z"
+    },
+    {
+      "path": "rose/LivingRose.swift",
+      "hash": "377fa7cc821c4a9e66fe777f130f7f4152ae9aee2d821df60db36cfbf1847ff2",
+      "size": 4730,
+      "mtime": "2026-02-28T09:34:09.361Z"
+    },
+    {
+      "path": "rose/rose.html",
+      "hash": "dc628cc7625322cd64ecc8e8e09bf3a098f9c01a59262f3be7003ab28a73ae5d",
+      "size": 22821,
+      "mtime": "2026-03-01T15:09:50.012Z"
+    },
+    {
+      "path": "salt/FOUNDERS_DRAFT_20260228_033904.salt.md",
+      "hash": "e1820d452d29efd35a17b76d15a5aed8ac93f66b8cdd71520e537792fb952d0b",
+      "size": 10982,
+      "mtime": "2026-02-28T03:39:36.921Z"
+    },
+    {
+      "path": "salt/FOUNDERS_DRAFT_20260228_034200.salt.md",
+      "hash": "ea62ce6fbf3553fb11348ff4e60f1c0f190e8c0871f47aab090ecfa1756f9332",
+      "size": 11320,
+      "mtime": "2026-02-28T03:42:00.648Z"
+    },
+    {
+      "path": "salt/FOUNDERS_DRAFT_20260228_034337.salt.md",
+      "hash": "a155388f446f2bda74b6909b15a7027a3f323dea596e6dec2668b15a5eaac2d6",
+      "size": 11597,
+      "mtime": "2026-02-28T03:44:08.572Z"
+    },
+    {
+      "path": "salt/REPLICATION.md",
+      "hash": "bbdcb2204a353ba37d8dba6dff10b1d63d275bfe25f7e858f776a1d9c06ab3ce",
+      "size": 1718,
+      "mtime": "2026-02-28T03:44:08.576Z"
+    },
+    {
+      "path": "schema/flow.schema.json",
+      "hash": "10f6d134657d0d9c76075b00c4286f5bd05dda13d2de9c31a668e31d91804cf6",
+      "size": 4241,
+      "mtime": "2026-01-13T12:28:08.972Z"
+    },
+    {
+      "path": "schema/tool.schema.json",
+      "hash": "f26a9d09df727ad79782e9fc6d39ce070e38bf1a19d4c1d15f3f7be981d0556d",
+      "size": 2996,
+      "mtime": "2026-01-13T12:28:10.062Z"
+    },
+    {
+      "path": "scripts/install_l7_registration.sh",
+      "hash": "7d0fc75bbfcaa95e02d5c55d02f1ee8471f550b70c866c0de12101b8433fa447",
+      "size": 631,
+      "mtime": "2026-01-13T05:25:49.628Z"
+    },
+    {
+      "path": "serve.js",
+      "hash": "b9f465acaa2830edac51bf7bbbdf7214116b3bf85a95844db7011b7135876e81",
+      "size": 9843,
+      "mtime": "2026-03-01T15:09:50.006Z"
+    },
+    {
+      "path": "simulations/cockpit.html",
+      "hash": "ca4b7b44f4b4bb9ad065f3e9fdbfc85da8c62d2614428734fb716fded71c0426",
+      "size": 24261,
+      "mtime": "2026-03-06T18:11:50.934Z"
+    },
+    {
+      "path": "simulations/dimensional-lens.html",
+      "hash": "83f87659ddcc86073df848923a3ed0d12dd4938852e1241eec5538f3219e6533",
+      "size": 82013,
+      "mtime": "2026-03-06T23:07:11.469Z"
+    },
+    {
+      "path": "simulations/emerald-tablet-os.html",
+      "hash": "21445ef819946c695993ba84c6a5a738889cc9882ba36a5e25b1e2947917ffec",
+      "size": 47157,
+      "mtime": "2026-03-01T15:09:50.013Z"
+    },
+    {
+      "path": "simulations/emerald-tablets.html",
+      "hash": "528c2ac1e51a3a1116c2c789f09e8419603d7adf7e505a7605c20d6fe459b884",
+      "size": 70008,
+      "mtime": "2026-03-06T19:05:04.047Z"
+    },
+    {
+      "path": "simulations/keyboard.html",
+      "hash": "4215227fe56b5d96b13099ee5c5b79412c01e13d0a58d9619087b50a84cb22f2",
+      "size": 21948,
+      "mtime": "2026-03-06T17:54:40.007Z"
+    },
+    {
+      "path": "simulations/luna-decoherence.html",
+      "hash": "372936962c55a10e13fc698244d7d7f059dfe570190c0e336f3d3f55fc56300e",
+      "size": 16862,
+      "mtime": "2026-03-02T20:28:24.125Z"
+    },
+    {
+      "path": "simulations/morph-runtime.js",
+      "hash": "69214c3f606c9e33a692673b911970cf59775394576b632c7af942c7f9bf48dc",
+      "size": 14362,
+      "mtime": "2026-03-01T15:09:50.013Z"
+    },
+    {
+      "path": "simulations/necropolis.js",
+      "hash": "4dc01644191568fa2e75e20fc5dd08b463b5e534b1d0f85b1547095c2a621e3c",
+      "size": 11801,
+      "mtime": "2026-03-06T23:05:03.745Z"
+    },
+    {
+      "path": "simulations/quantum-gravity-proof.html",
+      "hash": "2fcf667fd026311a9aeb2d53c0ea62f68edafee4ef68fb0923776a53abfd0f79",
+      "size": 48097,
+      "mtime": "2026-03-01T15:09:50.014Z"
+    },
+    {
+      "path": "simulations/scribe.html",
+      "hash": "c83cae69c23afded0b93af34b3d00d1673b5c732599b1dcbd9d00cb806da00a7",
+      "size": 13894,
+      "mtime": "2026-03-02T21:50:20.590Z"
+    },
+    {
+      "path": "simulations/shadow-theater.html",
+      "hash": "23a29f4ce920070a3e371eeb6b944b0d3f033cee7ecf3fc780cf67587f7a76ef",
+      "size": 82610,
+      "mtime": "2026-03-01T15:09:50.015Z"
+    },
+    {
+      "path": "simulations/solar-hexagram.html",
+      "hash": "e322dbe3bc597e85ef74ac28acd966dc88a234f201e664f1df8bcf2100a5e757",
+      "size": 35396,
+      "mtime": "2026-03-01T15:09:50.015Z"
+    },
+    {
+      "path": "simulations/telescope.html",
+      "hash": "0d2e52f8b13dcaebdc606fd0f65593af780dd70dff630f362348a7c798775fdb",
+      "size": 19923,
+      "mtime": "2026-03-07T03:56:25.600Z"
+    },
+    {
+      "path": "simulations/the-interconnector.html",
+      "hash": "8502edf3a5c884b0b919e50d9da28a4805e6ae0266cd58e50949bc1753d7333f",
+      "size": 45354,
+      "mtime": "2026-03-06T23:06:06.550Z"
+    },
+    {
+      "path": "simulations/world-map.html",
+      "hash": "e86276ce02f9304d84fdc05aaf085a427854958112f7e8585c549c291ce90073",
+      "size": 41023,
+      "mtime": "2026-03-07T03:44:36.124Z"
+    },
+    {
+      "path": "src/gateway-server.swift",
+      "hash": "0023496912ad38ead5f335c7c978205e40336d6e6eba331f15e8433c31630718",
+      "size": 25186,
+      "mtime": "2026-03-01T04:19:12.869Z"
+    },
+    {
+      "path": "src/infinite-viewer.html",
+      "hash": "0f0f6a950efe3ed81ddb9d10c35b8340aea1911c4c369e5002bdbc1a36870a5f",
+      "size": 34286,
+      "mtime": "2026-03-01T15:27:55.038Z"
+    },
+    {
+      "path": "src/studio.html",
+      "hash": "5c0ed8474baf197fd3777d00dd3106345588488cd3e358fdacdb171a00bd2d88",
+      "size": 59685,
+      "mtime": "2026-03-01T15:09:56.455Z"
+    },
+    {
+      "path": "SYSTEM_ARCHITECTURE.md",
+      "hash": "4bf12b87b4ef63373f4b0edc0245b531fb1c94fad4d7632df05240acbc9e06f1",
+      "size": 50290,
+      "mtime": "2026-03-01T04:25:41.794Z"
+    },
+    {
+      "path": "TIMELINE.md",
+      "hash": "c77a9aa58670b7609684c2b9886b7874100d731d79167a0851b812c5ff9894bd",
+      "size": 3261,
+      "mtime": "2026-02-28T04:34:54.687Z"
+    },
+    {
+      "path": "TOOL_REGISTRY.md",
+      "hash": "b12cf8783a5b8625d421c4ffe18ffc120eb85fbc45bfff5506d6accd564e08f5",
+      "size": 1353,
+      "mtime": "2026-01-13T04:35:51.387Z"
+    },
+    {
+      "path": "TOOL_SCHEMA_email.dispatch.json",
+      "hash": "714c5b9e4b6b4d0eefcf5ed47a6e1488dd130bb9929ed3ccaf2c4d7f51307d57",
+      "size": 1076,
+      "mtime": "2026-01-13T05:22:21.205Z"
+    },
+    {
+      "path": "TRANSFORMER.md",
+      "hash": "cd295f838747d7a15c37f588fb3239f361acdb6e2be3efe2cfcbd1c348d3bd41",
+      "size": 710,
+      "mtime": "2026-01-13T05:50:04.054Z"
+    }
+  ]
+}

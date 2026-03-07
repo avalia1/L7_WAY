@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L7 WAY — The Ancient Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a0f;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #d4c5a0;
+  overflow: hidden;
+}
+#map {
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+/* Layer control styling */
+.leaflet-control-layers {
+  background: rgba(10, 10, 15, 0.92) !important;
+  border: 1px solid #3a3520 !important;
+  border-radius: 4px !important;
+  color: #d4c5a0 !important;
+  font-family: 'Georgia', serif !important;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.leaflet-control-layers-list {
+  padding: 4px 8px !important;
+}
+.leaflet-control-layers label {
+  color: #d4c5a0 !important;
+  font-size: 12px !important;
+  margin-bottom: 2px !important;
+}
+.leaflet-control-layers-separator {
+  border-top-color: #3a3520 !important;
+}
+
+/* Custom popup styling */
+.leaflet-popup-content-wrapper {
+  background: rgba(10, 10, 15, 0.95) !important;
+  color: #d4c5a0 !important;
+  border: 1px solid #3a3520 !important;
+  border-radius: 6px !important;
+  font-family: 'Georgia', serif !important;
+}
+.leaflet-popup-tip {
+  background: rgba(10, 10, 15, 0.95) !important;
+  border: 1px solid #3a3520 !important;
+}
+.leaflet-popup-content {
+  margin: 10px 14px !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.leaflet-popup-content .ancient-name {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.leaflet-popup-content .modern-name {
+  font-size: 12px;
+  color: #8a7d60;
+  margin-bottom: 8px;
+}
+.leaflet-popup-content .heritage-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.leaflet-popup-content .era {
+  font-size: 11px;
+  color: #7a6d50;
+  font-style: italic;
+}
+.leaflet-popup-content .lang {
+  font-size: 11px;
+  color: #9a8d70;
+  margin-top: 4px;
+}
+.leaflet-popup-content .note {
+  font-size: 11px;
+  color: #6a5d40;
+  margin-top: 6px;
+  border-top: 1px solid #2a2510;
+  padding-top: 6px;
+}
+
+/* Title overlay */
+#title-overlay {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(10, 10, 15, 0.85);
+  border: 1px solid #3a3520;
+  border-radius: 6px;
+  padding: 8px 24px;
+  pointer-events: none;
+  text-align: center;
+}
+#title-overlay h1 {
+  font-size: 16px;
+  color: #c8b880;
+  letter-spacing: 3px;
+  font-weight: normal;
+  text-transform: uppercase;
+}
+#title-overlay .sub {
+  font-size: 10px;
+  color: #6a5d40;
+  letter-spacing: 2px;
+}
+
+/* Info panel */
+#info-panel {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 1000;
+  background: rgba(10, 10, 15, 0.85);
+  border: 1px solid #3a3520;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 11px;
+  max-width: 280px;
+  pointer-events: none;
+}
+#info-panel .count {
+  color: #c8b880;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* Search bar */
+#search-bar {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+}
+#search-input {
+  background: rgba(10, 10, 15, 0.9);
+  border: 1px solid #3a3520;
+  border-radius: 4px;
+  color: #d4c5a0;
+  font-family: 'Georgia', serif;
+  font-size: 13px;
+  padding: 6px 12px;
+  width: 220px;
+  outline: none;
+}
+#search-input::placeholder { color: #5a5030; }
+#search-input:focus { border-color: #6a5d40; }
+#search-results {
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid #3a3520;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  display: none;
+}
+.search-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  border-bottom: 1px solid #1a1510;
+}
+.search-item:hover { background: rgba(58, 53, 32, 0.5); }
+.search-item .si-ancient { color: #c8b880; }
+.search-item .si-modern { color: #6a5d40; font-size: 11px; }
+
+/* Zoom indicator */
+.leaflet-control-zoom a {
+  background: rgba(10, 10, 15, 0.9) !important;
+  color: #d4c5a0 !important;
+  border-color: #3a3520 !important;
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(30, 25, 15, 0.9) !important;
+}
+.leaflet-control-attribution {
+  background: rgba(10, 10, 15, 0.7) !important;
+  color: #5a5030 !important;
+  font-size: 9px !important;
+}
+.leaflet-control-attribution a { color: #7a6d50 !important; }
+
+/* Custom marker labels */
+.ancient-label {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: 'Georgia', serif;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+.ancient-label .label-text {
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+  cursor: pointer;
+  transition: transform 0.2s, font-size 0.2s;
+}
+.ancient-label:hover .label-text {
+  transform: scale(1.15);
+}
+</style>
+</head>
+<body>
+
+<div id="title-overlay">
+  <h1>The Ancient Map</h1>
+  <div class="sub">Memory of Cities &mdash; L7 WAY</div>
+  <div style="margin-top:4px;pointer-events:auto;"><a href="telescope.html" style="color:#5a5030;text-decoration:none;font-size:10px;letter-spacing:1px;">Open The Telescope &rarr;</a></div>
+</div>
+
+<div id="info-panel">
+  <div class="count" id="city-count"></div>
+  <div id="zoom-level"></div>
+  <div style="margin-top:4px;color:#5a5030;">Zoom to street level. Toggle cultures in layer control.</div>
+</div>
+
+<div id="search-bar">
+  <input type="text" id="search-input" placeholder="Search ancient or modern..." />
+  <div id="search-results"></div>
+</div>
+
+<div id="map"></div>
+
+<script>
+// ============================================================
+// CULTURAL HERITAGE DEFINITIONS
+// ============================================================
+const CULTURES = {
+  sumerian:     { name: 'Sumerian / Akkadian',     color: '#e6b422', lang: 'Sumerian, Akkadian' },
+  babylonian:   { name: 'Babylonian / Assyrian',   color: '#d4a017', lang: 'Akkadian, Aramaic' },
+  egyptian:     { name: 'Egyptian',                 color: '#c49a3c', lang: 'Egyptian, Coptic' },
+  greek:        { name: 'Greek',                    color: '#4a90d9', lang: 'Ancient Greek' },
+  roman:        { name: 'Roman',                    color: '#d45050', lang: 'Latin' },
+  persian:      { name: 'Persian / Iranian',        color: '#9b59b6', lang: 'Old Persian, Avestan' },
+  phoenician:   { name: 'Phoenician / Punic',       color: '#e67e22', lang: 'Phoenician, Punic' },
+  levantine:    { name: 'Levantine / Semitic',      color: '#c0a060', lang: 'Aramaic, Hebrew, Canaanite' },
+  indian:       { name: 'Indian / South Asian',     color: '#e74c3c', lang: 'Sanskrit, Prakrit, Tamil' },
+  chinese:      { name: 'Chinese',                  color: '#e74c4c', lang: 'Classical Chinese' },
+  japanese:     { name: 'Japanese',                 color: '#f06292', lang: 'Classical Japanese' },
+  korean:       { name: 'Korean',                   color: '#ff8a65', lang: 'Classical Korean' },
+  southeast:    { name: 'Southeast Asian',          color: '#26c6da', lang: 'Khmer, Pali, Sanskrit' },
+  mesoamerican: { name: 'Mesoamerican',             color: '#66bb6a', lang: 'Nahuatl, Maya, Zapotec' },
+  andean:       { name: 'Andean',                   color: '#8bc34a', lang: 'Quechua, Aymara' },
+  african:      { name: 'African',                  color: '#ff9800', lang: 'Ge\'ez, Mande, Bantu, Swahili' },
+  celtic:       { name: 'Celtic',                   color: '#2ecc71', lang: 'Celtic, Old Irish, Gaulish' },
+  norse:        { name: 'Norse / Germanic',         color: '#81d4fa', lang: 'Old Norse, Proto-Germanic' },
+  arabian:      { name: 'Arabian / Islamic',        color: '#26a69a', lang: 'Classical Arabic' },
+  byzantine:    { name: 'Byzantine',                color: '#7e57c2', lang: 'Medieval Greek, Latin' },
+  central_asian:{ name: 'Central Asian / Silk Road', color: '#ab47bc', lang: 'Sogdian, Turkic, Tocharian' },
+  nubian:       { name: 'Nubian / Kushite',         color: '#ffa726', lang: 'Meroitic, Old Nubian' },
+  minoan:       { name: 'Minoan / Mycenaean',       color: '#5c6bc0', lang: 'Linear A/B, Proto-Greek' },
+  etruscan:     { name: 'Etruscan / Italic',        color: '#ef5350', lang: 'Etruscan, Oscan, Umbrian' },
+  iberian:      { name: 'Iberian / Tartessian',     color: '#ff7043', lang: 'Iberian, Tartessian, Celtiberian' },
+};
+
+// ============================================================
+// ANCIENT CITIES DATABASE
+// Each: [lat, lng, ancientName, modernName, culture, era, note]
+// ============================================================
+const CITIES = [
+  // ---- SUMERIAN / AKKADIAN ----
+  [30.962, 46.105, 'Ur', 'Tell el-Muqayyar, Iraq', 'sumerian', 'c. 3800 BCE', 'Birthplace of Abraham. Ziggurat of Ur-Nammu.'],
+  [31.322, 45.636, 'Uruk', 'Warka, Iraq', 'sumerian', 'c. 4000 BCE', 'City of Gilgamesh. First writing (cuneiform). Earliest known city.'],
+  [31.017, 46.258, 'Eridu', 'Abu Shahrein, Iraq', 'sumerian', 'c. 5400 BCE', 'Sumerian tradition: first city ever created. Temple of Enki.'],
+  [31.578, 45.258, 'Lagash', 'Al-Hiba, Iraq', 'sumerian', 'c. 2500 BCE', 'City-state of Gudea. Rich in Sumerian literary tablets.'],
+  [32.126, 45.233, 'Nippur', 'Nuffar, Iraq', 'sumerian', 'c. 5000 BCE', 'Religious capital of Sumer. Temple of Enlil.'],
+  [31.798, 45.405, 'Girsu', 'Tello, Iraq', 'sumerian', 'c. 3000 BCE', 'First Sumerian site excavated. Stele of the Vultures.'],
+  [32.050, 44.420, 'Kish', 'Tell al-Uhaymir, Iraq', 'sumerian', 'c. 3100 BCE', 'First dynasty after the Great Flood in Sumerian King List.'],
+  [31.419, 45.987, 'Larsa', 'Tell as-Senkereh, Iraq', 'sumerian', 'c. 2900 BCE', 'Solar city. Rival of Isin. Temple of Shamash (sun god).'],
+
+  // ---- BABYLONIAN / ASSYRIAN ----
+  [32.536, 44.421, 'Babylon', 'Hillah, Iraq', 'babylonian', 'c. 2300 BCE', 'Hanging Gardens. Tower of Babel. Code of Hammurabi.'],
+  [36.360, 43.153, 'Nineveh', 'Mosul, Iraq', 'babylonian', 'c. 6000 BCE', 'Capital of Assyrian Empire. Library of Ashurbanipal.'],
+  [35.460, 43.260, 'Assur', 'Qal\'at Sherqat, Iraq', 'babylonian', 'c. 2500 BCE', 'First capital of Assyria. Sacred city of god Ashur.'],
+  [35.283, 43.817, 'Nimrud', 'near Mosul, Iraq', 'babylonian', 'c. 1250 BCE', 'Kalhu — military capital of Assyria. Lamassu gate guardians.'],
+  [35.767, 43.333, 'Dur-Sharrukin', 'Khorsabad, Iraq', 'babylonian', '717 BCE', 'Sargon II\'s fortress city. Built in a single generation.'],
+  [33.098, 44.366, 'Seleucia', 'near Baghdad, Iraq', 'babylonian', '305 BCE', 'Hellenistic successor to Babylon. Greek-Mesopotamian fusion.'],
+  [33.093, 44.583, 'Ctesiphon', 'near Baghdad, Iraq', 'babylonian', 'c. 120 BCE', 'Parthian/Sassanid capital. Taq Kasra — world\'s largest brick arch.'],
+
+  // ---- EGYPTIAN ----
+  [25.719, 32.655, 'Waset (Thebes)', 'Luxor, Egypt', 'egyptian', 'c. 3200 BCE', 'City of Amun. Karnak and Luxor temples. Valley of the Kings.'],
+  [29.847, 31.253, 'Inbu-Hedj (Memphis)', 'Mit Rahina, Egypt', 'egyptian', 'c. 3100 BCE', 'First capital of unified Egypt. City of Ptah.'],
+  [30.131, 31.303, 'Iunu (Heliopolis)', 'Ain Shams, Cairo', 'egyptian', 'c. 2600 BCE', 'Sun Temple. Origin of the Ennead. Benben stone.'],
+  [31.200, 29.916, 'Rhakotis (Alexandria)', 'Alexandria, Egypt', 'egyptian', '331 BCE', 'Library of Alexandria. Pharos Lighthouse. Greek-Egyptian synthesis.'],
+  [27.645, 30.898, 'Akhetaten', 'Amarna, Egypt', 'egyptian', '1346 BCE', 'Akhenaten\'s city of the sun disk. Monotheistic revolution.'],
+  [24.089, 32.898, 'Abu (Elephantine)', 'Aswan, Egypt', 'egyptian', 'c. 3000 BCE', 'Nilometer. First Cataract. Border garrison of Upper Egypt.'],
+  [26.778, 31.500, 'Abdju (Abydos)', 'al-Balyana, Egypt', 'egyptian', 'c. 3300 BCE', 'Tomb of Osiris. King List. Sacred pilgrimage site.'],
+  [29.979, 31.134, 'Giza', 'Giza, Egypt', 'egyptian', 'c. 2580 BCE', 'Great Pyramid of Khufu. Sphinx. Only surviving Ancient Wonder.'],
+
+  // ---- GREEK ----
+  [37.972, 23.726, 'Athenai', 'Athens, Greece', 'greek', 'c. 3000 BCE', 'Parthenon. Birthplace of democracy and philosophy.'],
+  [37.075, 22.427, 'Sparta', 'Sparti, Greece', 'greek', 'c. 1000 BCE', 'Military city-state. Thermopylae. Laconian austerity.'],
+  [37.906, 22.879, 'Korinthos', 'Corinth, Greece', 'greek', 'c. 6500 BCE', 'Isthmus trade hub. Temple of Apollo. Two harbors.'],
+  [37.941, 27.342, 'Ephesos', 'Selçuk, Turkey', 'greek', 'c. 1000 BCE', 'Temple of Artemis (Wonder). Library of Celsus.'],
+  [39.960, 26.239, 'Troia (Troy)', 'Hisarlık, Turkey', 'greek', 'c. 3000 BCE', 'Homer\'s Iliad. Nine layers of civilization. Trojan War.'],
+  [39.121, 27.179, 'Pergamon', 'Bergama, Turkey', 'greek', 'c. 300 BCE', 'Great Altar of Zeus. Library rivaling Alexandria. Parchment.'],
+  [37.531, 27.278, 'Miletos', 'Balat, Turkey', 'greek', 'c. 1500 BCE', 'Birthplace of philosophy: Thales, Anaximander, Anaximenes.'],
+  [37.086, 25.149, 'Delos', 'Delos, Greece', 'greek', 'c. 2500 BCE', 'Birthplace of Apollo. Sacred island. Treasury of Delian League.'],
+  [39.624, 22.418, 'Iolkos', 'Volos, Greece', 'greek', 'c. 1500 BCE', 'Jason and the Argonauts departed from here.'],
+  [38.480, 22.501, 'Delphoi', 'Delphi, Greece', 'greek', 'c. 1400 BCE', 'Oracle of Apollo. Navel of the world. Pythia.'],
+  [37.631, 21.630, 'Olympia', 'Olympia, Greece', 'greek', 'c. 1000 BCE', 'Original Olympic Games. Temple of Zeus (Wonder).'],
+  [37.599, 22.800, 'Mykenai', 'Mycenae, Greece', 'greek', 'c. 1600 BCE', 'Lion Gate. Agamemnon\'s citadel. Shaft Graves.'],
+  [35.297, 25.161, 'Knossos', 'Heraklion, Crete', 'minoan', 'c. 2000 BCE', 'Palace of Minos. Labyrinth of the Minotaur. Linear B tablets.'],
+  [36.362, 22.473, 'Gytheion', 'Gythio, Greece', 'greek', 'c. 600 BCE', 'Spartan naval port. Paris and Helen eloped here.'],
+  [37.038, 15.293, 'Syrakousai', 'Syracuse, Sicily', 'greek', '734 BCE', 'Archimedes\' city. Largest Greek city in the west.'],
+  [32.825, 21.855, 'Kyrene', 'Shahhat, Libya', 'greek', '631 BCE', 'Greek colony in Africa. Birthplace of Eratosthenes.'],
+  [40.937, 24.146, 'Amphipolis', 'near Serres, Greece', 'greek', '437 BCE', 'Athenian colony. Lion of Amphipolis. Battle site.'],
+  [40.520, 22.970, 'Thessalonike', 'Thessaloniki, Greece', 'greek', '315 BCE', 'Named for Alexander\'s sister. Galerius\' Arch.'],
+
+  // ---- MINOAN / MYCENAEAN ----
+  [36.430, 28.223, 'Ialysos', 'Rhodes, Greece', 'minoan', 'c. 1500 BCE', 'Mycenaean settlement. Later site of Colossus of Rhodes.'],
+  [35.513, 24.018, 'Phaistos', 'near Mires, Crete', 'minoan', 'c. 1900 BCE', 'Phaistos Disc — undeciphered. Second Minoan palace.'],
+
+  // ---- ROMAN ----
+  [41.893, 12.483, 'Roma', 'Rome, Italy', 'roman', '753 BCE', 'Caput Mundi. Colosseum, Forum, Pantheon. Eternal City.'],
+  [40.751, 14.487, 'Pompeii', 'Pompei, Italy', 'roman', 'c. 600 BCE', 'Frozen by Vesuvius 79 CE. Complete Roman city preserved.'],
+  [40.821, 14.426, 'Herculaneum', 'Ercolano, Italy', 'roman', 'c. 600 BCE', 'Sister city of Pompeii. Preserved scrolls. Villa of the Papyri.'],
+  [36.853, 10.323, 'Carthago', 'Tunis, Tunisia', 'roman', '814 BCE', 'Hannibal\'s city. Punic Wars. Destroyed and rebuilt by Rome.'],
+  [51.508, -0.076, 'Londinium', 'London, England', 'roman', '43 CE', 'Roman wall. Forum. Mithraeum. Became world capital.'],
+  [48.854, 2.349, 'Lutetia', 'Paris, France', 'roman', 'c. 52 BCE', 'Gallic Parisii settlement. Roman baths (Thermes de Cluny).'],
+  [50.940, 6.960, 'Colonia Agrippina', 'Cologne, Germany', 'roman', '50 CE', 'Agrippina\'s colony. Roman glass capital. Cathedral site.'],
+  [48.208, 16.373, 'Vindobona', 'Vienna, Austria', 'roman', 'c. 15 BCE', 'Marcus Aurelius died here. Danube frontier garrison.'],
+  [47.530, 19.050, 'Aquincum', 'Budapest, Hungary', 'roman', 'c. 89 CE', 'Pannonian capital. Amphitheater. Roman baths.'],
+  [45.464, 9.190, 'Mediolanum', 'Milan, Italy', 'roman', 'c. 400 BCE', 'Celtic then Roman. Edict of Milan (313 CE). Western capital.'],
+  [43.296, 5.370, 'Massalia', 'Marseille, France', 'roman', '600 BCE', 'Greek colony, then Roman. Oldest city in France.'],
+  [38.915, -6.338, 'Emerita Augusta', 'Mérida, Spain', 'roman', '25 BCE', 'Roman theater. Aqueduct. Capital of Lusitania.'],
+  [41.117, 1.251, 'Tarraco', 'Tarragona, Spain', 'roman', '218 BCE', 'Scipio\'s base. Amphitheater. Roman walls.'],
+  [37.389, -5.984, 'Hispalis', 'Seville, Spain', 'roman', 'c. 200 BCE', 'Baetis river. Julius Caesar. Later Moorish Ishbiliyya.'],
+  [41.653, -0.877, 'Caesaraugusta', 'Zaragoza, Spain', 'roman', '14 BCE', 'Caesar Augustus\' city. Roman walls and theater.'],
+  [39.858, -4.024, 'Toletum', 'Toledo, Spain', 'roman', '193 BCE', 'Iberian fortress. Three cultures: Christian, Muslim, Jewish.'],
+  [38.722, -9.139, 'Olisipo', 'Lisbon, Portugal', 'roman', 'c. 200 BCE', 'Legend: founded by Ulysses. Roman municipium.'],
+  [43.370, -8.395, 'Brigantium', 'A Coruña, Spain', 'roman', 'c. 62 CE', 'Tower of Hercules — oldest working lighthouse.'],
+  [44.439, 26.096, 'Dacia Felix', 'Bucharest, Romania', 'roman', '106 CE', 'Trajan\'s conquest. Roman colony in Dacia.'],
+  [42.698, 23.322, 'Serdica', 'Sofia, Bulgaria', 'roman', 'c. 29 BCE', 'Constantine: "Serdica is my Rome." Crossroads of empire.'],
+  [41.997, 21.432, 'Scupi', 'Skopje, N. Macedonia', 'roman', 'c. 200 BCE', 'Birthplace of Justinian I.'],
+  [43.857, 18.413, 'Aquae Sulphurae', 'Sarajevo, Bosnia', 'roman', 'c. 100 CE', 'Roman sulfur springs. Illyrian settlement.'],
+
+  // ---- ETRUSCAN / ITALIC ----
+  [42.640, 11.635, 'Velzna (Volsinii)', 'Bolsena, Italy', 'etruscan', 'c. 800 BCE', 'Etruscan federation capital. Fanum Voltumnae sanctuary.'],
+  [43.058, 11.785, 'Clevsin (Clusium)', 'Chiusi, Italy', 'etruscan', 'c. 700 BCE', 'Lars Porsena\'s city. Etruscan tombs and urns.'],
+  [42.403, 12.107, 'Tarchna (Tarquinia)', 'Tarquinia, Italy', 'etruscan', 'c. 900 BCE', 'Painted tombs. Etruscan kings of Rome.'],
+
+  // ---- PERSIAN / IRANIAN ----
+  [29.935, 52.892, 'Parsa (Persepolis)', 'Marvdasht, Iran', 'persian', '518 BCE', 'Darius\' ceremonial capital. Apadana. Burned by Alexander.'],
+  [32.190, 48.245, 'Susa (Shushan)', 'Shush, Iran', 'persian', 'c. 4200 BCE', 'Elamite then Persian. Code of Hammurabi found here.'],
+  [34.799, 48.515, 'Ecbatana (Hagmatana)', 'Hamadan, Iran', 'persian', 'c. 700 BCE', 'Median capital. Seven walls of seven colors.'],
+  [30.197, 53.168, 'Pasargadae', 'near Shiraz, Iran', 'persian', '546 BCE', 'Cyrus the Great\'s capital. His tomb stands here.'],
+  [32.651, 51.677, 'Isfahan', 'Isfahan, Iran', 'persian', 'c. 600 BCE', '"Half the world." Safavid jewel. Naqsh-e Jahan Square.'],
+  [36.310, 59.602, 'Tus', 'Mashhad, Iran', 'persian', 'c. 500 BCE', 'Ferdowsi\'s city. Shahnameh composed here.'],
+
+  // ---- PHOENICIAN / PUNIC ----
+  [34.122, 35.652, 'Gebal (Byblos)', 'Jbeil, Lebanon', 'phoenician', 'c. 5000 BCE', 'Oldest continuously inhabited city. "Bible" derives from Byblos.'],
+  [33.274, 35.196, 'Tsur (Tyre)', 'Tyre, Lebanon', 'phoenician', 'c. 2750 BCE', 'Purple dye. Island fortress. Alexander built a causeway.'],
+  [33.563, 35.372, 'Sidon (Saida)', 'Sidon, Lebanon', 'phoenician', 'c. 4000 BCE', 'Glass making. Sarcophagus of Alexander.'],
+  [37.600, -0.980, 'Carthago Nova', 'Cartagena, Spain', 'phoenician', '228 BCE', 'Hasdrubal\'s New Carthage. Silver mines. Roman theater.'],
+  [36.535, -6.294, 'Gadir (Gades)', 'Cádiz, Spain', 'phoenician', 'c. 1104 BCE', 'Oldest city in Western Europe. Phoenician temple of Melqart.'],
+  [35.192, -6.115, 'Lixus', 'near Larache, Morocco', 'phoenician', 'c. 1100 BCE', 'Garden of the Hesperides. Phoenician then Roman.'],
+
+  // ---- LEVANTINE / SEMITIC ----
+  [31.776, 35.234, 'Yerushalayim (Jerusalem)', 'Jerusalem', 'levantine', 'c. 3500 BCE', 'Temple Mount. Holy to three faiths. City of David.'],
+  [33.513, 36.292, 'Dimashq (Damascus)', 'Damascus, Syria', 'levantine', 'c. 6300 BCE', 'Oldest continuously inhabited capital. Umayyad Mosque.'],
+  [31.858, 35.449, 'Yeriho (Jericho)', 'Jericho, Palestine', 'levantine', 'c. 9000 BCE', 'Oldest known walled city. Tower of Jericho.'],
+  [36.202, 36.160, 'Antiocheia', 'Antakya, Turkey', 'levantine', '300 BCE', 'Third largest Roman city. "Christians" first named here.'],
+  [34.567, 36.410, 'Tadmor (Palmyra)', 'Tadmur, Syria', 'levantine', 'c. 2000 BCE', 'Zenobia\'s desert kingdom. Temple of Bel. Silk Road oasis.'],
+  [30.329, 35.443, 'Reqem (Petra)', 'Wadi Musa, Jordan', 'levantine', 'c. 312 BCE', 'Nabataean rock city. Al-Khazneh. Rose-red city.'],
+  [34.008, 35.648, 'Berytus', 'Beirut, Lebanon', 'levantine', 'c. 3000 BCE', 'Roman law school. Phoenician harbor. "Paris of the East."'],
+  [32.076, 36.093, 'Rabbath Ammon', 'Amman, Jordan', 'levantine', 'c. 7250 BCE', 'Ammonite capital. Roman Philadelphia. Citadel.'],
+  [32.463, 35.298, 'Shechem', 'Nablus, Palestine', 'levantine', 'c. 1900 BCE', 'Covenant city. Joseph\'s tomb. Samaritan holy site.'],
+
+  // ---- ARABIAN / ISLAMIC ----
+  [21.423, 39.826, 'Makkah', 'Mecca, Saudi Arabia', 'arabian', 'c. 2000 BCE', 'Kaaba. Birthplace of Muhammad. Holiest city of Islam.'],
+  [24.469, 39.612, 'Yathrib (Madinah)', 'Medina, Saudi Arabia', 'arabian', 'c. 600 BCE', 'Prophet\'s Mosque. City of the Prophet. Hijra destination.'],
+  [15.355, 44.207, 'Sana\'a', 'Sana\'a, Yemen', 'arabian', 'c. 500 BCE', 'Ghumdan Palace. Highest capital in Arabia. Ancient Sabaean.'],
+  [23.586, 58.381, 'Suhar', 'Sohar, Oman', 'arabian', 'c. 3000 BCE', 'Legend: birthplace of Sinbad. Ancient copper trading port.'],
+  [13.760, 45.367, 'Ma\'rib', 'Ma\'rib, Yemen', 'arabian', 'c. 1000 BCE', 'Great Dam of Ma\'rib. Capital of Sheba.'],
+
+  // ---- INDIAN / SOUTH ASIAN ----
+  [27.329, 68.138, 'Mohenjo-daro', 'Larkana, Pakistan', 'indian', 'c. 2500 BCE', 'Great Bath. Indus Valley grid city. Dancing Girl figurine.'],
+  [30.628, 72.866, 'Harappa', 'near Sahiwal, Pakistan', 'indian', 'c. 2600 BCE', 'Indus Valley. Standardized weights. Undeciphered script.'],
+  [33.747, 72.833, 'Takshashila (Taxila)', 'near Islamabad, Pakistan', 'indian', 'c. 600 BCE', 'World\'s first university. Chanakya taught here.'],
+  [25.612, 85.143, 'Pataliputra', 'Patna, India', 'indian', 'c. 490 BCE', 'Maurya/Gupta capital. Ashoka\'s edicts. Chandragupta\'s court.'],
+  [25.317, 83.010, 'Kashi (Varanasi)', 'Varanasi, India', 'indian', 'c. 1100 BCE', 'Oldest living city. Ganges ghats. Spiritual capital of India.'],
+  [23.183, 75.777, 'Avantika', 'Ujjain, India', 'indian', 'c. 600 BCE', 'Prime meridian of Indian astronomy. Chandragupta II\'s capital.'],
+  [25.135, 85.446, 'Nalanda', 'near Rajgir, India', 'indian', 'c. 450 CE', 'Buddhist university. 10,000 students. 9 million manuscripts.'],
+  [17.384, 78.457, 'Golconda', 'Hyderabad, India', 'indian', 'c. 1518 CE', 'Diamond capital. Kohinoor\'s origin. Fort of impenetrable walls.'],
+  [26.449, 80.350, 'Indraprastha', 'Delhi, India', 'indian', 'c. 1400 BCE', 'Pandava capital (Mahabharata). Under modern Delhi.'],
+  [11.018, 76.957, 'Karur/Vanji', 'Coimbatore area, India', 'indian', 'c. 300 BCE', 'Chera dynasty capital. Tamil Sangam literature.'],
+  [6.934, 79.851, 'Anuradhapura', 'Anuradhapura, Sri Lanka', 'indian', 'c. 377 BCE', 'Sacred Bodhi tree. Buddhist monastery. Ancient capital of Lanka.'],
+
+  // ---- CHINESE ----
+  [34.264, 108.942, 'Chang\'an', 'Xi\'an, China', 'chinese', 'c. 1100 BCE', 'Tang capital. Terracotta Army. Eastern terminus of Silk Road.'],
+  [34.632, 112.454, 'Luoyang', 'Luoyang, China', 'chinese', 'c. 2070 BCE', 'Nine dynasties\' capital. Longmen Grottoes. White Horse Temple.'],
+  [34.797, 114.348, 'Daliang', 'Kaifeng, China', 'chinese', 'c. 2000 BCE', 'Song capital. Along the Qing River. Jewish community.'],
+  [32.061, 118.774, 'Jianye/Jiankang', 'Nanjing, China', 'chinese', '229 CE', 'Six Dynasties capital. Ming tombs. City wall.'],
+  [30.274, 120.155, 'Lin\'an', 'Hangzhou, China', 'chinese', 'c. 589 CE', 'Southern Song capital. West Lake. "Paradise on earth."'],
+  [39.905, 116.391, 'Dadu/Khanbaliq', 'Beijing, China', 'chinese', 'c. 1045 BCE', 'Yuan/Ming/Qing capital. Forbidden City. Temple of Heaven.'],
+  [36.090, 114.352, 'Yin', 'Anyang, China', 'chinese', 'c. 1300 BCE', 'Shang dynasty capital. Oracle bones. First Chinese writing.'],
+  [30.572, 104.066, 'Chengdu', 'Chengdu, China', 'chinese', 'c. 316 BCE', 'Shu Han kingdom. Dujiangyan irrigation. Sichuan pepper.'],
+  [29.563, 106.551, 'Jiangzhou', 'Chongqing, China', 'chinese', 'c. 316 BCE', 'Ba kingdom capital. Mountain city at two rivers\' confluence.'],
+  [31.232, 121.469, 'Huating/Songjiang', 'Shanghai area, China', 'chinese', 'c. 750 CE', 'Tang-era fishing village. Song-era port town.'],
+
+  // ---- JAPANESE ----
+  [34.685, 135.805, 'Heijo-kyo', 'Nara, Japan', 'japanese', '710 CE', 'First permanent Japanese capital. Todai-ji Great Buddha.'],
+  [35.012, 135.768, 'Heian-kyo', 'Kyoto, Japan', 'japanese', '794 CE', 'Imperial capital for 1000 years. Golden Pavilion. Zen gardens.'],
+  [35.676, 139.650, 'Edo', 'Tokyo, Japan', 'japanese', '1457 CE', 'Tokugawa shogunate. Became world\'s largest city.'],
+  [35.319, 139.551, 'Kamakura', 'Kamakura, Japan', 'japanese', '1185 CE', 'First shogunate capital. Great Buddha. Samurai culture.'],
+  [34.693, 135.502, 'Naniwa', 'Osaka, Japan', 'japanese', 'c. 645 CE', 'First capital after Taika Reform. Merchant city. Kitchen of Japan.'],
+
+  // ---- KOREAN ----
+  [35.834, 129.219, 'Seorabeol', 'Gyeongju, S. Korea', 'korean', '57 BCE', 'Silla kingdom. Bulguksa temple. Seokguram Grotto. Royal tombs.'],
+  [37.971, 126.563, 'Songdo', 'Kaesong, N. Korea', 'korean', '919 CE', 'Goryeo dynasty capital. Ginseng. DMZ border city.'],
+  [37.572, 126.977, 'Hanyang', 'Seoul, S. Korea', 'korean', '1394 CE', 'Joseon capital. Gyeongbokgung Palace. Five Grand Palaces.'],
+
+  // ---- SOUTHEAST ASIAN ----
+  [13.412, 103.867, 'Yasodharapura', 'Angkor/Siem Reap, Cambodia', 'southeast', '889 CE', 'Angkor Wat. Largest religious monument. Khmer Empire.'],
+  [21.172, 94.857, 'Arimaddanapura', 'Bagan, Myanmar', 'southeast', '849 CE', 'Thousands of Buddhist temples. First Burmese empire.'],
+  [14.356, 100.569, 'Ayutthaya', 'Ayutthaya, Thailand', 'southeast', '1351 CE', 'Siamese kingdom. Island capital. 400 temples.'],
+  [-7.608, 110.204, 'Borobudur', 'Central Java, Indonesia', 'southeast', 'c. 800 CE', 'Largest Buddhist monument. 2,672 relief panels. Mandala design.'],
+  [16.470, 107.580, 'Hue', 'Hue, Vietnam', 'southeast', '1802 CE', 'Nguyen dynasty. Imperial Citadel. Forbidden Purple City.'],
+  [21.029, 105.852, 'Thang Long', 'Hanoi, Vietnam', 'southeast', '1010 CE', 'Ascending Dragon. Ly dynasty. Temple of Literature (1070 CE).'],
+
+  // ---- MESOAMERICAN ----
+  [19.433, -99.133, 'Tenochtitlan', 'Mexico City, Mexico', 'mesoamerican', '1325 CE', 'Aztec island capital. Templo Mayor. 200,000 people at contact.'],
+  [19.692, -98.844, 'Teotihuacan', 'San Juan Teotihuacan, Mexico', 'mesoamerican', 'c. 100 BCE', 'Pyramid of the Sun. Avenue of the Dead. "Where gods were born."'],
+  [20.683, -88.569, 'Chichen Itza', 'near Valladolid, Mexico', 'mesoamerican', 'c. 600 CE', 'El Castillo. Sacred cenote. Maya-Toltec fusion.'],
+  [17.222, -89.611, 'Tikal', 'Petén, Guatemala', 'mesoamerican', 'c. 400 BCE', 'Maya city in the jungle. Temple IV — tallest pre-Columbian structure.'],
+  [14.840, -89.140, 'Copán', 'Copán Ruinas, Honduras', 'mesoamerican', 'c. 426 CE', 'Maya hieroglyphic stairway. Longest Maya text.'],
+  [17.063, -96.726, 'Monte Albán', 'Oaxaca, Mexico', 'mesoamerican', 'c. 500 BCE', 'Zapotec capital. Mountaintop city. Danzantes carvings.'],
+  [20.361, -89.772, 'Uxmal', 'near Mérida, Mexico', 'mesoamerican', 'c. 500 CE', 'Pyramid of the Magician. Puuc Maya architecture.'],
+  [14.640, -90.531, 'Kaminaljuyu', 'Guatemala City, Guatemala', 'mesoamerican', 'c. 1200 BCE', 'Highland Maya. Obsidian trade. Under modern city.'],
+
+  // ---- ANDEAN ----
+  [-13.531, -71.968, 'Qosqo (Cusco)', 'Cusco, Peru', 'andean', 'c. 1100 CE', 'Navel of the Inca world. Sacsayhuamán. Temple of the Sun.'],
+  [-16.553, -68.674, 'Tiwanaku', 'near La Paz, Bolivia', 'andean', 'c. 500 CE', 'Gate of the Sun. 12,500 ft. elevation. Pre-Inca civilization.'],
+  [-8.115, -79.041, 'Chan Chan', 'near Trujillo, Peru', 'andean', 'c. 850 CE', 'Chimú capital. Largest adobe city. 60,000 inhabitants.'],
+  [-13.163, -72.546, 'Machu Picchu', 'Cusco Region, Peru', 'andean', 'c. 1450 CE', 'Inca citadel in the clouds. Intihuatana sun stone.'],
+  [-12.046, -77.028, 'Pachacamac', 'Lima outskirts, Peru', 'andean', 'c. 200 CE', 'Oracle of the coast. Pre-Inca pilgrimage site.'],
+
+  // ---- AFRICAN ----
+  [-20.267, 30.933, 'Great Zimbabwe', 'Masvingo, Zimbabwe', 'african', 'c. 1000 CE', 'Great Enclosure. Shona kingdom. Stone walls without mortar.'],
+  [14.121, 38.721, 'Aksum', 'Axum, Ethiopia', 'african', 'c. 400 BCE', 'Obelisks. Ark of the Covenant (tradition). Aksumite Empire.'],
+  [16.933, 33.748, 'Meroe', 'near Shendi, Sudan', 'african', 'c. 750 BCE', 'Kushite pyramids. Iron smelting center. Meroitic script.'],
+  [16.772, -3.009, 'Timbuktu', 'Timbuktu, Mali', 'african', 'c. 1100 CE', 'Sankore University. 700,000 manuscripts. Gold-salt trade.'],
+  [13.905, -4.555, 'Djenne-Djeno', 'Djenné, Mali', 'african', 'c. 250 BCE', 'Oldest known city in sub-Saharan Africa. Great Mosque (adobe).'],
+  [-8.950, 39.517, 'Kilwa Kisiwani', 'Kilwa, Tanzania', 'african', 'c. 800 CE', 'Swahili trading port. Chinese porcelain. Gold coins.'],
+  [9.030, 38.747, 'Addis Ababa area', 'Addis Ababa, Ethiopia', 'african', 'c. 1886 CE', 'Entoto: ancient highland settlement above modern capital.'],
+  [6.497, 3.388, 'Eko', 'Lagos, Nigeria', 'african', 'c. 1400 CE', 'Yoruba fishing camp. Eko = "war camp." Lagos from Portuguese.'],
+  [-6.163, 39.189, 'Zanzibar Stone Town', 'Zanzibar, Tanzania', 'african', 'c. 800 CE', 'Swahili hub. Spice trade. Omani sultanate.'],
+
+  // ---- NUBIAN / KUSHITE ----
+  [18.550, 31.817, 'Napata', 'Karima, Sudan', 'nubian', 'c. 1450 BCE', 'Kushite royal city. Jebel Barkal. 25th Dynasty pharaohs.'],
+  [19.632, 30.328, 'Kerma', 'Kerma, Sudan', 'nubian', 'c. 2500 BCE', 'Oldest African city outside Egypt. Deffufa temples.'],
+  [21.822, 31.276, 'Abu Simbel', 'Abu Simbel, Egypt', 'nubian', '1264 BCE', 'Ramesses II\'s colossal temple. Nubian border. UNESCO rescued.'],
+
+  // ---- CELTIC ----
+  [53.578, -6.612, 'Teamhair (Tara)', 'near Navan, Ireland', 'celtic', 'c. 3000 BCE', 'High Kings\' seat. Lia Fáil (Stone of Destiny). Sacred hill.'],
+  [55.005, -2.360, 'Vindolanda', 'near Hexham, England', 'celtic', 'c. 85 CE', 'Roman fort on Hadrian\'s Wall. Vindolanda tablets (letters).'],
+  [48.137, 11.575, 'Manching', 'near Ingolstadt, Germany', 'celtic', 'c. 300 BCE', 'Largest Celtic oppidum north of Alps. Gold treasure.'],
+  [46.948, 7.444, 'Brenodurum', 'Bern, Switzerland', 'celtic', 'c. 200 BCE', 'Celtic Helvetii settlement. Bear cult origin of name.'],
+  [48.208, -1.680, 'Condate', 'Rennes, France', 'celtic', 'c. 300 BCE', 'Redones tribe capital. "Confluence" of rivers.'],
+
+  // ---- NORSE / GERMANIC ----
+  [53.953, -1.080, 'Jorvik', 'York, England', 'norse', '866 CE', 'Viking capital of England. Jorvik Viking Centre.'],
+  [59.337, 17.760, 'Birka', 'near Stockholm, Sweden', 'norse', 'c. 750 CE', 'Viking Age trading hub. First Swedish town. Amber and furs.'],
+  [54.489, 9.572, 'Hedeby', 'near Schleswig, Germany', 'norse', 'c. 770 CE', 'Greatest Viking trading center. Danevirke wall.'],
+  [64.147, -21.943, 'Reykjavik', 'Reykjavik, Iceland', 'norse', '874 CE', 'Ingólfr Arnarson\'s settlement. "Smoky Bay." Althing (930).'],
+  [63.430, 10.395, 'Nidaros', 'Trondheim, Norway', 'norse', '997 CE', 'Olav Tryggvason\'s city. Nidaros Cathedral. Viking kings.'],
+  [59.329, 18.069, 'Sigtuna to Stockholm', 'Stockholm, Sweden', 'norse', 'c. 970 CE', 'First Swedish capital (Sigtuna). Stockholm "log islet."'],
+  [55.676, 12.569, 'Havn', 'Copenhagen, Denmark', 'norse', 'c. 1000 CE', '"Merchant\'s harbor." Viking fishing village. Became capital.'],
+
+  // ---- BYZANTINE ----
+  [41.008, 28.978, 'Byzantion / Konstantinoupolis', 'Istanbul, Turkey', 'byzantine', '660 BCE / 330 CE', 'Hagia Sophia. Walls of Theodosius. Center of two empires.'],
+  [38.423, 27.143, 'Smyrna', 'Izmir, Turkey', 'byzantine', 'c. 3000 BCE', 'Birthplace of Homer (tradition). Seven Churches of Revelation.'],
+  [40.519, 43.088, 'Ani', 'Kars Province, Turkey', 'byzantine', 'c. 961 CE', '"City of 1001 Churches." Armenian capital. Ghost city.'],
+
+  // ---- CENTRAL ASIAN / SILK ROAD ----
+  [39.654, 66.960, 'Marakanda', 'Samarkand, Uzbekistan', 'central_asian', 'c. 700 BCE', 'Registan Square. Tamerlane\'s capital. Silk Road jewel.'],
+  [39.773, 64.422, 'Bukhara', 'Bukhara, Uzbekistan', 'central_asian', 'c. 500 BCE', 'Kalyan Minaret. Avicenna\'s birthplace. "Pillar of Islam."'],
+  [37.940, 58.380, 'Merv', 'near Mary, Turkmenistan', 'central_asian', 'c. 3000 BCE', 'Largest city on earth (12th c.). Sultan Sanjar\'s mausoleum.'],
+  [42.870, 74.590, 'Suyab / Balasagun', 'near Bishkek, Kyrgyzstan', 'central_asian', 'c. 600 CE', 'Turkic khaganate capital. Silk Road junction. Burana Tower.'],
+  [34.528, 69.172, 'Kabura', 'Kabul, Afghanistan', 'central_asian', 'c. 1500 BCE', 'Gateway between Central and South Asia. Gardens of Babur.'],
+  [36.720, 67.112, 'Balkh', 'Balkh, Afghanistan', 'central_asian', 'c. 1500 BCE', '"Mother of Cities." Zoroaster\'s birthplace (tradition). Rumi born here.'],
+  [38.574, 68.774, 'Dushanbe area', 'Dushanbe, Tajikistan', 'central_asian', 'c. 300 BCE', 'Greco-Bactrian settlements. "Monday" bazaar.'],
+
+  // ---- IBERIAN / TARTESSIAN ----
+  [37.383, -6.005, 'Tartessos', 'near Seville, Spain', 'iberian', 'c. 1100 BCE', 'Biblical Tarshish? Legendary wealth. Lost civilization of the west.'],
+  [39.472, -0.376, 'Valentia', 'Valencia, Spain', 'iberian', '138 BCE', 'Roman colony. Iberian Edetani territory. City of arts and sciences.'],
+  [41.388, 2.170, 'Barcino', 'Barcelona, Spain', 'iberian', 'c. 15 BCE', 'Augustus\' colony. Laietani Iberian settlement beneath.'],
+];
+
+// ============================================================
+// MAP INITIALIZATION
+// ============================================================
+const map = L.map('map', {
+  center: [30, 20],
+  zoom: 3,
+  minZoom: 2,
+  maxZoom: 19,
+  zoomControl: true,
+  attributionControl: true,
+});
+
+// Tile layers
+const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+});
+
+const osmTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom: 17,
+  attribution: '&copy; OpenTopoMap'
+});
+
+const cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19,
+  attribution: '&copy; CARTO'
+});
+
+const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19,
+  attribution: '&copy; CARTO'
+});
+
+// Default: dark base map
+cartoDark.addTo(map);
+
+const baseMaps = {
+  "Dark": cartoDark,
+  "Light": cartoLight,
+  "Street": osmStandard,
+  "Terrain": osmTopo,
+};
+
+// ============================================================
+// CREATE CULTURE LAYER GROUPS
+// ============================================================
+const cultureLayers = {};
+for (const key in CULTURES) {
+  cultureLayers[key] = L.layerGroup();
+}
+
+// ============================================================
+// POPULATE MARKERS
+// ============================================================
+const allMarkers = [];
+
+CITIES.forEach(([lat, lng, ancient, modern, culture, era, note]) => {
+  const c = CULTURES[culture];
+  if (!c) return;
+
+  const col = c.color;
+
+  // Circle marker (visible at all zoom levels)
+  const marker = L.circleMarker([lat, lng], {
+    radius: 5,
+    fillColor: col,
+    color: col,
+    weight: 1,
+    opacity: 0.9,
+    fillOpacity: 0.7,
+  });
+
+  // Tooltip label (ancient name)
+  marker.bindTooltip(ancient, {
+    permanent: true,
+    direction: 'right',
+    offset: [8, 0],
+    className: 'ancient-label',
+  });
+
+  // Style the tooltip after it's added
+  marker.on('tooltipopen', function(e) {
+    const el = e.tooltip.getElement();
+    if (el) {
+      el.querySelector('.leaflet-tooltip-text, span')?.remove;
+      el.innerHTML = `<span class="label-text" style="color:${col};">${ancient}</span>`;
+    }
+  });
+
+  // Popup with full info
+  marker.bindPopup(`
+    <div class="ancient-name" style="color:${col};">${ancient}</div>
+    <div class="modern-name">${modern}</div>
+    <div class="heritage-tag" style="background:${col}22;color:${col};border:1px solid ${col}44;">${c.name}</div>
+    <div class="era">${era}</div>
+    <div class="lang">Language: ${c.lang}</div>
+    <div class="note">${note}</div>
+  `, { maxWidth: 280 });
+
+  marker.addTo(cultureLayers[culture]);
+  allMarkers.push({ marker, lat, lng, ancient, modern, culture, era, note });
+});
+
+// Add all culture layers to map by default
+for (const key in cultureLayers) {
+  cultureLayers[key].addTo(map);
+}
+
+// ============================================================
+// LAYER CONTROL
+// ============================================================
+const overlayMaps = {};
+for (const key in CULTURES) {
+  const c = CULTURES[key];
+  const count = CITIES.filter(city => city[4] === key).length;
+  overlayMaps[`<span style="color:${c.color};">&#9679;</span> ${c.name} (${count})`] = cultureLayers[key];
+}
+
+L.control.layers(baseMaps, overlayMaps, {
+  collapsed: true,
+  position: 'topright',
+}).addTo(map);
+
+// ============================================================
+// CITY COUNT
+// ============================================================
+document.getElementById('city-count').textContent = `${CITIES.length} ancient cities mapped`;
+
+// Zoom level display
+map.on('zoomend', () => {
+  document.getElementById('zoom-level').textContent = `Zoom: ${map.getZoom()} / 19`;
+});
+document.getElementById('zoom-level').textContent = `Zoom: ${map.getZoom()} / 19`;
+
+// ============================================================
+// DYNAMIC LABEL VISIBILITY
+// ============================================================
+function updateLabelVisibility() {
+  const zoom = map.getZoom();
+  const bounds = map.getBounds();
+
+  allMarkers.forEach(({ marker }) => {
+    const tooltip = marker.getTooltip();
+    if (!tooltip) return;
+
+    const latlng = marker.getLatLng();
+    const inView = bounds.contains(latlng);
+
+    if (zoom >= 5) {
+      // Show all labels in view
+      if (!marker.isTooltipOpen() && inView) marker.openTooltip();
+    } else if (zoom >= 3) {
+      // Show labels but smaller
+      if (!marker.isTooltipOpen() && inView) marker.openTooltip();
+    }
+    // At zoom < 3 labels still show but overlap — Leaflet handles this
+  });
+
+  // Adjust marker size based on zoom
+  const radius = zoom >= 10 ? 8 : zoom >= 6 ? 6 : zoom >= 4 ? 5 : 4;
+  allMarkers.forEach(({ marker }) => {
+    marker.setRadius(radius);
+  });
+}
+
+map.on('zoomend moveend', updateLabelVisibility);
+
+// ============================================================
+// SEARCH
+// ============================================================
+const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+
+  if (q.length < 2) {
+    searchResults.style.display = 'none';
+    return;
+  }
+
+  const matches = allMarkers.filter(m =>
+    m.ancient.toLowerCase().includes(q) ||
+    m.modern.toLowerCase().includes(q) ||
+    (CULTURES[m.culture]?.name || '').toLowerCase().includes(q) ||
+    (CULTURES[m.culture]?.lang || '').toLowerCase().includes(q)
+  ).slice(0, 12);
+
+  if (matches.length === 0) {
+    searchResults.style.display = 'none';
+    return;
+  }
+
+  matches.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'search-item';
+    const col = CULTURES[m.culture]?.color || '#ccc';
+    div.innerHTML = `<span class="si-ancient" style="color:${col};">${m.ancient}</span><br><span class="si-modern">${m.modern}</span>`;
+    div.onclick = () => {
+      map.setView([m.lat, m.lng], 12);
+      m.marker.openPopup();
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(div);
+  });
+
+  searchResults.style.display = 'block';
+});
+
+searchInput.addEventListener('blur', () => {
+  setTimeout(() => { searchResults.style.display = 'none'; }, 200);
+});
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === 'Escape') {
+    searchInput.blur();
+    searchResults.style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>

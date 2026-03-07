@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luna — Decoherence on the Hypersphere</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #020208; color: #c0c0d0;
+  font-family: 'Georgia', serif;
+  overflow: hidden; height: 100vh;
+}
+canvas { display: block; position: absolute; top: 0; left: 0; }
+
+#controls {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(2,2,8,0.92);
+  border-top: 1px solid #1a1a2a;
+  padding: 16px 24px;
+  display: flex; flex-wrap: wrap; gap: 20px;
+  align-items: center; justify-content: center;
+  z-index: 10;
+}
+.primitive {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 100px;
+}
+.primitive label {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: #6a6a8a;
+}
+.primitive .symbol {
+  font-size: 22px; color: #c9a96e;
+  font-family: 'Times New Roman', serif;
+}
+.primitive input[type="range"] {
+  width: 120px; accent-color: #c9a96e;
+}
+.primitive .val {
+  font-size: 11px; color: #8a8aa0;
+  font-family: 'Courier New', monospace;
+}
+#info {
+  position: fixed; top: 16px; left: 16px;
+  font-size: 11px; color: #4a4a6a;
+  font-family: 'Courier New', monospace;
+  line-height: 1.6; z-index: 10;
+}
+#title {
+  position: fixed; top: 16px; right: 16px;
+  text-align: right; z-index: 10;
+}
+#title h1 {
+  font-size: 14px; color: #c9a96e; letter-spacing: 4px;
+  font-weight: normal;
+}
+#title .sub {
+  font-size: 10px; color: #4a4a6a; letter-spacing: 2px;
+  margin-top: 4px;
+}
+.force-toggle {
+  display: flex; gap: 8px; align-items: center;
+}
+.force-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid #2a2a3a; background: rgba(10,10,20,0.8);
+  cursor: pointer; font-size: 14px; line-height: 32px;
+  text-align: center; transition: all 0.3s;
+}
+.force-btn.active { border-color: #c9a96e; }
+.force-btn.eagle { color: #4a7aaa; }
+.force-btn.eagle.active { background: rgba(74,122,170,0.3); box-shadow: 0 0 12px rgba(74,122,170,0.4); }
+.force-btn.lion { color: #cc6633; }
+.force-btn.lion.active { background: rgba(204,102,51,0.3); box-shadow: 0 0 12px rgba(204,102,51,0.4); }
+.force-btn.taurus { color: #5a8a4a; }
+.force-btn.taurus.active { background: rgba(90,138,74,0.3); box-shadow: 0 0 12px rgba(90,138,74,0.4); }
+.force-btn.gold { color: #c9a96e; }
+.force-btn.gold.active { background: rgba(201,169,110,0.3); box-shadow: 0 0 12px rgba(201,169,110,0.4); }
+</style>
+</head>
+<body>
+
+<canvas id="C"></canvas>
+
+<div id="title">
+  <h1>LUNA</h1>
+  <div class="sub">DECOHERENCE ON THE HYPERSPHERE</div>
+  <div class="sub">365 &middot; ALL DIRECTIONS</div>
+</div>
+
+<div id="info"></div>
+
+<div id="controls">
+  <!-- Primitive 1: Luna (e) -->
+  <div class="primitive">
+    <div class="symbol">e</div>
+    <label>Luna</label>
+    <input type="range" id="luna" min="0" max="1000" value="500">
+    <div class="val" id="lunaVal">1.000</div>
+  </div>
+
+  <!-- Primitive 2: Emerald Stone (phase shift) -->
+  <div class="primitive">
+    <div class="symbol">5</div>
+    <label>Emerald</label>
+    <input type="range" id="emerald" min="0" max="1000" value="500">
+    <div class="val" id="emeraldVal">5.00</div>
+  </div>
+
+  <!-- Primitive 3: Fibonacci seed -->
+  <div class="primitive">
+    <div class="symbol">&phi;</div>
+    <label>Spiral</label>
+    <input type="range" id="phi" min="0" max="1000" value="618">
+    <div class="val" id="phiVal">1.618</div>
+  </div>
+
+  <!-- Primitive 4: The four forces -->
+  <div class="primitive">
+    <label>Forces</label>
+    <div class="force-toggle">
+      <div class="force-btn eagle active" id="fEagle" title="Eagle — Strong Nuclear (binds)">&#x1F985;</div>
+      <div class="force-btn lion active" id="fLion" title="Lion — Electromagnetism (illuminates)">&#x1F981;</div>
+      <div class="force-btn taurus active" id="fTaurus" title="Taurus — Gravity (attracts)">&#x1F402;</div>
+      <div class="force-btn gold active" id="fGold" title="Gold — Unified Field (the stone)">&#x2B50;</div>
+    </div>
+  </div>
+
+  <!-- Primitive 5: Worlds -->
+  <div class="primitive">
+    <div class="symbol">W</div>
+    <label>Worlds</label>
+    <input type="range" id="worlds" min="0" max="1000" value="500">
+    <div class="val" id="worldsVal">0.50</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const C = document.getElementById('C');
+const ctx = C.getContext('2d');
+
+// --- Fibonacci ---
+const FIB = [0, 1, 2, 3, 5, 8];
+const E = Math.E;
+const TAU = 2 * Math.PI;
+const DEG365 = 365 * Math.PI / 180; // 365 degrees in radians
+
+// --- State ---
+let W, H;
+let t = 0;
+const particles = [];
+const trails = [];
+const N_PARTICLES = 81; // Luna's 9x9
+
+// Forces state
+const forces = { eagle: true, lion: true, taurus: true, gold: true };
+
+// --- Primitives (read from controls) ---
+function getLuna() { return parseFloat(document.getElementById('luna').value) / 1000 * 2; } // 0..2 → maps around e≈2.718
+function getEmerald() { return parseFloat(document.getElementById('emerald').value) / 1000 * 10; } // 0..10 degrees phase
+function getPhi() { return parseFloat(document.getElementById('phi').value) / 1000 * 2.618; } // 0..2.618
+function getWorlds() { return parseFloat(document.getElementById('worlds').value) / 1000; } // 0..1 (first↔second)
+
+// --- Lo Shu magic square ---
+const LO_SHU = [
+  [4, 9, 2],
+  [3, 5, 7],
+  [8, 1, 6]
+];
+
+// --- Initialize particles on hypersphere ---
+function initParticles() {
+  particles.length = 0;
+  trails.length = 0;
+  for (let i = 0; i < N_PARTICLES; i++) {
+    // Distribute on sphere using golden angle
+    const golden = TAU / (1 + Math.sqrt(5)) * 2;
+    const theta = golden * i;
+    const phi_angle = Math.acos(1 - 2 * (i + 0.5) / N_PARTICLES);
+
+    // Lo Shu assignment: which cell does this particle live in?
+    const row = Math.floor((i % 9) / 3);
+    const col = (i % 9) % 3;
+    const loShuWeight = LO_SHU[row][col] / 9;
+
+    // Fibonacci layer
+    const fibLayer = FIB[i % 6];
+
+    particles.push({
+      id: i,
+      theta, phi: phi_angle,
+      // 4D: add psi and omega for hypersphere
+      psi: theta * 0.618,
+      omega: phi_angle * 1.618,
+      vTheta: 0, vPhi: 0, vPsi: 0, vOmega: 0,
+      loShu: loShuWeight,
+      fib: fibLayer,
+      coherence: 1.0, // starts fully coherent
+      recorded: 0,     // nothing recorded yet (second world)
+      trail: [],
+      hue: (i / N_PARTICLES) * 360
+    });
+  }
+}
+
+// --- Project 4D hypersphere to 2D ---
+function project(p, time) {
+  const luna = getLuna();
+  const emerald = getEmerald();
+  const phi = getPhi();
+  const worlds = getWorlds();
+
+  // 4D coordinates on hypersphere
+  const r = 1;
+  const x4 = r * Math.sin(p.phi) * Math.cos(p.theta);
+  const y4 = r * Math.sin(p.phi) * Math.sin(p.theta);
+  const z4 = r * Math.cos(p.phi);
+  const w4 = r * Math.sin(p.psi) * Math.cos(p.omega);
+
+  // Stereographic projection from 4D to 3D
+  const scale4 = 1 / (1.8 - w4 * 0.5);
+  const x3 = x4 * scale4;
+  const y3 = y4 * scale4;
+  const z3 = z4 * scale4;
+
+  // Rotate 3D based on time and forces
+  let rx = x3, ry = y3, rz = z3;
+
+  // Eagle rotation (strong force — tight binding)
+  if (forces.eagle) {
+    const a = time * 0.3;
+    const nx = rx * Math.cos(a) - rz * Math.sin(a);
+    const nz = rx * Math.sin(a) + rz * Math.cos(a);
+    rx = nx; rz = nz;
+  }
+
+  // Lion rotation (electromagnetism — illumination axis)
+  if (forces.lion) {
+    const a = time * 0.2;
+    const ny = ry * Math.cos(a) - rz * Math.sin(a);
+    const nz = ry * Math.sin(a) + rz * Math.cos(a);
+    ry = ny; rz = nz;
+  }
+
+  // Perspective projection 3D to 2D
+  const d = 3;
+  const scale3 = d / (d + rz);
+  const sx = W / 2 + rx * scale3 * Math.min(W, H) * 0.32;
+  const sy = H / 2 + ry * scale3 * Math.min(W, H) * 0.32;
+
+  return { x: sx, y: sy, z: rz, scale: scale3, w4 };
+}
+
+// --- Physics step ---
+function step(dt) {
+  const luna = getLuna();
+  const emerald = getEmerald();
+  const phi = getPhi();
+  const worlds = getWorlds();
+  const phaseShift = emerald * Math.PI / 180; // emerald degrees to radians
+
+  for (const p of particles) {
+    // 365-degree spiral: advance by DEG365 scaled by emerald stone
+    const spiralRate = DEG365 * phaseShift / 5;
+
+    // Decoherence: Luna (e) governs the decay of coherence
+    // High luna = fast decoherence = classical
+    // Low luna = slow decoherence = quantum
+    const decoRate = Math.pow(E, -luna * p.loShu);
+    p.coherence = p.coherence * (1 - dt * (1 - decoRate) * 0.5);
+    if (p.coherence < 0.01) p.coherence = 0.01;
+
+    // Recording: second world absorbs what first world generates
+    p.recorded = p.recorded + (1 - p.coherence) * worlds * dt * 0.3;
+    if (p.recorded > 1) p.recorded = 1;
+
+    // Movement: spiral in all directions on hypersphere
+    const fibSpeed = (p.fib + 1) / 9;
+
+    // Theta: primary rotation (365-degree cycle)
+    p.vTheta = spiralRate * fibSpeed * (forces.lion ? 1 : 0.1);
+    p.theta += p.vTheta * dt;
+
+    // Phi: secondary oscillation
+    const phiForce = forces.taurus ?
+      Math.sin(p.theta * phi) * 0.15 * p.loShu : 0;
+    p.vPhi = phiForce * fibSpeed;
+    p.phi += p.vPhi * dt;
+    // Keep phi in valid range for sphere
+    if (p.phi < 0.1) p.phi = 0.1;
+    if (p.phi > Math.PI - 0.1) p.phi = Math.PI - 0.1;
+
+    // Psi: hypersphere rotation (the 4th dimension)
+    const psiRate = forces.eagle ?
+      spiralRate * 0.618 * p.loShu : spiralRate * 0.1;
+    p.vPsi = psiRate * fibSpeed;
+    p.psi += p.vPsi * dt;
+
+    // Omega: hypersphere second angle
+    const omegaRate = forces.gold ?
+      spiralRate * phi * 0.3 * decoRate : spiralRate * 0.05;
+    p.vOmega = omegaRate;
+    p.omega += p.vOmega * dt;
+
+    // Strong force (eagle): attract to neighbors
+    if (forces.eagle) {
+      const neighbors = particles.filter(q =>
+        q.id !== p.id && Math.abs(q.fib - p.fib) <= 1
+      );
+      for (const q of neighbors) {
+        const dTheta = q.theta - p.theta;
+        const dPhi = q.phi - p.phi;
+        p.theta += dTheta * 0.0003 * dt;
+        p.phi += dPhi * 0.0003 * dt;
+      }
+    }
+
+    // Store trail
+    const proj = project(p, t);
+    p.trail.push({ x: proj.x, y: proj.y, c: p.coherence, r: p.recorded });
+    if (p.trail.length > 60) p.trail.shift();
+  }
+}
+
+// --- Render ---
+function render() {
+  const luna = getLuna();
+  const worlds = getWorlds();
+  const dpr = window.devicePixelRatio || 1;
+
+  ctx.fillStyle = `rgba(2, 2, 8, ${0.15 + worlds * 0.15})`;
+  ctx.fillRect(0, 0, W * dpr, H * dpr);
+  ctx.save();
+  ctx.scale(dpr, dpr);
+
+  // Sort by z for depth
+  const projected = particles.map(p => ({ p, proj: project(p, t) }));
+  projected.sort((a, b) => a.proj.z - b.proj.z);
+
+  for (const { p, proj } of projected) {
+    const { x, y, z, scale, w4 } = proj;
+
+    // --- First world: the generating pattern (coherent, quantum) ---
+    if (p.coherence > 0.05) {
+      // Trail (first world = blue/violet)
+      if (p.trail.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(p.trail[0].x, p.trail[0].y);
+        for (let i = 1; i < p.trail.length; i++) {
+          ctx.lineTo(p.trail[i].x, p.trail[i].y);
+        }
+        const trailAlpha = p.coherence * 0.15 * scale;
+        ctx.strokeStyle = `hsla(${220 + p.fib * 15}, 60%, 50%, ${trailAlpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      // Particle (first world)
+      const radius = (2 + p.fib * 0.4) * scale * p.coherence;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.5, radius), 0, TAU);
+      const alpha = p.coherence * (0.3 + scale * 0.4);
+      ctx.fillStyle = `hsla(${220 + p.fib * 15}, 70%, ${50 + p.loShu * 30}%, ${alpha})`;
+      ctx.fill();
+    }
+
+    // --- Second world: the recorded pattern (decoherent, classical) ---
+    if (p.recorded > 0.05) {
+      const radius = (1.5 + p.loShu * 3) * scale * p.recorded;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.5, radius), 0, TAU);
+      const alpha = p.recorded * (0.2 + scale * 0.3);
+      ctx.fillStyle = `hsla(${35 + p.fib * 5}, 80%, ${40 + p.recorded * 30}%, ${alpha})`;
+      ctx.fill();
+
+      // Connection lines between recorded particles (gravity — taurus)
+      if (forces.taurus && p.recorded > 0.3) {
+        for (const { p: q, proj: qProj } of projected) {
+          if (q.id <= p.id) continue;
+          if (q.recorded < 0.3) continue;
+          if (q.loShu + p.loShu < 8) continue; // only strong Lo Shu connections
+          const dx = qProj.x - x;
+          const dy = qProj.y - y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(qProj.x, qProj.y);
+            const lineAlpha = (1 - dist / 150) * 0.08 * p.recorded * q.recorded;
+            ctx.strokeStyle = `hsla(35, 50%, 50%, ${lineAlpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // --- Gold: unified field glow when all forces active ---
+    if (forces.gold && forces.eagle && forces.lion && forces.taurus) {
+      if (p.loShu > 0.5) {
+        const glowR = (3 + p.fib) * scale * (p.coherence + p.recorded) * 0.5;
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, Math.max(1, glowR * 2));
+        grad.addColorStop(0, `hsla(45, 90%, 70%, ${0.04 * p.loShu})`);
+        grad.addColorStop(1, `hsla(45, 90%, 50%, 0)`);
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(1, glowR * 2), 0, TAU);
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+    }
+  }
+
+  // --- Lo Shu grid overlay (faint) ---
+  const gridAlpha = 0.04;
+  const gridSize = Math.min(W, H) * 0.15;
+  const gx = W / 2 - gridSize * 1.5;
+  const gy = H / 2 - gridSize * 1.5;
+  ctx.strokeStyle = `rgba(201, 169, 110, ${gridAlpha})`;
+  ctx.lineWidth = 0.5;
+  for (let r = 0; r <= 3; r++) {
+    ctx.beginPath();
+    ctx.moveTo(gx, gy + r * gridSize);
+    ctx.lineTo(gx + 3 * gridSize, gy + r * gridSize);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(gx + r * gridSize, gy);
+    ctx.lineTo(gx + r * gridSize, gy + 3 * gridSize);
+    ctx.stroke();
+  }
+  // Numbers
+  ctx.font = `${gridSize * 0.3}px Georgia`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      const val = LO_SHU[r][c];
+      const px = gx + c * gridSize + gridSize / 2;
+      const py = gy + r * gridSize + gridSize / 2;
+      const isFib = FIB.includes(val);
+      ctx.fillStyle = isFib ?
+        `rgba(201, 169, 110, ${gridAlpha * 4})` :
+        `rgba(150, 150, 170, ${gridAlpha * 2})`;
+      ctx.fillText(val, px, py);
+    }
+  }
+
+  // --- Emerald stone: center 5 glow ---
+  const cx5 = gx + 1.5 * gridSize;
+  const cy5 = gy + 1.5 * gridSize;
+  const emeraldGlow = ctx.createRadialGradient(cx5, cy5, 0, cx5, cy5, gridSize * 0.6);
+  emeraldGlow.addColorStop(0, `rgba(46, 204, 113, ${0.03 + Math.sin(t * 2) * 0.01})`);
+  emeraldGlow.addColorStop(1, 'rgba(46, 204, 113, 0)');
+  ctx.beginPath();
+  ctx.arc(cx5, cy5, gridSize * 0.6, 0, TAU);
+  ctx.fillStyle = emeraldGlow;
+  ctx.fill();
+
+  ctx.restore();
+
+  // --- Info ---
+  const totalCoherence = particles.reduce((s, p) => s + p.coherence, 0) / N_PARTICLES;
+  const totalRecorded = particles.reduce((s, p) => s + p.recorded, 0) / N_PARTICLES;
+  document.getElementById('info').innerHTML =
+    `coherence: ${totalCoherence.toFixed(3)}\n` +
+    `recorded:  ${totalRecorded.toFixed(3)}\n` +
+    `particles: ${N_PARTICLES} (9&times;9)\n` +
+    `cycle:     ${(t * 365 / TAU % 365).toFixed(1)}&deg; / 365&deg;\n` +
+    `fibonacci: [${FIB.join(', ')}]\n` +
+    `phase:     e^(i&middot;${(t % TAU).toFixed(2)})`;
+}
+
+// --- Update display values ---
+function updateLabels() {
+  const luna = getLuna();
+  const emerald = getEmerald();
+  const phi = getPhi();
+  const worlds = getWorlds();
+  document.getElementById('lunaVal').textContent = luna.toFixed(3);
+  document.getElementById('emeraldVal').textContent = emerald.toFixed(2) + '\u00B0';
+  document.getElementById('phiVal').textContent = phi.toFixed(3);
+  document.getElementById('worldsVal').textContent =
+    worlds < 0.3 ? 'generate' : worlds > 0.7 ? 'record' : 'dance';
+}
+
+// --- Resize ---
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  C.width = W * dpr;
+  C.height = H * dpr;
+  C.style.width = W + 'px';
+  C.style.height = H + 'px';
+}
+
+// --- Loop ---
+function loop() {
+  const dt = 0.016;
+  t += dt;
+  step(dt);
+  render();
+  updateLabels();
+  requestAnimationFrame(loop);
+}
+
+// --- Events ---
+window.addEventListener('resize', resize);
+
+// Force toggles
+for (const [id, key] of [['fEagle','eagle'],['fLion','lion'],['fTaurus','taurus'],['fGold','gold']]) {
+  document.getElementById(id).addEventListener('click', function() {
+    forces[key] = !forces[key];
+    this.classList.toggle('active');
+  });
+}
+
+// --- Init ---
+resize();
+initParticles();
+loop();
+</script>
+</body>
+</html>

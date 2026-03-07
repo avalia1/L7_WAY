@@ -1,6 +1,7 @@
 L7 WAY — SOFTWARE LICENSE
 
-Copyright (c) 2026 Alberto Valido Delgado, doing business as AVLI Cloud LLC.
+Copyright (c) 2026 Alberto Valido Delgado.
+AVALIA CONSULTING LLC (FL Doc L19000154273), dba Avli Cloud.
 All rights reserved.
 
 
@@ -27,57 +28,59 @@ No fee. No registration. No approval required.
 
 3. COMMERCIAL USE
 
-Any entity that derives commercial profit from the L7 system or any of its
-components shall pay a one-time licensing fee to the Founder.
+Any entity that derives commercial revenue from the L7 system, any of its
+components, or any application built upon the L7 architecture or Universal
+OS shall pay a licensing fee to the Founder.
 
-   a. FEE: 10% (ten percent) of profit attributable to L7 components,
-      calculated proportionally:
+   a. FEE: 12% (twelve percent) of gross commercial revenue derived from
+      the licensed technology.
 
-      Fee = 10% x Profit x L7 Usage Proportion
+      This rate is uniform. No caps. No tiers. No sliding scale.
+      One rate for all commercial licensees, regardless of size.
 
-      Where "L7 Usage Proportion" is the fraction of the enterprise's
-      profit-generating operations that depend on L7 tools.
+      "Gross commercial revenue" means all revenue directly attributable
+      to products, services, or operations that incorporate, depend on,
+      or are built upon L7 tools, architecture, or derivatives thereof.
 
-      Examples:
-      - If 100% of business is conducted using L7 tools: 10% of all profit.
-      - If L7 tools are used in 10% of profit-producing operations:
-        10% of 10% of profit (i.e., 1% of total profit).
-      - If L7 tools are used in 50% of operations: 10% of 50% = 5% of
-        total profit.
-
-      The proportion is determined in good faith by mutual agreement
-      between the licensee and AVLI Cloud LLC at the time of licensing.
-
-   b. ONE-TIME: This fee is paid once. Upon payment, the licensee receives
-      a perpetual, irrevocable commercial license to use, modify, and deploy
-      L7 tools indefinitely. No recurring fees. No per-seat charges.
-      No renewal. No audits after payment.
+   b. ONGOING: The fee applies for the duration of commercial use. It is
+      a revenue share, not a one-time payment. Licensees report and remit
+      quarterly, or on a schedule agreed in the licensing agreement.
 
    c. PROCESS: Contact AVLI Cloud LLC to establish a written licensing
       agreement. Good-faith negotiation. Written agreement executed.
-      Payment remitted. License granted. Done.
+      Reporting and payment commence. Licensing relationship established.
 
    d. DERIVATIVE WORKS: Any software, service, product, or system that
       incorporates, extends, or is substantially based on L7 architecture,
       schemas, or code is a derivative work and subject to this license.
+      This includes applications built on the L7 Universal OS.
+
+   e. PRIOR COMMERCIAL TERMS: Licensees who entered into commercial
+      agreements under prior versions of this license (see Section 13)
+      are governed by the terms in effect at the time of their agreement.
+      This section applies to new commercial relationships entered on or
+      after March 6, 2026.
 
 
-4. POST-PAYMENT RIGHTS
+4. LICENSEE RIGHTS
 
-Once the one-time fee is paid:
+Upon execution of a commercial licensing agreement:
 
-   a. Perpetual license to use all L7 tools commercially.
-   b. No future litigation under this license — the matter is closed.
-   c. No recurring fees — one payment, forever.
-   d. No monitoring or audits.
-   e. Freedom to use, modify, and deploy as the licensee sees fit.
+   a. License to use all L7 tools commercially for the duration of the
+      agreement.
+   b. Freedom to use, modify, and deploy as the licensee sees fit,
+      subject to reporting obligations.
+   c. No per-seat charges. No minimum fees. Revenue share only.
+   d. If a licensee generates zero revenue in a reporting period,
+      zero is owed. The fee is proportional to success.
 
 
 5. THE FOUNDER'S ROLE
 
-The Founder creates tools. The Founder collects the one-time licensing fee
-for commercial use. The Founder does not monitor, enforce, judge, or restrict
-how the tools are used after licensing.
+The Founder creates tools. The Founder collects the licensing fee for
+commercial use. The Founder does not monitor, enforce, judge, or restrict
+how the tools are used beyond the reporting obligations in the licensing
+agreement.
 
 How the tools are used is the licensee's decision and responsibility. Existing
 laws in all applicable jurisdictions govern the conduct of all parties.
@@ -110,8 +113,8 @@ death, incapacity, or unavailability of the Founder. Upon such event:
    a. All intellectual property rights transfer to the successor entity
       designated in the AVLI Cloud LLC Operating Agreement and/or the
       Founder's revocable living trust.
-   b. The licensing terms remain unchanged. The one-time fee structure,
-      the non-commercial freedom, and the post-payment perpetual license
+   b. The licensing terms remain unchanged. The revenue share structure,
+      the non-commercial freedom, and existing licensing agreements
       continue in full force.
    c. The proof of authorship (git history, salt seals, original artifacts)
       exists independently and speaks for itself regardless of the
@@ -170,13 +173,46 @@ in the courts of Broward County, Florida, or the United States District Court
 for the Southern District of Florida.
 
 
-13. PRIOR VERSIONS
+13. LICENSE HISTORY AND PRIOR VERSIONS
 
-Any prior license references (including MIT license references in package
-metadata or earlier distributions) applied to the versions in which they
-appeared. This license governs the current version and all future versions
-of the L7 system. Recipients of prior versions retain the rights granted
-under the license terms that accompanied those versions.
+The L7 system has been distributed under three license schedules. Each
+schedule applied to the versions distributed during its period. Recipients
+of prior versions retain the rights granted under the terms that accompanied
+those versions. No schedule is retroactive.
+
+   a. MIT RESEARCH PERIOD (January 12, 2026 — February 27, 2026)
+
+      The earliest versions of L7 were distributed with an MIT license
+      reference in package.json metadata. No formal MIT LICENSE text file
+      was included in the repository. During this period:
+
+      - The repository had 0 forks, 0 watchers, and 0 external contributors
+      - The package was never published to npm or any registry
+      - No third party is known to have received or used these versions
+
+      Any party that did receive the L7 source code during this period
+      retains MIT rights to the specific version they received. Those
+      rights do not extend to versions released after February 27, 2026.
+
+   b. FIRST PROPRIETARY PERIOD (February 27, 2026 — March 5, 2026)
+
+      The license was changed to a proprietary license with the following
+      commercial terms: 10% of profit attributable to L7 components,
+      calculated proportionally to L7 usage, paid as a one-time fee.
+
+      Any party that entered into a commercial licensing agreement during
+      this period is governed by those terms. No such agreements exist
+      as of the date of this revision.
+
+   c. CURRENT SCHEDULE (March 6, 2026 — present)
+
+      The license was revised to the current terms: 12% of gross
+      commercial revenue derived from the licensed technology, paid as
+      an ongoing revenue share. One rate, no caps, no tiers, no sliding
+      scale. This schedule governs all new commercial relationships.
+
+This license, as revised, governs the current version and all future
+versions of the L7 system.
 
 
 14. CONTACT

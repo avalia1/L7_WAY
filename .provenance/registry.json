@@ -1,0 +1,313 @@
+{
+  "creator": "Alberto Valido Delgado",
+  "system": "L7 WAY",
+  "chain": [
+    {
+      "file": "LIBRARY.html",
+      "body_hash": "8f701431341b2f297b20da00f4c0bf5f766dd7b9c466634fb5e4a6e65d1a6f63",
+      "chain_hash": "f66eab329df00b161fb664a7f3d079806bee91b5a4051400191b6e91c8fcb290",
+      "created": "2026-03-01T15:09:50.004020+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "l7index.js",
+      "body_hash": "c5fb18572219f11f1af942da1006faa8dff0876780acb66b5d6f6559557e5ac3",
+      "chain_hash": "51c3abf97977ed975d993c89a77072503c489f2be839f704475d2d4865d560ca",
+      "created": "2026-03-01T15:09:50.004535+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "l7scan.js",
+      "body_hash": "eadb2dd94cef9ab096cf8bb0340ae4f81d2ed259d294b57ada41965fde62f40d",
+      "chain_hash": "696719b8eefb5ce6c65b00467fd607936a0c380930981736d6a49a4565d92591",
+      "created": "2026-03-01T15:09:50.005032+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "l7tree-split.js",
+      "body_hash": "1aae4cb20978f5dcdc95df1f100980028130988759d0f5f53cf0d3d0ef1b5f73",
+      "chain_hash": "b272ebba0f8b8e5840262f024defbd5925735aacf8cea3d0b59a390a27ec2f2c",
+      "created": "2026-03-01T15:09:50.005568+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "serve.js",
+      "body_hash": "ae5a29c4e93b2520e1fecd54b33c1fdaa45a67f5a1626c8edbfdc4b503e1438a",
+      "chain_hash": "a782b44e1ffd235b3bb293f6cc4426914a78ec5dd1b668f8c93b5a44b3200035",
+      "created": "2026-03-01T15:09:50.006072+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "publications/APPENDIX_LVIII_BOOK_OF_LIFE.html",
+      "body_hash": "ac861a2768a2a4c24126acac88ba118f996fc66a6df19f7613c47ba50c20f3ba",
+      "chain_hash": "3cd68a4b8483bbf3183a12d9d6146f5058b603ea70d12ef2404ccceecee66c01",
+      "created": "2026-03-01T15:09:50.008151+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "publications/APPENDIX_LVIII_SESSION_TRANSCRIPT.html",
+      "body_hash": "05f91cdb051cafb2359462760f753b9f9aeb7fc07d30990d848b2b94ce50de31",
+      "chain_hash": "81fa026541a5c8ce8d7085b90d6105394f82393c9afcc1498a916c9e18018af6",
+      "created": "2026-03-01T15:09:50.010069+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "publications/IQS888_UNIFIED_QUANTUM_GRAVITY.html",
+      "body_hash": "5487d49813db3954cbe6705400d79cd657bbfbeb8c1e7a8b80ba843f06952b4e",
+      "chain_hash": "51ac7077888666403ac453a1e0b5739ee8c1169680c6ce9038beddca3e40add2",
+      "created": "2026-03-01T15:09:50.011033+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "rose/rose.html",
+      "body_hash": "543fba1d89c0d1fca89d91ce3f8dbf2ec1499e5c26a8e2d04de8419413f55f84",
+      "chain_hash": "411e7f0d4c7f8b0181e03b896ffae8e12d88ae083708d7610092320f343592af",
+      "created": "2026-03-01T15:09:50.011801+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "simulations/emerald-tablet-os.html",
+      "body_hash": "8ec1b587d27924a6fc199f20fa541e0c092727654198e6acf00cd167e9ef491e",
+      "chain_hash": "5aed2d8194d9ae31cb03b509593b85e9237289450ea38aebb2faaa86ec5a91ae",
+      "created": "2026-03-01T15:09:50.012715+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "simulations/morph-runtime.js",
+      "body_hash": "88d3dbb52b01268a2e28ffb41d2c97027b73d52dabc63a8c77da1bd618804f87",
+      "chain_hash": "2b58ba945962a33500f858247f84f877774f0288c9c473deec25b8ae85135bb9",
+      "created": "2026-03-01T15:09:50.013176+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "simulations/quantum-gravity-proof.html",
+      "body_hash": "eadd36f00a1da7ab882722def5663cfbf1f5b142e5f79505b528bcf42a2ff336",
+      "chain_hash": "7fc161384f5c6e50ae5705b0b8b5f781b87f1007460bd1103cf254c74864f087",
+      "created": "2026-03-01T15:09:50.013846+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "simulations/shadow-theater.html",
+      "body_hash": "df5be08a8df174a6d9e18e28d1f0bd447ba636c93619ea53df41a132274e0dc2",
+      "chain_hash": "684bf3279b7a9f4f1c343d7f9f2452d60aa1e58c02476bb684e19e99bbd9fec8",
+      "created": "2026-03-01T15:09:50.014343+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "simulations/solar-hexagram.html",
+      "body_hash": "56beb186432a7b41286dfdf507dd9cff384e18464f4a8af419e826753b4ac46c",
+      "chain_hash": "371870d7cf3a389deb81c486412d50af87841369918fae0d4bb671e2efa2d41c",
+      "created": "2026-03-01T15:09:50.014919+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/autopoiesis.js",
+      "body_hash": "7d57a097c583b361ff8f388c782ed516a664c1609c0d6ceae39120c80b2ef093",
+      "chain_hash": "9f79f24accd25014b5bb4401c60a9305a73feb5481d2d59290ba1399ce2084a0",
+      "created": "2026-03-01T15:09:50.015410+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/dodecahedron.js",
+      "body_hash": "56d9f9b9c4fbfd5134b99a960f2035f0608b175b781c31b53cac7559bc61e43d",
+      "chain_hash": "4312477733a9749917452f3b205646d9131e1d30ad45df9950964d13be7e496a",
+      "created": "2026-03-01T15:09:50.015855+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/domains.js",
+      "body_hash": "44c9ffc9fd9af403500b17d8f8cc615290e980d922f29542fd9129726420b326",
+      "chain_hash": "a78662b48674c31c35b9053de386cb4cd22e1fcd2f4fbfac57bf5d17c59558ca",
+      "created": "2026-03-01T15:09:50.016438+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/executor.js",
+      "body_hash": "d58005869fae7569eb6a2e48fc67dc7d913db312d7d8d3401c2b75842cfe1050",
+      "chain_hash": "0c971ad29e2f8753181916e01860ee03031101f35dc67dc1916dde5e8fb0f3a5",
+      "created": "2026-03-01T15:09:50.016901+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/field.js",
+      "body_hash": "ae037223a08a329799813e70b3f2e651d024864b5f2b3fe676f925df936466cf",
+      "chain_hash": "3e7595aed6b3bb6e0cb4dc84edb997e87886ad5e915d4b5ce48478d27132b090",
+      "created": "2026-03-01T15:09:50.017401+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/forge.js",
+      "body_hash": "872d2b1d0e168b0a1d44e24ebf7f03f0c98fe1ddcc673cd9ca90a8f3435c5222",
+      "chain_hash": "0ec3a76a71e6dc8e37a55d347f572c803589453e61bab1efc7b608fb0d36d55a",
+      "created": "2026-03-01T15:09:50.018061+00:00",
+      "version": 2,
+      "creator": "Alberto Valido Delgado",
+      "updated": "2026-03-01T15:10:30.148841+00:00"
+    },
+    {
+      "file": "lib/gateway.js",
+      "body_hash": "ac44474cf16ebef39f57a1479d91a3af7087a34e0d3f1ca98bc03bd69e82fa73",
+      "chain_hash": "9d0621a244c96023a743d837c1f8767e7f1dc0958866fc7511ce74819e0edb64",
+      "created": "2026-03-01T15:09:50.018518+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/harmonics.js",
+      "body_hash": "e0119bc7448423b537d5d5af75e113e38d8cccd0b80e30102ad6f003a72d8c22",
+      "chain_hash": "912b4a7d1816cee1e896b2cdb9c1c5236759f359672072029b11fc94aa5a3f80",
+      "created": "2026-03-01T15:09:50.018991+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/heart.js",
+      "body_hash": "63a4276710a95a6b64e2be0363d2450e35ae18ac644098a45e349183e7b4d526",
+      "chain_hash": "f22df397405f1c8419e51ea5782483928357f979b2c045c4a741915a94bb5a15",
+      "created": "2026-03-01T15:09:50.019419+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/hexagrams.js",
+      "body_hash": "a89d8ca698c95af49d43783e92586b5327033862a203a6c8b9b491a4b0997a87",
+      "chain_hash": "53424be7dbd4682ebdc1061dd5b835dbafa9b89f919ff830bee9f776a3b680e1",
+      "created": "2026-03-01T15:09:50.019925+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/migrate.js",
+      "body_hash": "4a22ae80ed04ac9e1011c9008f19f4e9f4e4ef417491a47c806d5429ac69bdc6",
+      "chain_hash": "72aaab5408c9000225ea307318b6f400d856332123ea34391234eb45265850a0",
+      "created": "2026-03-01T15:09:50.020336+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/nerve.js",
+      "body_hash": "fbdfab90d0117ff2b95e6270b53b5757624749568fd45639f1ee28e39752f362",
+      "chain_hash": "7aacf3c194f32d82645c3561a2b46ce47038b5850b030962011a84e8cb6e27ab",
+      "created": "2026-03-01T15:09:50.020762+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/parser.js",
+      "body_hash": "76fe6a77bfc2f2a3caa18b621472b31eb36b4be0d4df10c5afc38b8ccc88a69d",
+      "chain_hash": "9b65f6d213fe3857c0835a39605ef7025e732ec2fa48ac5f47bb2cca4fe8600c",
+      "created": "2026-03-01T15:09:50.021194+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/polarity.js",
+      "body_hash": "92cf3f6de7d23c143ac6c6ceb317e8137a85ac6bc9acc44d14f88fbecd4bd881",
+      "chain_hash": "441b88a806b45467c1e22bc8e846593b4d2c746470ac6f9398364f1c6c543618",
+      "created": "2026-03-01T15:09:50.021603+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/prima.js",
+      "body_hash": "72bc2b6eb7d1e9d7c383dbbca11e44309625213671257b1070aed6a588dbc157",
+      "chain_hash": "f0c7c48d881db5bffe91f971f092714ccf79e3072f078066172674322b339db8",
+      "created": "2026-03-01T15:09:50.022050+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/self.js",
+      "body_hash": "ddbf2251462bd9a9fe4d456445e1e9bc5737c0aa492af767b578567fc88d607e",
+      "chain_hash": "802e60a9edec4e89b4b871f1f46456ceafcce57507dc5f58a89ff1c9c8559337",
+      "created": "2026-03-01T15:09:50.022462+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/state.js",
+      "body_hash": "86d98f096de037566d6afcab9f2bff12fb8c7c3386fde9a36251602e73793491",
+      "chain_hash": "5f3c58752fbd083c3b2ed6826e7ccb5618f39b3b2ffde9eaf4037bed36d6d50c",
+      "created": "2026-03-01T15:09:50.022874+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "lib/watermark.js",
+      "body_hash": "bf28c928f4a72010da870b9b7fd35e4987f36b98fcc8afbc40165b8ad93193ba",
+      "chain_hash": "2fab50f0b322f1c0c9682ad03da1dfdf9af3b37b0a25c8fafc45360048b1e363",
+      "created": "2026-03-01T15:09:50.023582+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "timemachine/timemachine.html",
+      "body_hash": "5ebc87e635079b25c8215ebae25c42c0282554889a99677b94a35e5e0cb78290",
+      "chain_hash": "f8d7ddda6d431ff478a7e90fded1c30ec1e1bcc8dc3745871c0b6a52a64ef3b3",
+      "created": "2026-03-01T15:09:50.024116+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "empire/server.js",
+      "body_hash": "6c989d61b7e38e14d854401062b705bfe7eacbba47ea2defd3bedddd63b8eb29",
+      "chain_hash": "3cce44c28084fe233daa4954b27951d70e9dd26e5cbf0088d4cd81b48353811e",
+      "created": "2026-03-01T15:09:56.451346+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "empire/public/app.js",
+      "body_hash": "bf7f0404e875747dac591738e8bb0239259a4a1b638f65d5958dd2dd169ec012",
+      "chain_hash": "4bb0134a439e8563eb71866b4e02df123920e92b115565bad2d2f51d1c3ae802",
+      "created": "2026-03-01T15:09:56.452222+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "empire/public/index.html",
+      "body_hash": "9253499a45714b3f3010a5fddef6cfd1a89ebd5d3292c2a41c689a75505770e8",
+      "chain_hash": "faa756982e865e70c91590b0f9a30b4121051662d297039ef0ab633bd92fa7e1",
+      "created": "2026-03-01T15:09:56.452763+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    },
+    {
+      "file": "src/infinite-viewer.html",
+      "body_hash": "46a6522ea545a6e3de5c511964c290b4f4822fe9b3dd0d1eb018251fff39be9c",
+      "chain_hash": "97afae737383947e48b85356cb352bff63015471fda0084fc9c8a9982a059f6b",
+      "created": "2026-03-01T15:09:56.453849+00:00",
+      "version": 2,
+      "creator": "Alberto Valido Delgado",
+      "updated": "2026-03-01T15:33:23.517063+00:00"
+    },
+    {
+      "file": "src/studio.html",
+      "body_hash": "4431e65e2f1917f2e0d8d9038da715a4a998230eec77c47f877315cb276c2a50",
+      "chain_hash": "42430120c0cccdc133fc8aadeec0564c79c0b5b6262e69cc168c3064d7802c06",
+      "created": "2026-03-01T15:09:56.454698+00:00",
+      "version": 1,
+      "creator": "Alberto Valido Delgado"
+    }
+  ],
+  "created": "2026-03-01T15:09:50.003560+00:00"
+}

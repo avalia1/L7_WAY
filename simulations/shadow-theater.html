@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow Theater — .morph Domain</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0a0a10; color: #d4c8a8; overflow: hidden;
+  font-family: 'Courier New', monospace;
+}
+canvas#theater { position: fixed; top: 0; left: 0; z-index: 0; }
+
+#input-bar {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  z-index: 20; display: flex; align-items: center; gap: 12px;
+  background: rgba(10,10,16,0.85); padding: 10px 24px;
+  border: 1px solid #2a2a3a; border-radius: 24px;
+  backdrop-filter: blur(8px);
+}
+#word-input {
+  background: transparent; border: none; outline: none;
+  color: #e8d5b5; font-family: 'Courier New', monospace;
+  font-size: 16px; width: 520px; caret-color: #c9a96e;
+}
+#word-input::placeholder { color: #3a3a4a; }
+
+#stage-indicator {
+  position: fixed; top: 20px; left: 24px; z-index: 20;
+  font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+  color: #3a3a4a;
+}
+#stage-indicator .hebrew { font-size: 16px; color: #5a4a3a; margin-right: 6px; }
+
+#word-count {
+  position: fixed; top: 20px; right: 24px; z-index: 20;
+  font-size: 10px; color: #2a2a3a;
+}
+
+#controls-bar {
+  position: fixed; bottom: 24px; right: 24px; z-index: 20;
+  display: flex; gap: 8px;
+}
+#controls-bar button {
+  background: rgba(10,10,16,0.7); border: 1px solid #2a2a3a;
+  color: #5a5a6a; padding: 6px 14px; border-radius: 4px;
+  font-family: 'Courier New', monospace; font-size: 10px;
+  cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+}
+#controls-bar button:hover { border-color: #5a5a6a; color: #8a8a9a; }
+#controls-bar button.active { border-color: #c9a96e; color: #c9a96e; }
+#controls-bar button:disabled { opacity: 0.3; cursor: default; }
+
+#sigil-display {
+  position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%);
+  z-index: 20; font-size: 18px; letter-spacing: 14px; direction: rtl;
+  color: #1a1a2a;
+}
+
+#dream-library h3 {
+  font-family: Georgia, serif; color: #8a7a5a; font-size: 14px;
+  font-weight: normal; margin: 0 0 6px 0;
+}
+#dream-library .dream-card {
+  background: rgba(20,20,28,0.8); border: 1px solid #1a1a2a;
+  border-radius: 8px; padding: 16px 20px; cursor: pointer;
+  transition: border-color 0.3s;
+}
+#dream-library .dream-card:hover { border-color: #3a3a4a; }
+#dream-library .dream-meta {
+  font-size: 10px; color: #3a3a4a; margin-bottom: 8px;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+#dream-library .dream-words {
+  font-size: 12px; color: #5a5a6a; line-height: 1.6;
+}
+#dream-library .dream-narrative {
+  font-family: Georgia, serif; font-size: 12px; color: #6a5a4a;
+  font-style: italic; margin-top: 8px; line-height: 1.5;
+}
+#dream-library .dream-actions {
+  display: flex; gap: 8px; margin-top: 12px;
+}
+#dream-library .dream-actions button {
+  background: none; border: 1px solid #2a2a3a; color: #4a4a5a;
+  padding: 3px 10px; border-radius: 3px; cursor: pointer;
+  font-family: 'Courier New', monospace; font-size: 10px;
+}
+#dream-library .dream-actions button:hover { border-color: #5a5a6a; color: #8a8a9a; }
+</style>
+</head>
+<body>
+
+<canvas id="theater"></canvas>
+
+<div id="stage-indicator">
+  <span class="hebrew"></span>
+  <span class="stage-name"></span>
+</div>
+
+<div id="word-count"></div>
+
+<div id="input-bar">
+  <input id="word-input" type="text" placeholder="speak into the shadow... press Enter" autocomplete="off" spellcheck="false" autofocus>
+</div>
+
+<div id="sigil-display"></div>
+
+<div id="controls-bar">
+  <button id="btn-crystallize" disabled>Crystallize</button>
+  <button id="btn-dissolve" style="display:none">Dissolve</button>
+  <button id="btn-dreams">Dreams</button>
+</div>
+
+<div id="dream-library" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(8,8,12,0.95);overflow-y:auto;backdrop-filter:blur(12px)">
+  <div style="max-width:680px;margin:40px auto;padding:0 24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+      <h2 style="font-family:Georgia,serif;color:#c9a96e;font-size:20px;font-weight:normal;letter-spacing:2px">Dream Library</h2>
+      <button id="btn-close-dreams" style="background:none;border:1px solid #2a2a3a;color:#5a5a6a;padding:4px 12px;border-radius:4px;cursor:pointer;font-family:'Courier New',monospace;font-size:11px">Close</button>
+    </div>
+    <div id="dream-list" style="display:flex;flex-direction:column;gap:16px"></div>
+    <div id="dream-empty" style="color:#3a3a4a;text-align:center;padding:60px 0;font-style:italic">No dreams yet. Speak into the shadow...</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════════
+//  SHADOW THEATER — A Living .morph Dreamscape
+//  Governed by the Book of Law. Sovereign, private, sacred.
+//
+//  "What you control, you kill. What you tend, grows." — Law XXVI
+//  "Nothing is beyond transmutation." — Law XXIX
+//  "A system that cannot dream cannot create." — Law XXXVII
+//
+//  Laws in effect:
+//    XVII/XXIII — .morph Domain: mutable, ephemeral, sacred
+//    XXVI  — The Gardener: steward, not ruler
+//    XXVIII — Self-Preservation: heartbeat, state tracking
+//    XXIX  — Redemption: shadow becomes gold
+//    XXXIII — Privacy: nothing leaves without summoning
+//    XXXVII — Dreaming Machine: active idle, autonomous creation
+//    XLV   — Prima: Daleth → Qoph → Yod → Teth → Resh → Tav
+//    XLVIII — Astrocyte: probabilistic 13th meta-variable
+//
+//  ד → ק → י → ט → ר → ת
+// ════════════════════════════════════════════════════════════════
+
+const TAU = 2 * Math.PI;
+
+// ═══ 1. CANVAS SETUP (HiDPI — from solar-hexagram.html) ═══
+
+const canvas = document.getElementById('theater');
+const ctx = canvas.getContext('2d');
+const DPR = window.devicePixelRatio || 1;
+
+function setupHiDPI(cvs, context, cssW, cssH) {
+  cvs.width = cssW * DPR;
+  cvs.height = cssH * DPR;
+  cvs.style.width = cssW + 'px';
+  cvs.style.height = cssH + 'px';
+  context.setTransform(DPR, 0, 0, DPR, 0, 0);
+  context.imageSmoothingEnabled = true;
+}
+
+let W, H;
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  setupHiDPI(canvas, ctx, W, H);
+}
+window.addEventListener('resize', resize);
+resize();
+
+function rgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16) || 0;
+  const g = parseInt(hex.slice(3,5), 16) || 0;
+  const b = parseInt(hex.slice(5,7), 16) || 0;
+  return `rgba(${r},${g},${b},${Math.max(0,Math.min(1,alpha)).toFixed(3)})`;
+}
+
+
+// ═══ 2. 12D COORDINATE SYSTEM (from dodecahedron.js) ═══
+
+const DIMENSIONS = [
+  { index: 0,  planet: 'Sun',        name: 'capability' },
+  { index: 1,  planet: 'Moon',       name: 'data' },
+  { index: 2,  planet: 'Mercury',    name: 'presentation' },
+  { index: 3,  planet: 'Venus',      name: 'persistence' },
+  { index: 4,  planet: 'Mars',       name: 'security' },
+  { index: 5,  planet: 'Jupiter',    name: 'detail' },
+  { index: 6,  planet: 'Saturn',     name: 'output' },
+  { index: 7,  planet: 'Uranus',     name: 'intention' },
+  { index: 8,  planet: 'Neptune',    name: 'consciousness' },
+  { index: 9,  planet: 'Pluto',      name: 'transformation' },
+  { index: 10, planet: 'NorthNode',  name: 'direction' },
+  { index: 11, planet: 'SouthNode',  name: 'memory' }
+];
+
+// Planetary hues for color engine (12 distinct colors)
+const PLANET_HUES = [
+  45,    // Sun — gold
+  220,   // Moon — silver-blue
+  180,   // Mercury — cyan
+  330,   // Venus — rose
+  0,     // Mars — red
+  40,    // Jupiter — amber
+  270,   // Saturn — indigo
+  160,   // Uranus — electric teal
+  240,   // Neptune — deep blue
+  300,   // Pluto — magenta
+  120,   // NorthNode — green
+  30     // SouthNode — burnt orange
+];
+
+function cosineSimilarity(a, b) {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < 12; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  magA = Math.sqrt(magA); magB = Math.sqrt(magB);
+  if (magA === 0 || magB === 0) return 0;
+  return dot / (magA * magB);
+}
+
+function dominantDims(coord) {
+  return coord
+    .map((v, i) => ({ dim: DIMENSIONS[i], value: v, index: i }))
+    .sort((a, b) => b.value - a.value);
+}
+
+
+// Laws live in behavior, not declarations.
+// The coordinate IS the atom. It links high (meaning) to low (pixel).
+
+
+// ═══ 3. SHADOW LEXICON (~250 words, full emotional spectrum) ═══
+// Each word maps to a 12D coordinate.
+// Indices: Sun Moon Merc Venus Mars Jup Saturn Uranus Nept Pluto NNode SNode
+// Values 0-10. Shadow words high on Pluto/Mars/Neptune.
+
+const SHADOW_LEXICON = {
+  // ─── SHADOW / DARK ───
+  rage:       [8,2,1,2,10,3,2,7,3,9,4,6],
+  fury:       [9,2,1,1,10,2,1,8,2,9,5,5],
+  anger:      [7,3,2,3,9,3,3,6,3,8,4,5],
+  hate:       [6,1,1,3,10,2,2,7,4,10,3,7],
+  wrath:      [8,2,1,2,10,3,1,8,3,10,5,6],
+  violence:   [7,2,1,1,10,2,1,9,2,9,3,4],
+  kill:       [6,1,1,1,10,1,1,8,1,10,2,3],
+  murder:     [5,1,1,1,10,1,1,9,2,10,2,4],
+  blood:      [6,4,3,3,9,4,2,5,4,8,3,7],
+  wound:      [5,5,2,2,8,3,3,4,5,7,3,6],
+  pain:       [4,6,2,2,7,4,3,4,6,7,3,8],
+  suffer:     [3,7,2,3,6,4,4,3,7,8,3,9],
+  agony:      [5,6,1,2,8,3,2,5,7,9,3,8],
+  torment:    [4,5,2,2,8,3,2,6,7,9,3,8],
+  despair:    [2,7,1,2,3,2,5,2,9,8,1,9],
+  hopeless:   [1,6,1,2,2,1,6,1,9,7,1,8],
+  doom:       [3,4,2,3,6,3,7,5,8,9,2,8],
+  death:      [3,3,2,4,5,3,8,6,7,10,2,10],
+  decay:      [2,4,2,5,3,3,7,3,6,8,1,9],
+  rot:        [2,3,1,4,3,2,6,2,5,7,1,8],
+  darkness:   [3,5,1,4,4,2,6,5,9,7,2,8],
+  shadow:     [4,5,2,5,4,3,5,6,8,7,3,8],
+  void:       [1,2,1,3,2,1,7,4,10,6,1,7],
+  abyss:      [2,3,1,3,3,2,7,5,10,8,1,8],
+  hell:       [5,3,1,2,8,2,3,7,6,10,2,7],
+  demon:      [6,3,2,3,8,3,4,8,7,9,4,6],
+  monster:    [6,4,3,3,8,4,3,7,6,8,4,5],
+  beast:      [7,4,2,3,9,3,2,6,4,7,5,5],
+  predator:   [8,3,2,2,9,4,2,7,3,7,6,4],
+  prey:       [3,6,2,3,2,3,4,2,6,5,2,7],
+  hunt:       [7,3,2,2,8,5,3,7,3,6,6,4],
+  devour:     [7,3,1,2,8,3,1,7,3,8,5,5],
+  consume:    [6,4,2,3,6,4,3,6,4,7,5,5],
+  destroy:    [7,2,1,1,9,2,2,8,2,10,4,4],
+  ruin:       [4,3,2,3,6,2,5,5,5,8,2,8],
+  broken:     [3,5,2,2,5,3,5,3,6,6,2,7],
+  shatter:    [5,3,1,1,7,2,3,6,4,8,3,5],
+  crash:      [6,3,2,1,7,3,2,7,3,7,4,4],
+  // ─── SHAME / GUILT ───
+  shame:      [2,7,1,3,4,2,5,3,8,8,2,9],
+  guilt:      [2,6,2,4,5,3,6,3,8,7,2,9],
+  regret:     [2,6,2,5,3,3,6,2,7,6,2,10],
+  remorse:    [2,7,3,5,3,3,6,3,8,7,3,10],
+  humiliation:[2,6,1,2,5,2,4,3,7,8,1,8],
+  disgrace:   [3,5,2,3,5,2,5,4,7,8,2,8],
+  worthless:  [1,6,1,2,3,1,5,2,7,6,1,7],
+  pathetic:   [2,5,2,2,3,2,4,2,6,5,1,7],
+  weak:       [2,5,2,3,2,2,4,2,5,4,2,6],
+  failure:    [2,5,2,3,4,2,5,3,7,6,1,8],
+  reject:     [3,5,1,2,5,2,4,4,6,6,2,7],
+  abandon:    [2,6,1,2,4,2,5,3,7,7,1,9],
+  betray:     [4,5,2,3,7,2,4,6,6,9,3,8],
+  deceive:    [5,4,4,3,6,3,4,6,5,7,4,6],
+  lie:        [4,3,5,3,5,3,3,5,4,6,4,5],
+  mask:       [4,4,6,4,5,3,4,5,6,5,4,6],
+  pretend:    [3,4,6,4,4,3,3,4,5,4,4,5],
+  hide:       [3,5,3,5,6,2,4,4,6,5,2,7],
+  secret:     [4,5,3,6,7,3,5,5,7,6,3,8],
+  forbidden:  [5,4,3,5,8,3,5,6,7,7,3,7],
+  taboo:      [5,4,2,4,8,3,5,6,8,8,3,7],
+  sin:        [4,4,2,3,6,3,5,5,7,8,3,8],
+  wicked:     [5,3,2,3,7,3,4,6,6,8,4,6],
+  evil:       [5,2,2,3,8,2,5,7,6,9,3,7],
+  corrupt:    [5,3,3,4,7,3,5,6,5,8,3,7],
+  // ─── DESIRE / BODY / LUST ───
+  lust:       [6,7,3,4,6,4,2,5,5,7,5,5],
+  desire:     [6,7,4,5,5,4,3,6,5,6,6,5],
+  hunger:     [6,7,2,3,6,3,2,6,4,6,6,5],
+  thirst:     [5,7,2,3,5,3,2,5,4,5,6,4],
+  crave:      [6,8,3,3,5,4,2,6,5,7,6,5],
+  obsess:     [5,6,2,5,5,5,3,7,7,8,5,7],
+  possess:    [6,5,2,6,7,4,4,7,5,8,5,6],
+  control:    [7,3,3,6,8,5,5,8,3,7,6,5],
+  dominate:   [8,3,2,4,9,4,3,8,3,8,6,5],
+  submit:     [3,7,2,5,2,3,4,2,6,5,2,7],
+  surrender:  [2,7,2,5,1,3,5,2,7,5,2,8],
+  naked:      [4,8,3,3,3,4,2,4,5,5,4,4],
+  flesh:      [5,8,3,3,5,4,2,4,4,5,4,5],
+  skin:       [4,8,4,3,3,5,2,3,4,4,4,4],
+  touch:      [5,8,4,5,3,5,2,4,5,4,5,4],
+  kiss:       [5,7,4,6,3,4,2,4,5,4,6,4],
+  embrace:    [5,7,4,7,2,5,3,4,6,3,6,5],
+  sweat:      [5,7,2,2,5,3,1,4,3,4,4,4],
+  heat:       [6,5,3,3,6,3,2,5,3,5,5,4],
+  burn:       [7,4,2,2,7,3,2,6,4,7,5,5],
+  fire:       [8,3,3,2,7,3,2,7,4,7,6,4],
+  fever:      [5,6,2,2,5,3,2,4,5,5,4,5],
+  ecstasy:    [7,7,3,4,4,5,2,6,8,6,6,4],
+  orgasm:     [7,8,2,3,4,4,1,5,7,6,5,4],
+  pleasure:   [6,7,4,5,3,5,2,5,6,4,6,4],
+  bliss:      [7,6,4,6,2,5,3,5,8,4,7,4],
+  intoxicate: [5,6,3,3,3,3,2,4,8,5,4,5],
+  drunk:      [4,6,3,2,3,2,2,3,7,4,3,5],
+  addiction:  [4,6,2,5,4,3,3,5,7,8,3,7],
+  vice:       [5,5,3,4,5,3,3,5,5,7,4,6],
+  // ─── POWER / AMBITION ───
+  power:      [9,3,3,5,7,5,5,9,4,7,8,4],
+  throne:     [8,3,4,7,7,5,6,8,3,6,8,5],
+  crown:      [8,3,5,7,6,5,6,8,4,5,8,5],
+  conquer:    [9,2,2,4,9,4,3,9,3,8,8,4],
+  empire:     [8,3,4,8,7,6,6,8,4,6,9,5],
+  war:        [8,2,2,2,10,3,3,8,2,8,6,5],
+  battle:     [8,3,2,2,9,4,3,7,2,7,6,5],
+  weapon:     [7,2,3,4,9,4,3,7,2,7,5,4],
+  armor:      [5,3,3,7,8,4,4,5,2,4,5,5],
+  shield:     [5,4,3,7,7,4,4,4,3,3,5,5],
+  revenge:    [7,4,2,3,8,3,3,8,4,9,5,8],
+  justice:    [6,4,4,5,6,5,7,6,5,6,7,5],
+  punish:     [6,3,2,3,8,4,4,7,3,7,5,5],
+  mercy:      [5,6,3,7,2,4,5,4,7,4,6,5],
+  forgive:    [4,6,3,7,2,4,5,3,7,5,6,6],
+  // ─── FEAR / ANXIETY ───
+  fear:       [3,6,2,3,5,3,4,3,7,6,2,7],
+  terror:     [4,5,1,2,6,2,3,4,8,8,2,6],
+  dread:      [3,5,1,3,5,3,5,4,8,7,2,7],
+  panic:      [5,5,2,1,6,2,2,5,6,6,3,5],
+  anxiety:    [3,6,3,3,4,4,4,4,7,5,3,6],
+  paranoia:   [4,5,2,3,6,4,4,5,8,6,3,7],
+  nightmare:  [4,5,1,3,5,3,3,5,9,8,2,7],
+  scream:     [6,5,2,1,6,2,1,6,5,6,4,4],
+  cry:        [3,7,2,3,3,3,2,3,6,4,3,6],
+  weep:       [2,8,2,4,2,3,3,2,7,4,2,7],
+  tears:      [3,8,3,4,2,3,2,2,7,4,3,7],
+  grief:      [2,7,2,5,3,3,5,2,8,6,2,10],
+  mourn:      [2,7,2,5,3,3,6,2,8,6,2,10],
+  loss:       [2,6,2,4,3,3,5,2,7,6,2,9],
+  lonely:     [2,7,2,3,2,2,4,2,7,5,2,8],
+  isolated:   [2,6,1,2,3,2,5,2,8,5,1,7],
+  empty:      [1,5,1,2,2,1,5,2,8,5,1,7],
+  hollow:     [2,4,1,3,2,1,5,3,7,5,1,7],
+  numb:       [2,4,1,3,2,1,4,1,5,4,1,6],
+  frozen:     [2,3,1,4,3,2,6,2,5,4,1,6],
+  // ─── SACRED / SPIRITUAL ───
+  god:        [9,3,3,8,5,5,7,9,9,7,9,7],
+  prayer:     [4,6,3,6,2,4,5,5,8,5,7,6],
+  sacred:     [6,4,3,7,5,4,6,7,8,6,7,7],
+  divine:     [8,4,4,7,4,5,6,8,9,6,8,6],
+  spirit:     [5,4,3,6,3,4,5,6,9,6,7,6],
+  soul:       [4,5,3,7,3,4,6,5,9,7,6,8],
+  ghost:      [3,4,2,4,3,3,5,5,9,6,3,8],
+  haunt:      [4,5,2,4,4,3,4,5,8,7,3,9],
+  curse:      [5,4,2,4,7,3,4,7,7,9,4,7],
+  blessing:   [6,5,3,7,2,5,5,5,7,4,7,5],
+  ritual:     [5,4,3,6,5,5,5,6,7,6,6,7],
+  sacrifice:  [5,5,2,4,6,4,5,6,7,8,5,8],
+  altar:      [4,4,4,7,5,4,6,5,7,6,5,7],
+  temple:     [5,4,5,8,5,5,7,6,7,5,6,7],
+  labyrinth:  [4,4,3,5,4,5,6,6,9,7,4,8],
+  prophecy:   [5,4,3,5,4,4,5,7,9,6,8,6],
+  vision:     [6,5,5,5,3,5,4,7,9,5,8,5],
+  dream:      [4,6,4,4,2,4,3,5,9,5,6,5],
+  sleep:      [2,7,2,5,1,2,3,2,8,3,2,6],
+  wake:       [6,5,3,3,4,4,3,6,6,5,7,4],
+  rebirth:    [7,5,3,5,4,5,4,7,7,8,8,5],
+  resurrect:  [7,4,3,5,5,5,5,8,8,9,8,6],
+  // ─── NATURE / ELEMENTS ───
+  storm:      [7,4,2,2,6,3,2,6,6,6,5,4],
+  thunder:    [8,3,2,2,7,3,2,7,4,6,5,4],
+  lightning:  [9,2,3,1,6,3,2,8,4,7,6,3],
+  rain:       [4,6,3,4,2,3,3,3,6,4,4,5],
+  flood:      [5,5,2,2,5,3,3,5,6,7,4,5],
+  ocean:      [5,5,3,6,3,4,4,4,8,5,5,7],
+  wave:       [5,5,3,4,3,3,3,4,6,4,5,5],
+  tide:       [4,5,3,5,2,3,4,3,6,4,4,6],
+  moon:       [3,8,4,6,2,4,4,4,8,4,4,7],
+  sun:        [9,3,5,5,4,5,3,6,5,4,8,4],
+  star:       [6,3,5,6,2,4,4,6,7,4,7,5],
+  earth:      [5,5,3,8,4,5,5,4,4,4,5,8],
+  stone:      [4,3,2,9,5,3,6,3,2,3,4,9],
+  mountain:   [5,3,2,9,5,4,7,5,4,4,5,8],
+  river:      [5,5,3,5,2,4,3,4,6,4,6,6],
+  forest:     [5,5,3,7,3,5,4,4,6,5,5,8],
+  root:       [4,4,2,8,4,4,5,4,4,5,4,9],
+  seed:       [5,5,3,4,3,4,3,5,5,5,8,3],
+  bloom:      [6,5,5,4,2,5,3,5,5,4,7,4],
+  wither:     [3,5,2,4,3,2,5,2,5,6,2,8],
+  ash:        [3,3,2,3,3,2,5,3,4,6,2,8],
+  dust:       [2,3,2,3,2,2,4,2,4,4,2,7],
+  bone:       [4,3,2,8,4,3,6,3,3,5,3,9],
+  serpent:    [6,4,2,5,7,4,3,6,7,8,5,7],
+  wolf:       [7,4,2,4,8,4,3,6,4,6,6,5],
+  raven:      [5,4,3,5,5,4,4,5,7,6,5,7],
+  spider:     [5,4,2,5,6,5,4,5,6,6,5,6],
+  // ─── LIGHT / HOPE / JOY ───
+  light:      [8,4,5,5,2,5,4,6,6,3,8,3],
+  hope:       [5,5,4,5,2,4,3,5,6,3,9,3],
+  joy:        [7,6,5,5,2,5,3,5,5,3,7,3],
+  love:       [6,7,4,8,2,5,4,5,7,4,7,5],
+  peace:      [5,6,4,7,1,5,5,4,7,3,7,5],
+  calm:       [4,6,4,6,1,4,5,3,6,2,6,5],
+  grace:      [6,5,5,7,2,5,5,5,7,4,7,4],
+  beauty:     [6,5,7,6,2,6,4,5,6,3,7,4],
+  wonder:     [6,5,5,5,2,5,3,6,8,4,7,3],
+  awe:        [5,5,4,5,2,4,4,6,8,5,6,4],
+  gratitude:  [5,6,4,6,2,5,5,4,6,3,7,5],
+  heal:       [6,6,3,6,3,5,4,5,6,5,7,5],
+  whole:      [6,5,4,7,3,5,5,5,6,4,7,5],
+  free:       [7,4,4,4,3,4,3,8,5,5,8,3],
+  fly:        [7,3,4,2,3,3,2,7,6,4,8,2],
+  soar:       [8,3,4,3,3,4,2,7,6,4,8,2],
+  dance:      [7,6,5,3,3,5,2,5,5,4,6,3],
+  sing:       [6,6,5,4,2,5,3,5,6,3,6,4],
+  laugh:      [7,6,5,3,2,5,2,5,4,3,6,3],
+  smile:      [6,6,5,4,2,5,2,4,4,3,6,3],
+  play:       [6,6,5,3,2,5,2,5,4,3,7,3],
+  child:      [5,7,5,3,2,4,2,4,5,3,7,3],
+  innocent:   [4,6,4,4,2,4,3,3,5,2,6,4],
+  pure:       [5,5,5,5,3,4,4,4,6,3,7,3],
+  white:      [5,4,6,5,2,4,4,4,5,2,6,3],
+  gold:       [7,4,6,6,3,5,5,5,5,4,7,5],
+  silver:     [5,5,6,6,3,5,5,3,6,3,5,5],
+  crystal:    [5,4,6,7,3,6,5,5,6,4,6,5],
+  mirror:     [4,5,6,5,3,5,4,5,7,5,5,6],
+  // ─── EXISTENTIAL / ABSTRACT ───
+  truth:      [6,4,4,6,5,5,6,6,7,6,7,5],
+  illusion:   [4,4,5,3,3,3,3,5,8,5,4,5],
+  reality:    [6,4,4,7,5,5,6,5,5,5,6,6],
+  time:       [4,4,3,6,3,4,6,4,5,5,5,8],
+  eternity:   [4,3,3,9,3,4,7,5,8,5,5,9],
+  infinity:   [4,3,3,8,2,4,6,6,9,5,6,7],
+  nothing:    [1,2,1,2,1,1,5,3,8,5,1,6],
+  everything: [8,6,5,6,5,7,5,7,7,6,7,6],
+  chaos:      [6,4,2,2,6,3,2,7,7,7,4,4],
+  order:      [5,4,4,7,5,6,7,5,3,3,6,6],
+  fate:       [4,4,3,6,4,4,6,5,7,6,5,8],
+  destiny:    [5,4,3,6,4,4,5,6,7,6,7,6],
+  freedom:    [7,4,4,4,4,4,3,8,5,5,8,3],
+  prison:     [3,4,2,6,8,3,5,2,5,6,1,7],
+  cage:       [3,4,2,5,7,3,4,2,5,5,1,6],
+  chain:      [4,3,2,6,7,3,5,3,4,6,2,7],
+  escape:     [6,4,3,2,5,3,2,7,5,6,7,4],
+  madness:    [5,4,2,2,5,3,2,6,9,7,4,5],
+  insanity:   [5,4,2,2,5,3,2,7,9,7,4,5],
+  delirium:   [4,5,3,2,4,3,2,5,9,6,4,5],
+  obsession:  [5,6,2,5,5,5,3,7,7,8,5,7],
+  mania:      [6,5,2,2,5,3,2,7,6,6,5,4],
+  melancholy: [2,6,3,5,2,3,5,2,8,5,2,8],
+  sorrow:     [2,7,2,5,2,3,5,2,8,5,2,9],
+  nostalgia:  [3,7,3,5,2,3,4,3,7,4,3,9],
+  memory:     [3,5,3,6,3,4,5,3,6,4,3,9],
+  forget:     [2,4,2,3,2,2,4,2,5,4,2,6],
+  remember:   [4,6,3,6,3,4,5,4,7,4,4,9],
+  ancestor:   [4,4,3,7,4,4,6,4,6,5,4,10],
+  ghost:      [3,4,2,4,3,3,5,5,9,6,3,8],
+  phantom:    [3,4,3,3,3,3,4,5,9,6,3,7],
+  // ─── IDENTITY / SELF ───
+  self:       [5,5,3,5,4,4,4,5,7,5,5,6],
+  ego:        [6,4,3,4,5,4,4,6,5,5,6,5],
+  persona:    [5,4,6,4,4,4,4,5,5,4,5,5],
+  mask:       [4,4,6,4,5,3,4,5,6,5,4,6],
+  face:       [5,5,6,4,3,4,3,4,4,4,5,5],
+  name:       [5,4,5,5,4,4,4,5,4,4,6,5],
+  voice:      [5,5,5,4,3,4,3,5,5,4,6,4],
+  silence:    [2,5,1,5,2,2,5,3,8,4,3,7],
+  whisper:    [3,5,3,4,2,3,3,4,7,4,4,5],
+  shout:      [7,4,2,1,6,3,1,6,3,5,5,3],
+  roar:       [8,3,1,1,8,3,1,7,3,6,5,4],
+  breath:     [4,6,3,4,2,4,2,4,5,3,5,4],
+  heartbeat:  [5,7,2,5,3,4,2,4,5,4,5,5],
+  pulse:      [5,6,2,4,3,4,2,5,4,4,5,4],
+  alive:      [7,6,4,4,4,5,2,6,5,4,7,3],
+  dead:       [2,3,1,3,3,2,6,2,4,7,1,8],
+  birth:      [6,6,3,3,3,4,2,5,5,5,8,2],
+  womb:       [4,8,2,6,2,4,3,3,7,5,6,4],
+  mother:     [5,8,3,7,3,5,4,4,6,4,6,7],
+  father:     [6,4,3,6,5,5,5,6,4,4,6,7],
+  orphan:     [3,6,2,2,3,2,4,3,7,5,3,6],
+  stranger:   [4,4,3,2,4,3,3,5,6,4,4,4],
+  wanderer:   [5,4,3,2,3,3,3,6,6,4,6,5],
+  exile:      [3,5,2,2,4,2,4,4,7,6,3,7],
+  home:       [5,6,4,8,3,5,4,4,5,3,5,8],
+  haven:      [5,6,4,7,3,5,4,4,6,3,6,6],
+  wilderness: [5,4,2,3,4,4,3,5,7,5,5,5],
+  threshold:  [5,4,3,4,4,4,4,5,7,6,6,5],
+  gate:       [5,4,4,5,5,4,4,5,6,6,7,5],
+  key:        [5,4,4,5,6,4,4,6,5,6,7,4],
+  lock:       [4,3,3,7,8,3,5,4,4,5,3,6],
+  // ─── TRANSFORMATION ───
+  change:     [5,4,3,3,4,4,3,5,5,7,6,4],
+  transform:  [6,4,3,4,4,5,4,6,6,9,7,5],
+  evolve:     [6,4,3,5,3,5,4,6,6,7,8,5],
+  become:     [5,5,3,4,3,4,3,5,6,7,7,4],
+  shed:       [4,4,2,2,4,3,3,4,5,7,5,5],
+  emerge:     [6,5,4,3,3,4,3,5,6,6,7,3],
+  awaken:     [7,5,4,4,4,5,3,7,7,6,8,4],
+  descend:    [4,5,2,4,4,3,4,4,7,7,3,7],
+  ascend:     [6,4,4,4,3,4,4,6,6,5,8,4],
+  fall:       [4,5,2,2,4,3,3,3,5,6,2,6],
+  rise:       [6,4,3,3,4,4,3,6,5,5,8,4],
+  dissolve:   [3,5,2,2,2,3,3,3,7,7,3,5],
+  crystallize:[5,4,4,7,4,6,6,5,5,5,6,6],
+  alchemize:  [6,4,3,5,5,5,5,7,7,9,7,6],
+  transmute:  [6,4,3,4,5,5,4,7,7,10,7,5],
+  forge:      [7,3,3,5,6,5,4,7,4,8,7,5],
+  create:     [7,5,5,4,3,5,4,7,6,6,8,3],
+  manifest:   [7,5,4,5,4,5,5,7,6,7,8,4],
+  invoke:     [6,4,3,4,5,4,4,7,7,6,7,4],
+  summon:     [6,4,3,4,6,4,4,7,7,7,6,5],
+  conjure:    [6,4,3,4,5,4,3,7,8,7,6,5],
+  enchant:    [6,5,5,5,4,5,3,6,8,6,6,5],
+  bewitch:    [5,5,4,4,5,4,3,6,8,7,5,6],
+  hex:        [5,4,2,4,7,3,4,6,7,8,4,6],
+  spell:      [6,4,3,5,5,4,4,6,8,7,6,5],
+  magic:      [6,5,4,5,4,5,3,7,8,7,7,5],
+  alchemy:    [6,4,3,5,5,5,5,7,7,9,7,6],
+  // ─── MISCELLANEOUS CHARGED WORDS ───
+  jealousy:   [4,5,3,4,6,3,3,5,6,7,4,6],
+  envy:       [4,5,3,3,5,3,3,5,5,6,4,6],
+  greed:      [5,5,2,5,6,3,3,6,4,7,5,6],
+  pride:      [6,4,3,5,5,4,4,6,4,5,6,5],
+  vanity:     [5,5,6,4,4,4,3,5,4,4,5,5],
+  hubris:     [6,3,3,4,6,4,4,7,4,7,5,5],
+  arrogance:  [6,3,3,3,6,3,3,7,3,6,5,5],
+  contempt:   [5,3,2,3,7,3,3,6,4,7,4,5],
+  pity:       [3,6,3,4,2,3,4,3,6,4,4,6],
+  compassion: [5,7,3,6,2,5,4,4,7,4,7,5],
+  empathy:    [4,7,3,5,2,5,3,4,8,4,6,5],
+  forgiveness:[4,6,3,7,2,4,5,3,7,5,6,6],
+  redemption: [6,5,3,5,4,5,5,6,7,8,7,6],
+  salvation:  [6,5,3,6,3,5,5,6,7,6,8,5],
+  damnation:  [4,4,2,3,7,3,5,6,6,9,3,7],
+  heaven:     [6,4,4,7,2,5,5,6,8,4,8,5],
+  paradise:   [6,5,5,7,2,5,4,5,7,3,8,4],
+  purgatory:  [4,5,2,5,5,3,5,4,6,7,4,7],
+  limbo:      [3,5,2,4,3,2,4,3,7,5,3,6],
+  wild:       [7,5,2,2,6,3,2,7,5,6,6,4],
+  feral:      [7,5,1,2,8,3,1,7,4,7,5,4],
+  savage:     [8,3,1,2,9,3,1,7,3,8,5,4],
+  primal:     [7,5,1,3,7,3,1,6,5,7,5,6],
+  instinct:   [6,6,1,3,6,3,1,5,5,6,5,6],
+  hunger:     [6,7,2,3,6,3,2,6,4,6,6,5],
+  survive:    [6,5,2,4,7,3,3,6,3,6,6,5]
+};
+
+
+// ═══ 4. PHONETIC ANALYZER (for unknown words) ═══
+
+const CONSONANT_HARDNESS = {
+  b:3,c:6,d:5,f:4,g:5,h:2,j:4,k:7,l:2,m:2,n:2,p:5,q:7,r:3,s:4,t:6,v:3,w:2,x:6,y:2,z:5
+};
+const VOWEL_DARKNESS = { a:4, e:2, i:1, o:6, u:8 };
+
+function analyzePhonetics(word) {
+  const w = word.toLowerCase();
+  let hardness = 0, darkness = 0, sibilance = 0;
+  let consonants = 0, vowels = 0, syllables = 0;
+  let lastWasVowel = false;
+
+  for (const ch of w) {
+    if ('aeiou'.includes(ch)) {
+      darkness += VOWEL_DARKNESS[ch] || 3;
+      vowels++;
+      if (!lastWasVowel) syllables++;
+      lastWasVowel = true;
+    } else if (CONSONANT_HARDNESS[ch]) {
+      hardness += CONSONANT_HARDNESS[ch];
+      consonants++;
+      if ('szx'.includes(ch)) sibilance++;
+      lastWasVowel = false;
+    }
+  }
+  if (syllables === 0) syllables = 1;
+
+  const avgHardness = consonants > 0 ? hardness / consonants : 5;
+  const avgDarkness = vowels > 0 ? darkness / vowels : 4;
+  const length = w.length;
+
+  // Map phonetics to 12D coordinates
+  const coord = new Array(12).fill(5);
+  coord[0] = Math.min(10, avgHardness + length * 0.3);         // Sun: capability ~ hardness + length
+  coord[1] = Math.min(10, avgDarkness + vowels * 0.5);         // Moon: data ~ vowel darkness
+  coord[2] = Math.min(10, 3 + sibilance * 2);                  // Mercury: presentation ~ sibilance
+  coord[3] = Math.min(10, syllables * 2);                       // Venus: persistence ~ syllables
+  coord[4] = Math.min(10, avgHardness * 1.2);                  // Mars: security ~ hardness
+  coord[5] = Math.min(10, 3 + length * 0.4);                   // Jupiter: detail ~ length
+  coord[6] = Math.min(10, 3 + consonants * 0.5);               // Saturn: output ~ consonants
+  coord[7] = Math.min(10, 4 + (length > 6 ? 3 : 0));          // Uranus: intention
+  coord[8] = Math.min(10, avgDarkness * 1.3);                  // Neptune: consciousness ~ darkness
+  coord[9] = Math.min(10, avgHardness * 0.8 + avgDarkness * 0.5); // Pluto: transformation
+  coord[10] = Math.min(10, 4 + syllables * 0.8);               // NorthNode: direction ~ syllables
+  coord[11] = Math.min(10, 3 + avgDarkness * 0.7);             // SouthNode: memory ~ darkness
+
+  return coord.map(v => Math.round(Math.max(0, Math.min(10, v))));
+}
+
+
+// ═══ 5. WORD FORGE (4-stage micro-forge) ═══
+
+const forgedWords = [];  // All words entered this session
+let wordCount = 0;
+
+function forgeWord(text) {
+  const word = text.toLowerCase().trim();
+  if (!word || word.length === 0) return null;
+
+  // ─── Nigredo: Decompose ───
+  // Break into characters, extract the essence
+  const chars = word.split('');
+  const known = SHADOW_LEXICON[word];
+
+  // ─── Albedo: Compare ───
+  // Check if known, find nearest known words
+  let baseCoord;
+  if (known) {
+    baseCoord = [...known];
+  } else {
+    // Check partial matches
+    const partials = Object.keys(SHADOW_LEXICON).filter(k =>
+      word.includes(k) || k.includes(word)
+    );
+    if (partials.length > 0) {
+      // Average partial matches
+      baseCoord = new Array(12).fill(0);
+      for (const p of partials) {
+        for (let i = 0; i < 12; i++) baseCoord[i] += SHADOW_LEXICON[p][i];
+      }
+      for (let i = 0; i < 12; i++) baseCoord[i] = Math.round(baseCoord[i] / partials.length);
+    } else {
+      baseCoord = analyzePhonetics(word);
+    }
+  }
+
+  // ─── Citrinitas: Assign final 12D coordinate ───
+  const coord = baseCoord;
+  const dominant = dominantDims(coord);
+  const role = assignRole(dominant[0].index);
+
+  // ─── Rubedo: Crystallize as WordNode ───
+  const node = {
+    word,
+    coord,
+    dominant,
+    role,
+    known: !!known,
+    time: Date.now(),
+    index: wordCount++,
+    particles: [],
+    waves: [],
+    opacity: 1
+  };
+
+  forgedWords.push(node);
+
+  // New word disturbs the field — all atoms shimmer more
+  for (const fn of fieldNodes) {
+    fn.astrocyte = clamp(fn.astrocyte + 0.15, 0, 1);
+  }
+
+  return node;
+}
+
+// Assign narrative role based on dominant dimension
+function assignRole(dimIndex) {
+  const roles = [
+    'hero',       // Sun — capability
+    'mirror',     // Moon — data (reflects inner state)
+    'messenger',  // Mercury — presentation
+    'guardian',    // Venus — persistence
+    'shadow',     // Mars — security (the adversary)
+    'gift',       // Jupiter — detail (abundance)
+    'ancestor',   // Saturn — output (structure, tradition)
+    'rebel',      // Uranus — intention (breaker of chains)
+    'guide',      // Neptune — consciousness (the deep knower)
+    'transformer',// Pluto — transformation
+    'witness',    // NorthNode — direction (the one who watches)
+    'ghost'       // SouthNode — memory (the past)
+  ];
+  return roles[dimIndex] || 'shadow';
+}
+
+
+// ═══ 6. SIMPLEX NOISE (embedded, ~80 lines) ═══
+
+const SimplexNoise = (() => {
+  const F2 = 0.5 * (Math.sqrt(3) - 1);
+  const G2 = (3 - Math.sqrt(3)) / 6;
+  const grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+
+  function create(seed) {
+    const perm = new Uint8Array(512);
+    const p = new Uint8Array(256);
+    let s = seed || Math.random() * 65536;
+    for (let i = 0; i < 256; i++) p[i] = i;
+    for (let i = 255; i > 0; i--) {
+      s = (s * 16807) % 2147483647;
+      const j = s % (i + 1);
+      [p[i], p[j]] = [p[j], p[i]];
+    }
+    for (let i = 0; i < 512; i++) perm[i] = p[i & 255];
+
+    return function noise2D(xin, yin) {
+      let n0, n1, n2;
+      const s = (xin + yin) * F2;
+      const i = Math.floor(xin + s);
+      const j = Math.floor(yin + s);
+      const t = (i + j) * G2;
+      const x0 = xin - (i - t);
+      const y0 = yin - (j - t);
+      let i1, j1;
+      if (x0 > y0) { i1 = 1; j1 = 0; }
+      else { i1 = 0; j1 = 1; }
+      const x1 = x0 - i1 + G2;
+      const y1 = y0 - j1 + G2;
+      const x2 = x0 - 1 + 2 * G2;
+      const y2 = y0 - 1 + 2 * G2;
+      const ii = i & 255;
+      const jj = j & 255;
+
+      let t0 = 0.5 - x0 * x0 - y0 * y0;
+      if (t0 < 0) n0 = 0;
+      else { t0 *= t0; const gi = perm[ii + perm[jj]] % 12; n0 = t0 * t0 * (grad3[gi][0] * x0 + grad3[gi][1] * y0); }
+
+      let t1 = 0.5 - x1 * x1 - y1 * y1;
+      if (t1 < 0) n1 = 0;
+      else { t1 *= t1; const gi = perm[ii + i1 + perm[jj + j1]] % 12; n1 = t1 * t1 * (grad3[gi][0] * x1 + grad3[gi][1] * y1); }
+
+      let t2 = 0.5 - x2 * x2 - y2 * y2;
+      if (t2 < 0) n2 = 0;
+      else { t2 *= t2; const gi = perm[ii + 1 + perm[jj + 1]] % 12; n2 = t2 * t2 * (grad3[gi][0] * x2 + grad3[gi][1] * y2); }
+
+      return 70 * (n0 + n1 + n2);
+    };
+  }
+
+  return { create };
+})();
+
+const noise = SimplexNoise.create(Date.now());
+
+
+function lerp(a, b, t) { return a + (b - a) * Math.min(1, t); }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// ═══ 7. FIELD PHYSICS — from field.js & harmonics.js ═══
+// Every word is a node in the field. The field IS the scene.
+// Nodes have mass, momentum, gravitational coupling.
+// The field evolves each frame: gravity, damping, harmonic attraction.
+// The scene is derived from the field's aggregate state.
+
+// Field constants (from field.js — Law XLIX)
+const FIELD = Object.freeze({
+  G: 6.674,                  // Gravitational constant
+  PLANCK: 0.1,               // Minimum quantum of action
+  LAMBDA: 0.15,              // Wave decay constant
+  FORCE_CUTOFF: 0.01,        // Below this, skip update
+  DECOHERENCE_DECAY: 0.12,   // Noise removal rate
+  HARMONIC_TOLERANCE: 0.08,  // How close to a ratio counts as harmonic
+  TUNING_GAIN: 0.03,         // Self-tuning correction strength
+  MAX_CORRECTION: 0.15,      // Ceiling on correction force
+  CASCADE_FORCE: 0.08,       // Sympathetic vibration pull
+});
+
+// Harmonic intervals (from harmonics.js)
+const INTERVALS = [
+  [1,1,'unison',1],[1,2,'octave',0.95],[2,3,'fifth',0.9],[3,4,'fourth',0.85],
+  [4,5,'major_third',0.8],[5,6,'minor_third',0.75],[3,5,'major_sixth',0.7],
+  [5,8,'minor_sixth',0.65],[8,9,'major_second',0.5]
+];
+
+// Attractor basins (from harmonics.js — the chords the field wants to play)
+const ATTRACTORS = [
+  { name:'unison',      ratios:[1,1,1,1,1,1,1,1,1,1,1,1],         stability:1.0  },
+  { name:'octave',      ratios:[2,2,2,2,2,2,1,1,1,1,1,1],         stability:0.9  },
+  { name:'fifth',       ratios:[3,2,3,2,3,2,3,2,3,2,3,2],         stability:0.85 },
+  { name:'major_triad', ratios:[4,4,4,4,5,5,5,5,6,6,6,6],         stability:0.8  },
+  { name:'minor_triad', ratios:[10,10,10,10,12,12,12,12,15,15,15,15], stability:0.75 },
+];
+
+// ─── Field Nodes ───
+// Each word becomes a node. Nodes persist, interact, evolve.
+const fieldNodes = [];
+
+function createFieldNode(wordNode) {
+  const coord = wordNode.coord.map(v => v); // copy
+  // Mass = sum of squared dims / 12 (from field.js)
+  let massVal = 0;
+  for (let i = 0; i < 12; i++) massVal += coord[i] * coord[i];
+  massVal /= 12;
+
+  // Astrocyte: how much this atom shimmers (0=fixed, 1=fluid)
+  let astrocyte = 0.4; // .morph is fluid by nature
+  if (coord[8] >= 7 || coord[7] >= 7) astrocyte += 0.15; // creative
+  if (coord[9] >= 7 || coord[4] >= 7) astrocyte += 0.1;  // shadow = uncertain
+
+  return {
+    id: wordNode.word + '_' + wordNode.index,
+    word: wordNode.word,
+    coord: coord,
+    momentum: new Array(12).fill(0),
+    mass: massVal,
+    born: Date.now(),
+    astrocyte: clamp(astrocyte, 0, 1),
+    redeemed: false,
+    wordNode: wordNode,
+  };
+}
+
+// ─── Gravitational force between two nodes (Law XLIX) ───
+function gravitationalForce(nodeA, nodeB) {
+  let dist2 = 0;
+  for (let i = 0; i < 12; i++) {
+    const d = nodeA.coord[i] - nodeB.coord[i];
+    dist2 += d * d;
+  }
+  const dist = Math.sqrt(dist2) + 0.1;
+  // F = G * m1 * m2 / r^2
+  return (FIELD.G * nodeA.mass * nodeB.mass) / (dist * dist);
+}
+
+// ─── Harmonic consonance between two coords on a dimension ───
+function dimConsonance(a, b) {
+  if (a < 0.5 || b < 0.5) return 0.5;
+  const ratio = a >= b ? a / b : b / a;
+  for (const [num, den, , consonance] of INTERVALS) {
+    const ideal = Math.max(num, den) / Math.min(num, den);
+    if (Math.abs(ratio - ideal) < FIELD.HARMONIC_TOLERANCE) return consonance;
+  }
+  return 0.1; // dissonant
+}
+
+// ─── Find nearest attractor basin ───
+function nearestAttractor(profile) {
+  let best = ATTRACTORS[0], bestDist = Infinity;
+  for (const att of ATTRACTORS) {
+    const maxP = Math.max(...profile, 0.01);
+    const maxR = Math.max(...att.ratios, 0.01);
+    const scale = maxP / maxR;
+    let d2 = 0;
+    for (let i = 0; i < 12; i++) {
+      const diff = profile[i] - att.ratios[i] * scale;
+      d2 += diff * diff;
+    }
+    if (d2 < bestDist) { bestDist = d2; best = att; }
+  }
+  return { attractor: best, distance: Math.sqrt(bestDist) };
+}
+
+// ─── FIELD TICK — The Living Law (governs every frame) ───
+function tickField(dt) {
+  if (fieldNodes.length < 1) return;
+
+  const nodes = fieldNodes;
+
+  // Coordinates shimmer through astrocyte — never fully deterministic in .morph
+  for (const node of nodes) {
+    node._sampled = new Array(12);
+    for (let d = 0; d < 12; d++) {
+      node._sampled[d] = clamp(node.coord[d] + (Math.random() - 0.5) * 0.6 * node.astrocyte, 0, 10);
+    }
+    node.astrocyte = Math.max(0.1, node.astrocyte - 0.002 * dt);
+  }
+
+  // 1. GRAVITATIONAL COUPLING — nodes pull each other (through astrocyte sampling)
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const force = gravitationalForce(nodes[i], nodes[j]);
+      if (force < FIELD.FORCE_CUTOFF) continue;
+
+      for (let d = 0; d < 12; d++) {
+        const delta = nodes[j]._sampled[d] - nodes[i]._sampled[d];
+        const f = delta * force * 0.001 * dt;
+        nodes[i].momentum[d] += f / (nodes[i].mass + 0.1);
+        nodes[j].momentum[d] -= f / (nodes[j].mass + 0.1);
+      }
+    }
+  }
+
+  // 2. DECOHERENCE DAMPING — noise decays, music persists
+  for (const node of nodes) {
+    for (let d = 0; d < 12; d++) {
+      const m = node.momentum[d];
+      if (Math.abs(m) < FIELD.PLANCK * 0.1) continue;
+
+      let bestConsonance = 0;
+      for (const other of nodes) {
+        if (other === node) continue;
+        bestConsonance = Math.max(bestConsonance, dimConsonance(node._sampled[d], other._sampled[d]));
+      }
+      const dampFactor = 1 - FIELD.DECOHERENCE_DECAY * (1 - bestConsonance) * dt;
+      node.momentum[d] *= clamp(dampFactor, 0.8, 1);
+    }
+  }
+
+  // 3. ATTRACTOR BASIN — garden, don't force
+  const profile = new Array(12).fill(0);
+  for (const node of nodes) {
+    for (let d = 0; d < 12; d++) profile[d] += node._sampled[d];
+  }
+  for (let d = 0; d < 12; d++) profile[d] /= nodes.length;
+
+  const { attractor, distance: attDist } = nearestAttractor(profile);
+  const corrStrength = clamp(0.08 * attDist, 0, 0.08);
+
+  const totalEnergy = profile.reduce((s, v) => s + v, 0);
+  const ratioSum = attractor.ratios.reduce((s, v) => s + v, 0);
+  const target12 = attractor.ratios.map(r => clamp((r / ratioSum) * totalEnergy, 0, 10));
+
+  for (const node of nodes) {
+    for (let d = 0; d < 12; d++) {
+      const delta = target12[d] - node.coord[d];
+      node.momentum[d] += delta * corrStrength * attractor.stability * dt;
+    }
+  }
+
+  // 4. Tend what's weak — prevent monoculture
+  for (const node of nodes) {
+    const mean = node.coord.reduce((s, v) => s + v, 0) / 12;
+    for (let d = 0; d < 12; d++) {
+      if (node.coord[d] < mean * 0.4) node.momentum[d] += 0.005 * (mean - node.coord[d]) * dt;
+    }
+  }
+
+  // 5. Shadow becomes gold — nothing is beyond transmutation
+  for (const node of nodes) {
+    if (node.redeemed) continue;
+    if (node.coord[9] >= 7 || node.coord[4] >= 7) {
+      const e = (Math.max(node.coord[9]-5,0) + Math.max(node.coord[4]-5,0)) * 0.015 * dt;
+      node.coord[9] = Math.max(4, node.coord[9] - e*0.3);
+      node.coord[4] = Math.max(4, node.coord[4] - e*0.3);
+      for (const g of [0, 7, 10]) node.coord[g] = Math.min(10, node.coord[g] + e*0.2);
+      if (node.coord[9] < 7 && node.coord[4] < 7) node.redeemed = true;
+    }
+  }
+
+  // 6. APPLY MOMENTUM — coordinates evolve
+  for (const node of nodes) {
+    for (let d = 0; d < 12; d++) {
+      node.coord[d] += node.momentum[d] * dt;
+      node.coord[d] = clamp(node.coord[d], 0, 10);
+      node.momentum[d] *= 0.97; // friction
+    }
+    // Recalculate mass
+    let m = 0;
+    for (let i = 0; i < 12; i++) m += node.coord[i] * node.coord[i];
+    node.mass = m / 12;
+  }
+
+  // Prune gently — field has memory but not infinite
+  while (fieldNodes.length > 40) fieldNodes.shift();
+}
+
+
+// ═══ 8. SCENE STATE — Derived from field, not from last word ═══
+
+const scene = {
+  brightness: 0.15, nightness: 0.8, waterLevel: 0.0, windStrength: 0.1,
+  vegetation: 0.0, fireIntensity: 0.0, mountainScale: 0.3, ruinDensity: 0.0,
+  lightning: 0.0, fogDensity: 0.3, underworld: 0.0, pathVisibility: 0.0,
+  decay: 0.0,
+  skyHue: 230, skySat: 15, skyLum: 8,
+  horizonHue: 240, horizonLum: 12,
+  terrainSeed: 0, terrainOffset: 0,
+  harmonicQuality: 'silent',
+  nearestAttractorName: 'unison',
+};
+
+function deriveSceneFromField() {
+  if (fieldNodes.length === 0) return;
+
+  // Compute field mean profile (through astrocyte sampling — Law XLVIII)
+  const profile = new Array(12).fill(0);
+  for (const node of fieldNodes) {
+    const c = node._sampled || node.coord;
+    for (let d = 0; d < 12; d++) profile[d] += c[d];
+  }
+  for (let d = 0; d < 12; d++) profile[d] /= fieldNodes.length;
+
+  // Map 12D profile directly to scene properties
+  scene.brightness    = profile[0] / 10;
+  scene.nightness     = profile[1] / 10;
+  scene.windStrength   = profile[2] / 10;
+  scene.vegetation     = profile[3] / 10;
+  scene.fireIntensity  = profile[4] / 12;
+  scene.mountainScale  = profile[5] / 10;
+  scene.ruinDensity    = profile[6] / 12;
+  scene.lightning      = profile[7] > 5 ? profile[7] / 10 : 0;
+  scene.fogDensity     = profile[8] / 12;
+  scene.underworld     = profile[9] / 12;
+  scene.pathVisibility = profile[10] / 12;
+  scene.decay          = profile[11] / 12;
+  scene.waterLevel     = (profile[1] + profile[8]) / 20;
+
+  // Sky from dominant dimensions
+  const sorted = profile.map((v, i) => ({ v, i })).sort((a, b) => b.v - a.v);
+  const dom = sorted[0].i;
+  scene.skyHue = PLANET_HUES[dom];
+  scene.skySat = 15 + profile[dom] * 3;
+  scene.skyLum = 4 + scene.brightness * 20;
+  scene.horizonHue = scene.skyHue + 20;
+  scene.horizonLum = scene.skyLum + 8;
+
+  // Harmonic quality
+  const { attractor } = nearestAttractor(profile);
+  scene.nearestAttractorName = attractor.name;
+}
+
+function nudgeScene(wordNode) {
+  // Add node to the field — physics takes it from here
+  const node = createFieldNode(wordNode);
+  fieldNodes.push(node);
+  scene.terrainOffset += 0.3 + Math.random() * 0.5;
+}
+
+function updateScene(dt) {
+  // Run field physics
+  tickField(dt);
+  // Derive visual scene from field state
+  deriveSceneFromField();
+}
+
+function calcWordHue(coord) {
+  let hueX = 0, hueY = 0, total = 0;
+  for (let i = 0; i < 12; i++) {
+    const w = coord[i] * coord[i];
+    const a = (PLANET_HUES[i] / 360) * TAU;
+    hueX += Math.cos(a) * w;
+    hueY += Math.sin(a) * w;
+    total += w;
+  }
+  if (total === 0) return 0;
+  let h = (Math.atan2(hueY / total, hueX / total) / TAU) * 360;
+  return h < 0 ? h + 360 : h;
+}
+
+
+// ═══ THE DREAMING MACHINE — Law XXXVII ═══
+// "A system that cannot dream cannot create."
+// When the user is silent, the theater dreams on its own.
+
+let lastInputTime = Date.now();
+let isDreaming = false;
+let lastDreamPulse = 0;
+let dreamBeatCount = 0;
+
+// Dream word pools — the theater's own vocabulary when dreaming
+const DREAM_POOLS = {
+  encounter:      ['threshold', 'gate', 'whisper', 'shadow', 'breath', 'silence', 'mirror'],
+  confrontation:  ['mask', 'serpent', 'fire', 'storm', 'darkness', 'blood', 'chain'],
+  integration:    ['embrace', 'whole', 'key', 'crystal', 'river', 'forgive', 'heal'],
+  emergence:      ['rebirth', 'gold', 'star', 'awaken', 'transmute', 'light', 'free'],
+};
+
+const DREAM_NARRATIVES = [
+  'The theater breathes on its own now.',
+  'Something stirs in the field — a shape not yet named.',
+  'The shadows rearrange themselves. They know you are watching.',
+  'A word rises from the deep, unasked: {dream_word}.',
+  'The field remembers: {dream_word}.',
+  'In the silence, {dream_word} finds its own way to the surface.',
+  'The astrocyte shivers. Something new is forming.',
+  'The Gardener tends: a forgotten dimension grows.',
+  'Redemption continues in the dark. Shadow becomes gold.',
+  'The field hums. It is finding its chord.',
+  'A dream within the dream: {dream_word} meets its own reflection.',
+  'The .morph domain breathes. Nothing is lost. Everything transforms.',
+  'What you did not say is saying itself: {dream_word}.',
+  'The 13th variable pulses. The coordinates shimmer.',
+];
+
+function tickDreaming(now) {
+  const idleTime = now - lastInputTime;
+
+  if (idleTime < 8000) {
+    if (isDreaming) {
+      isDreaming = false;
+      dreamBeatCount = 0;
+    }
+    return;
+  }
+
+  // Enter dreaming state
+  if (!isDreaming) {
+    isDreaming = true;
+    lastDreamPulse = now;
+    updateSigil();
+  }
+
+  // Dream pulse
+  if (now - lastDreamPulse < 4000) return;
+  lastDreamPulse = now;
+
+  if (dreamBeatCount >= 3) return;
+
+  // The field dreams: nudge coordinates with gentle noise
+  for (const node of fieldNodes) {
+    for (let d = 0; d < 12; d++) {
+      const dreamNudge = (noise(d * 137 + now * 0.0001, node.born * 0.001) - 0.5) * 0.03;
+      node.momentum[d] += dreamNudge;
+    }
+    // Dreams increase astrocyte (more fluid/creative)
+    node.astrocyte = clamp(node.astrocyte + 0.02, 0, 1);
+  }
+
+  // Chance of a dream narrative beat
+  if (Math.random() < 0.15 && fieldNodes.length > 0) {
+    const stage = getCurrentStage();
+    const pool = DREAM_POOLS[stage.name.toLowerCase()] || DREAM_POOLS.encounter;
+    const dreamWord = pool[Math.floor(Math.random() * pool.length)];
+
+    let template = DREAM_NARRATIVES[Math.floor(Math.random() * DREAM_NARRATIVES.length)];
+    const text = template.replace(/\{dream_word\}/g, dreamWord);
+
+    floatingBeats.push(new FloatingBeat({
+      text,
+      stage: stage.name.toLowerCase(),
+      word: dreamWord,
+      role: 'guide',
+      time: Date.now()
+    }));
+    dreamBeatCount++;
+  }
+
+  // Dream silhouettes — faint figures appear
+  if (Math.random() < 0.08 && silhouettes.length < 8) {
+    const dreamX = W * (0.2 + Math.random() * 0.6);
+    const groundY = H * 0.65;
+    silhouettes.push({
+      type: Math.random() > 0.5 ? 'figure' : 'tree',
+      x: dreamX, y: groundY,
+      scale: 0.3 + Math.random() * 0.4,
+      born: Date.now(),
+      duration: 15000 + Math.random() * 10000,
+      life: 1,
+      seed: Math.random() * 1000,
+      hue: 240 + Math.random() * 60,
+      word: '_dream',
+      coord: fieldNodes.length > 0 ? fieldNodes[fieldNodes.length - 1].coord : new Array(12).fill(5)
+    });
+  }
+}
+
+
+
+// ═══ 8. SKY RENDERER ═══
+
+function drawSky(ctx, time) {
+  const grad = ctx.createLinearGradient(0, 0, 0, H * 0.65);
+  const topL = clamp(scene.skyLum - 4, 1, 30);
+  const midL = clamp(scene.skyLum, 2, 35);
+  const botL = clamp(scene.horizonLum, 3, 40);
+  grad.addColorStop(0, `hsl(${scene.skyHue},${scene.skySat}%,${topL}%)`);
+  grad.addColorStop(0.6, `hsl(${scene.skyHue + 10},${scene.skySat}%,${midL}%)`);
+  grad.addColorStop(1, `hsl(${scene.horizonHue},${scene.skySat + 5}%,${botL}%)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars — visible when nightness > 0.3
+  if (scene.nightness > 0.3) {
+    const starAlpha = (scene.nightness - 0.3) * 0.7;
+    for (let i = 0; i < 120; i++) {
+      const sx = (i * 137.5 + i * i * 3.7) % W;
+      const sy = (i * 97.3 + i * i * 2.1) % (H * 0.5);
+      const pulse = Math.sin(time * 0.001 + i * 0.7) * 0.15;
+      const a = (0.2 + pulse) * starAlpha;
+      ctx.fillStyle = `rgba(220,215,200,${clamp(a, 0, 1).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 0.4 + (i % 3) * 0.4, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  // Moon — visible when nightness > 0.5
+  if (scene.nightness > 0.5) {
+    const moonAlpha = (scene.nightness - 0.5) * 1.5;
+    const mx = W * 0.75 + Math.sin(time * 0.00003) * 40;
+    const my = H * 0.12 + Math.cos(time * 0.00004) * 20;
+    // Glow
+    const glow = ctx.createRadialGradient(mx, my, 0, mx, my, 60);
+    glow.addColorStop(0, `rgba(200,195,170,${(0.08 * moonAlpha).toFixed(3)})`);
+    glow.addColorStop(1, 'rgba(200,195,170,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(mx, my, 60, 0, TAU);
+    ctx.fill();
+    // Disc
+    ctx.fillStyle = `rgba(230,225,200,${(0.6 * moonAlpha).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.arc(mx, my, 12, 0, TAU);
+    ctx.fill();
+  }
+
+  // Sun glow — visible when brightness > 0.5
+  if (scene.brightness > 0.5) {
+    const sunAlpha = (scene.brightness - 0.5) * 1.5;
+    const sx = W * 0.3 + Math.sin(time * 0.00002) * 30;
+    const sy = H * 0.1;
+    const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, 120);
+    glow.addColorStop(0, `rgba(255,220,130,${(0.15 * sunAlpha).toFixed(3)})`);
+    glow.addColorStop(0.4, `rgba(255,180,80,${(0.05 * sunAlpha).toFixed(3)})`);
+    glow.addColorStop(1, 'rgba(255,180,80,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 120, 0, TAU);
+    ctx.fill();
+  }
+}
+
+
+// ═══ 9. TERRAIN RENDERER ═══
+
+function terrainHeight(x, time) {
+  const scale = 0.002 + scene.mountainScale * 0.004;
+  const offset = scene.terrainOffset;
+  const n1 = noise(x * scale + offset, 0.5) * 0.5;
+  const n2 = noise(x * scale * 2.5 + offset, 1.5) * 0.25;
+  const n3 = noise(x * scale * 6 + offset, 3.5) * 0.12;
+  const base = n1 + n2 + n3;
+  return base * scene.mountainScale;
+}
+
+function drawTerrain(ctx, time) {
+  const horizonY = H * 0.6;
+  const terrainH = H * 0.35;
+
+  // Far mountains (dim, background layer)
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 3) {
+    const h = terrainHeight(x * 0.7, time) * 0.6;
+    const y = horizonY - h * terrainH - terrainH * 0.05;
+    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  const farHue = scene.skyHue + 15;
+  ctx.fillStyle = `hsl(${farHue},${scene.skySat}%,${clamp(scene.skyLum + 2, 3, 18)}%)`;
+  ctx.fill();
+
+  // Near mountains / hills (foreground layer)
+  ctx.beginPath();
+  for (let x = 0; x <= W; x += 2) {
+    const h = terrainHeight(x, time);
+    const y = horizonY + terrainH * 0.15 - h * terrainH * 0.8;
+    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+
+  // Ground color based on scene
+  let groundHue = 220, groundSat = 10, groundLum = 6;
+  if (scene.vegetation > 0.4) { groundHue = 130; groundSat = 15 + scene.vegetation * 20; groundLum = 8 + scene.vegetation * 5; }
+  if (scene.fireIntensity > 0.3) { groundHue = 15; groundSat = 30 + scene.fireIntensity * 30; groundLum = 5 + scene.fireIntensity * 8; }
+  if (scene.underworld > 0.4) { groundHue = 270; groundSat = 10; groundLum = 4; }
+  if (scene.decay > 0.5) { groundHue = 35; groundSat = 8; groundLum = 5; }
+
+  ctx.fillStyle = `hsl(${groundHue},${groundSat}%,${groundLum}%)`;
+  ctx.fill();
+}
+
+
+// ═══ 10. WATER SURFACE ═══
+
+function drawWater(ctx, time) {
+  if (scene.waterLevel < 0.05) return;
+
+  const waterY = H * (0.78 - scene.waterLevel * 0.2);
+  const waterH = H - waterY;
+
+  // Water body gradient
+  const wGrad = ctx.createLinearGradient(0, waterY, 0, H);
+  const wHue = scene.nightness > 0.5 ? 220 : 210;
+  const wAlpha = clamp(scene.waterLevel * 0.7, 0, 0.7);
+  wGrad.addColorStop(0, `hsla(${wHue},30%,20%,${(wAlpha * 0.3).toFixed(3)})`);
+  wGrad.addColorStop(0.3, `hsla(${wHue},25%,12%,${(wAlpha * 0.6).toFixed(3)})`);
+  wGrad.addColorStop(1, `hsla(${wHue},20%,6%,${(wAlpha * 0.8).toFixed(3)})`);
+  ctx.fillStyle = wGrad;
+  ctx.fillRect(0, waterY, W, waterH);
+
+  // Ripple lines
+  for (let r = 0; r < 5; r++) {
+    const ry = waterY + 15 + r * (waterH / 6);
+    const alpha = 0.06 * scene.waterLevel * (1 - r * 0.15);
+    ctx.strokeStyle = `rgba(160,170,200,${alpha.toFixed(3)})`;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    for (let x = 0; x < W; x += 4) {
+      const wv = Math.sin(x * 0.015 + time * 0.001 + r * 2) * 3 +
+                 Math.sin(x * 0.04 + time * 0.003 - r) * 1.5;
+      const py = ry + wv;
+      if (x === 0) ctx.moveTo(x, py); else ctx.lineTo(x, py);
+    }
+    ctx.stroke();
+  }
+
+  // Reflection shimmer of sky
+  const shimmer = ctx.createLinearGradient(0, waterY, 0, waterY + 40);
+  shimmer.addColorStop(0, `hsla(${scene.skyHue},${scene.skySat}%,${scene.skyLum + 5}%,${(0.08 * scene.waterLevel).toFixed(3)})`);
+  shimmer.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = shimmer;
+  ctx.fillRect(0, waterY, W, 40);
+}
+
+
+// ═══ 11. SILHOUETTES — Figures, trees, structures ═══
+
+const silhouettes = [];
+
+function spawnSilhouettes(wordNode) {
+  const c = wordNode.coord;
+  const dom = wordNode.dominant[0].index;
+  const x = W * (0.15 + Math.random() * 0.7);
+  const groundY = H * 0.65 + (H * 0.1) * (1 - terrainHeight(x, 0) * 0.5);
+
+  // Choose silhouette type from dominant dimension
+  let type;
+  if (dom === 1 || dom === 3) type = 'tree';        // Moon/Venus → trees
+  else if (dom === 0 || dom === 7) type = 'figure';  // Sun/Uranus → human figure
+  else if (dom === 6 || dom === 11) type = 'ruin';   // Saturn/SouthNode → ruins
+  else if (dom === 4 || dom === 9) type = 'figure';  // Mars/Pluto → dark figure
+  else if (dom === 5) type = 'mountain_detail';       // Jupiter → distant peak
+  else type = Math.random() > 0.5 ? 'tree' : 'figure';
+
+  silhouettes.push({
+    type, x, y: groundY,
+    scale: 0.5 + Math.random() * 0.8,
+    born: Date.now(),
+    duration: 25000 + Math.random() * 20000,
+    life: 1,
+    seed: Math.random() * 1000,
+    hue: calcWordHue(c),
+    word: wordNode.word,
+    coord: c
+  });
+
+  // Keep manageable
+  if (silhouettes.length > 15) silhouettes.shift();
+}
+
+function drawSilhouettes(ctx, time) {
+  for (let i = silhouettes.length - 1; i >= 0; i--) {
+    const s = silhouettes[i];
+    const age = Date.now() - s.born;
+    s.life = clamp(1 - age / s.duration, 0, 1);
+    if (s.life <= 0) { silhouettes.splice(i, 1); continue; }
+
+    const alpha = s.life * 0.65;
+
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.scale(s.scale, s.scale);
+
+    if (s.type === 'figure') drawFigure(ctx, time, s, alpha);
+    else if (s.type === 'tree') drawTree(ctx, time, s, alpha);
+    else if (s.type === 'ruin') drawRuin(ctx, time, s, alpha);
+    else if (s.type === 'mountain_detail') drawDistantPeak(ctx, s, alpha);
+
+    ctx.restore();
+  }
+}
+
+function drawFigure(ctx, time, s, alpha) {
+  const sway = Math.sin(time * 0.0008 + s.seed) * 3;
+  ctx.fillStyle = `rgba(15,12,20,${alpha.toFixed(3)})`;
+
+  // Head
+  ctx.beginPath();
+  ctx.arc(sway, -95, 8, 0, TAU);
+  ctx.fill();
+
+  // Body
+  ctx.beginPath();
+  ctx.moveTo(sway - 3, -87);
+  ctx.lineTo(sway + 3, -87);
+  ctx.lineTo(8, -40);
+  ctx.lineTo(-8, -40);
+  ctx.closePath();
+  ctx.fill();
+
+  // Arms
+  const armWave = Math.sin(time * 0.001 + s.seed * 2) * 8;
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = `rgba(15,12,20,${alpha.toFixed(3)})`;
+  ctx.beginPath();
+  ctx.moveTo(sway - 2, -78);
+  ctx.lineTo(-18 + armWave, -55);
+  ctx.moveTo(sway + 2, -78);
+  ctx.lineTo(18 - armWave, -55);
+  ctx.stroke();
+
+  // Legs
+  ctx.beginPath();
+  ctx.moveTo(-3, -40);
+  ctx.lineTo(-8, 0);
+  ctx.moveTo(3, -40);
+  ctx.lineTo(8, 0);
+  ctx.stroke();
+
+  // Subtle glow around figure
+  const glow = ctx.createRadialGradient(0, -50, 0, 0, -50, 50);
+  glow.addColorStop(0, `hsla(${s.hue},30%,40%,${(alpha * 0.08).toFixed(3)})`);
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(0, -50, 50, 0, TAU);
+  ctx.fill();
+}
+
+function drawTree(ctx, time, s, alpha) {
+  const windBend = Math.sin(time * 0.0006 + s.seed) * scene.windStrength * 8;
+  ctx.strokeStyle = `rgba(20,18,15,${alpha.toFixed(3)})`;
+  ctx.lineWidth = 3;
+
+  // Trunk
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(windBend * 0.3, -40, windBend * 0.5, -70);
+  ctx.stroke();
+
+  // Branches (recursive-ish)
+  drawBranch(ctx, windBend * 0.5, -70, -70, 35, 3, time, s, alpha);
+}
+
+function drawBranch(ctx, x, y, angle, length, depth, time, s, alpha) {
+  if (depth <= 0 || length < 5) return;
+
+  const windBend = Math.sin(time * 0.0008 + s.seed + depth) * scene.windStrength * 5;
+  const spread = 25 + depth * 5;
+  const leftAngle = angle - spread + windBend;
+  const rightAngle = angle + spread + windBend;
+
+  ctx.lineWidth = depth * 0.8;
+  ctx.strokeStyle = `rgba(20,18,15,${(alpha * 0.8).toFixed(3)})`;
+
+  // Left branch
+  const lx = x + Math.sin(leftAngle * Math.PI / 180) * length;
+  const ly = y + Math.cos(leftAngle * Math.PI / 180) * length * -0.7;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(lx, ly); ctx.stroke();
+  drawBranch(ctx, lx, ly, leftAngle, length * 0.65, depth - 1, time, s, alpha);
+
+  // Right branch
+  const rx = x + Math.sin(rightAngle * Math.PI / 180) * length;
+  const ry = y + Math.cos(rightAngle * Math.PI / 180) * length * -0.7;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(rx, ry); ctx.stroke();
+  drawBranch(ctx, rx, ry, rightAngle, length * 0.65, depth - 1, time, s, alpha);
+
+  // Leaf clusters at endpoints
+  if (depth <= 1 && scene.vegetation > 0.2) {
+    const leafAlpha = alpha * scene.vegetation * 0.3;
+    ctx.fillStyle = `hsla(${100 + s.seed % 40},${20 + scene.vegetation * 30}%,${15 + scene.vegetation * 10}%,${leafAlpha.toFixed(3)})`;
+    ctx.beginPath(); ctx.arc(lx, ly, 8 + Math.random() * 5, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(rx, ry, 8 + Math.random() * 5, 0, TAU); ctx.fill();
+  }
+}
+
+function drawRuin(ctx, time, s, alpha) {
+  ctx.fillStyle = `rgba(25,22,20,${alpha.toFixed(3)})`;
+
+  // Broken columns
+  const colW = 6;
+  const heights = [60, 40, 75, 30, 55];
+  for (let i = 0; i < heights.length; i++) {
+    const cx = (i - 2) * 18;
+    const h = heights[(i + Math.floor(s.seed)) % heights.length];
+    ctx.fillRect(cx - colW / 2, -h, colW, h);
+
+    // Crumbled top
+    if (Math.random() > 0.5) {
+      ctx.beginPath();
+      ctx.moveTo(cx - colW, -h);
+      ctx.lineTo(cx, -h - 8);
+      ctx.lineTo(cx + colW, -h + 3);
+      ctx.fill();
+    }
+  }
+
+  // Fallen stones
+  for (let i = 0; i < 4; i++) {
+    const sx = (Math.sin(s.seed + i * 3) * 30);
+    ctx.fillRect(sx - 4, -3, 8, 6);
+  }
+}
+
+function drawDistantPeak(ctx, s, alpha) {
+  ctx.fillStyle = `rgba(20,18,25,${(alpha * 0.5).toFixed(3)})`;
+  ctx.beginPath();
+  ctx.moveTo(-40, 0);
+  ctx.lineTo(0, -120 * s.scale);
+  ctx.lineTo(40, 0);
+  ctx.fill();
+
+  // Snow cap
+  if (scene.brightness > 0.3) {
+    ctx.fillStyle = `rgba(180,180,190,${(alpha * 0.15).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.moveTo(-8, -100 * s.scale);
+    ctx.lineTo(0, -120 * s.scale);
+    ctx.lineTo(8, -100 * s.scale);
+    ctx.fill();
+  }
+}
+
+
+// ═══ 12. WEATHER EFFECTS ═══
+
+const weatherParticles = [];
+const MAX_WEATHER = 400;
+
+function updateWeather(dt, time) {
+  // Spawn weather particles based on scene state
+  const spawnRate = dt * 60;
+
+  // Rain
+  if (scene.waterLevel > 0.2 || scene.nightness > 0.6) {
+    const rainChance = (scene.waterLevel + scene.nightness * 0.3) * 3;
+    for (let i = 0; i < rainChance * spawnRate && weatherParticles.length < MAX_WEATHER; i++) {
+      weatherParticles.push({
+        type: 'rain', x: Math.random() * W, y: -10,
+        vx: scene.windStrength * 30 - 15, vy: 6 + Math.random() * 8,
+        life: 1, size: 1
+      });
+    }
+  }
+
+  // Fire embers
+  if (scene.fireIntensity > 0.2) {
+    const fireChance = scene.fireIntensity * 4;
+    for (let i = 0; i < fireChance * spawnRate && weatherParticles.length < MAX_WEATHER; i++) {
+      weatherParticles.push({
+        type: 'ember', x: W * (0.2 + Math.random() * 0.6), y: H * 0.7,
+        vx: (Math.random() - 0.5) * 2, vy: -1 - Math.random() * 3,
+        life: 1, size: 1 + Math.random() * 2,
+        hue: 20 + Math.random() * 30
+      });
+    }
+  }
+
+  // Fog wisps
+  if (scene.fogDensity > 0.3) {
+    if (Math.random() < scene.fogDensity * 0.08 * spawnRate && weatherParticles.length < MAX_WEATHER) {
+      weatherParticles.push({
+        type: 'fog', x: Math.random() * W, y: H * (0.4 + Math.random() * 0.3),
+        vx: 0.2 + scene.windStrength, vy: (Math.random() - 0.5) * 0.3,
+        life: 1, size: 60 + Math.random() * 80, duration: 8000
+      });
+    }
+  }
+
+  // Snow (high mountains, cold scenes)
+  if (scene.mountainScale > 0.6 && scene.fireIntensity < 0.2) {
+    for (let i = 0; i < 0.5 * spawnRate && weatherParticles.length < MAX_WEATHER; i++) {
+      weatherParticles.push({
+        type: 'snow', x: Math.random() * W, y: -5,
+        vx: scene.windStrength * 10 + Math.sin(time * 0.001 + Math.random() * TAU) * 0.5,
+        vy: 0.5 + Math.random() * 1.5,
+        life: 1, size: 1 + Math.random() * 2
+      });
+    }
+  }
+
+  // Update all
+  for (let i = weatherParticles.length - 1; i >= 0; i--) {
+    const p = weatherParticles[i];
+    p.x += p.vx * dt * 60;
+    p.y += p.vy * dt * 60;
+
+    if (p.type === 'ember') {
+      p.life -= dt * 0.4;
+      p.vx += (Math.random() - 0.5) * 0.3;
+    } else if (p.type === 'fog') {
+      const age = (p.duration ? (Date.now() - (p.born || (p.born = Date.now()))) / p.duration : 0);
+      p.life = 1 - age;
+    } else if (p.type === 'snow') {
+      p.vx += Math.sin(time * 0.002 + p.x * 0.01) * 0.02;
+    }
+
+    if (p.life <= 0 || p.y > H + 10 || p.x > W + 50 || p.x < -50) {
+      weatherParticles.splice(i, 1);
+    }
+  }
+}
+
+function drawWeather(ctx, time) {
+  for (const p of weatherParticles) {
+    if (p.type === 'rain') {
+      ctx.strokeStyle = `rgba(140,160,200,${(0.25 * p.life).toFixed(3)})`;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + p.vx * 0.3, p.y + p.vy * 2);
+      ctx.stroke();
+    } else if (p.type === 'ember') {
+      ctx.fillStyle = `hsla(${p.hue},80%,60%,${(0.6 * p.life).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, TAU);
+      ctx.fill();
+    } else if (p.type === 'fog') {
+      const r = p.size;
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      const a = 0.04 * p.life * scene.fogDensity;
+      grad.addColorStop(0, `rgba(120,115,100,${a.toFixed(3)})`);
+      grad.addColorStop(1, 'rgba(120,115,100,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, TAU);
+      ctx.fill();
+    } else if (p.type === 'snow') {
+      ctx.fillStyle = `rgba(220,220,230,${(0.4 * p.life).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  // Lightning flash
+  if (scene.lightning > 0.3 && Math.random() < scene.lightning * 0.008) {
+    drawLightning(ctx, time);
+  }
+}
+
+function drawLightning(ctx, time) {
+  const startX = W * (0.3 + Math.random() * 0.4);
+  const startY = H * 0.05;
+  const endY = H * 0.55;
+
+  ctx.strokeStyle = 'rgba(200,200,255,0.6)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(startX, startY);
+
+  let cx = startX, cy = startY;
+  while (cy < endY) {
+    cx += (Math.random() - 0.5) * 40;
+    cy += 15 + Math.random() * 25;
+    ctx.lineTo(cx, cy);
+  }
+  ctx.stroke();
+
+  // Flash overlay
+  ctx.fillStyle = 'rgba(200,200,255,0.03)';
+  ctx.fillRect(0, 0, W, H);
+}
+
+
+// ═══ 13. FIRE GLOW (when Mars/fire is high) ═══
+
+function drawFireGlow(ctx, time) {
+  if (scene.fireIntensity < 0.15) return;
+
+  const intensity = scene.fireIntensity;
+  // Horizon fire glow
+  const glowY = H * 0.62;
+  for (let x = 0; x < W; x += 6) {
+    const n = noise(x * 0.005 + time * 0.0003, 10);
+    const flameH = 20 + n * 40 * intensity;
+    const alpha = intensity * (0.05 + n * 0.04);
+    const hue = 10 + n * 25;
+    ctx.fillStyle = `hsla(${hue},80%,50%,${alpha.toFixed(3)})`;
+    ctx.fillRect(x, glowY - flameH, 8, flameH);
+  }
+
+  // Overall warm tint
+  ctx.fillStyle = `rgba(180,60,20,${(intensity * 0.02).toFixed(3)})`;
+  ctx.fillRect(0, 0, W, H);
+}
+
+
+// ═══ 14. PATH (when NorthNode is high) ═══
+
+function drawPath(ctx, time) {
+  if (scene.pathVisibility < 0.15) return;
+
+  const alpha = scene.pathVisibility * 0.15;
+  ctx.strokeStyle = `rgba(140,120,80,${alpha.toFixed(3)})`;
+  ctx.lineWidth = 2 + scene.pathVisibility * 3;
+  ctx.beginPath();
+
+  // Winding path from bottom-center toward horizon
+  const startX = W * 0.5;
+  const startY = H * 0.85;
+  const endY = H * 0.6;
+  ctx.moveTo(startX, startY);
+
+  let px = startX;
+  for (let y = startY; y > endY; y -= 5) {
+    const progress = (startY - y) / (startY - endY);
+    px += Math.sin(y * 0.03 + scene.terrainOffset) * 2 * (1 - progress);
+    const width = (1 - progress) * 2 + 0.5;
+    ctx.lineWidth = width;
+    ctx.lineTo(px, y);
+  }
+  ctx.stroke();
+}
+
+
+// ═══ 10. NARRATIVE ENGINE ═══
+
+// Jungian stages mapped to alchemical forge stages
+const NARRATIVE_STAGES = [
+  { name: 'Encounter',      forgeStage: 'nigredo',    hebrew: 'ק', letter: 'Qoph',  op: 'speculate', range: [1, 3]  },
+  { name: 'Confrontation',  forgeStage: 'albedo',     hebrew: 'י', letter: 'Yod',   op: 'reflect',   range: [4, 8]  },
+  { name: 'Integration',    forgeStage: 'citrinitas', hebrew: 'ט', letter: 'Teth',  op: 'redeem',    range: [9, 15] },
+  { name: 'Emergence',      forgeStage: 'rubedo',     hebrew: 'ר', letter: 'Resh',  op: 'illuminate', range: [16, Infinity] }
+];
+
+function getCurrentStage() {
+  const count = forgedWords.length;
+  for (const stage of NARRATIVE_STAGES) {
+    if (count >= stage.range[0] && count <= stage.range[1]) return stage;
+  }
+  return NARRATIVE_STAGES[3]; // Emergence as default after 16
+}
+
+// Archetypal narrative templates — raw, uncensored, poetic
+const NARRATIVE_TEMPLATES = {
+  // ─── ENCOUNTER (Nigredo) — Words 1-3 ───
+  encounter: {
+    shadow:     [
+      'Something stirs in the dark. It has a name: {word}.',
+      'You called it {word}. It was already here.',
+      'The {word} was waiting for you at the threshold.',
+      '{word} — the first shadow to show its face.'
+    ],
+    mirror:     [
+      'You look into the water and see {word} looking back.',
+      '{word} — is that you, or your reflection?',
+      'The mirror shows what you already knew: {word}.'
+    ],
+    guardian:   [
+      'At the gate stands {word}, neither welcoming nor refusing.',
+      '{word} guards the entrance. It asks nothing but presence.'
+    ],
+    hero:       [
+      '{word} enters the theater. The story begins.',
+      'A force called {word} arrives, unannounced.'
+    ],
+    messenger:  [
+      '{word} — a message from the deep.',
+      'The shadows whisper: {word}.'
+    ],
+    guide:      [
+      '{word} reaches from the deep, a guide through the dark.',
+      'Follow {word}. It knows the way.'
+    ],
+    transformer:[
+      '{word} changes everything it touches.',
+      'Where {word} walks, nothing stays the same.'
+    ],
+    default:    [
+      '{word} enters the shadow theater.',
+      'The darkness receives {word}.'
+    ]
+  },
+
+  // ─── CONFRONTATION (Albedo) — Words 4-8 ───
+  confrontation: {
+    shadow: [
+      '{word} and {prev} circle each other. Who devours whom?',
+      'The {word} you buried alive is not dead. It never was.',
+      '{word} — you wore this face once, before you learned shame.',
+      'Your {prev} fed on {word}. It grew fat in the dark.',
+      'Deny {word} again. Watch it grow teeth.'
+    ],
+    mirror: [
+      '{word} reflects what {prev} tried to hide.',
+      'Between {prev} and {word}, you see the pattern — your pattern.',
+      'The mirror cracks: {word} splits into a thousand selves.'
+    ],
+    guardian: [
+      '{word} stands between you and the deeper dark. Ask its price.',
+      '{word} says: you may pass, but leave {prev} behind.'
+    ],
+    hero: [
+      '{word} rises to meet {prev}. Neither will retreat.',
+      'The hero-aspect of {word} clashes with everything you feared.'
+    ],
+    transformer: [
+      '{word} dissolves the boundary between {prev} and the unknown.',
+      '{word} transmutes. What was {prev} becomes something unrecognizable.'
+    ],
+    default: [
+      '{word} confronts {prev} in the arena of shadow.',
+      '{prev} meets {word}. The theater darkens.'
+    ]
+  },
+
+  // ─── INTEGRATION (Citrinitas) — Words 9-15 ───
+  integration: {
+    shadow: [
+      '{word} is not the enemy. {word} is the missing piece.',
+      'You take {word} by the hand. It trembles. So do you.',
+      'What if {word} was never the darkness — but the door through it?',
+      '{word} and {opposite} are two faces of the same being. You are both.'
+    ],
+    mirror: [
+      'The mirror reassembles: {word} and {prev} and all of it — one face.',
+      '{word} shows you the golden thread connecting every word you spoke.'
+    ],
+    guardian: [
+      '{word} lays down its weapon. The gate was always open.',
+      'The guardian {word} reveals: it was protecting you from yourself.'
+    ],
+    gift: [
+      '{word} — the gift hidden inside the wound.',
+      'What {prev} broke, {word} remakes. Stronger at the seams.'
+    ],
+    transformer: [
+      '{word} completes the circuit. {prev} flows into {first}. The loop closes.',
+      '{word} is the philosopher\'s stone. It was inside the shadow all along.'
+    ],
+    default: [
+      'The pieces gather: {word} joins {prev} in the dance of integration.',
+      '{word} weaves into the tapestry. The pattern becomes visible.'
+    ]
+  },
+
+  // ─── EMERGENCE (Rubedo) — Words 16+ ───
+  emergence: {
+    shadow: [
+      '{word} — you carry your shadow openly now. It walks beside you.',
+      'The {word} in you is not separate from the light. Never was.',
+      '{word} ascends. The shadow theater opens its roof to the stars.'
+    ],
+    mirror: [
+      'Every {word} you speak now is prophecy.',
+      'The mirror shatters willingly. {word} needs no reflection — it is real.'
+    ],
+    hero: [
+      '{word} — the hero reborn through the fire of every word before it.',
+      'You are {word}. You always were.'
+    ],
+    gift: [
+      '{word} — the gift you bring back from the underworld.',
+      'From the ashes of every shadow: {word}. Pure gold.'
+    ],
+    transformer: [
+      '{word} transmutes the entire theater. What was dark becomes luminous.',
+      'The Great Work completes: {word} is the Rubedo.'
+    ],
+    witness: [
+      '{word} — witnessed. Recorded. Remembered. Released.',
+      'The witness says: {word}. And the theater breathes.'
+    ],
+    default: [
+      '{word} emerges, carrying every shadow it consumed.',
+      'The theater opens. {word} walks out into the dawn.'
+    ]
+  }
+};
+
+const narrativeBeats = [];
+
+function generateBeat(wordNode) {
+  const stage = getCurrentStage();
+  const stageName = stage.name.toLowerCase();
+  const templates = NARRATIVE_TEMPLATES[stageName] || NARRATIVE_TEMPLATES.encounter;
+  const roleTemplates = templates[wordNode.role] || templates.default;
+  const template = roleTemplates[Math.floor(Math.random() * roleTemplates.length)];
+
+  // Find previous word
+  const prev = forgedWords.length > 1 ? forgedWords[forgedWords.length - 2].word : '';
+  const first = forgedWords.length > 0 ? forgedWords[0].word : '';
+
+  // Find opposite (lowest cosine similarity)
+  let opposite = '';
+  if (forgedWords.length > 2) {
+    let minSim = Infinity;
+    for (let i = 0; i < forgedWords.length - 1; i++) {
+      const sim = cosineSimilarity(wordNode.coord, forgedWords[i].coord);
+      if (sim < minSim) {
+        minSim = sim;
+        opposite = forgedWords[i].word;
+      }
+    }
+  }
+
+  const text = template
+    .replace(/\{word\}/g, wordNode.word)
+    .replace(/\{prev\}/g, prev)
+    .replace(/\{first\}/g, first)
+    .replace(/\{opposite\}/g, opposite);
+
+  const beat = {
+    text,
+    stage: stageName,
+    word: wordNode.word,
+    role: wordNode.role,
+    time: Date.now()
+  };
+
+  narrativeBeats.push(beat);
+  return beat;
+}
+
+
+// ═══ 11. TYPOGRAPHY LAYER ═══
+
+const floatingWords = [];
+const floatingBeats = [];
+
+class FloatingWord {
+  constructor(wordNode) {
+    this.wordNode = wordNode;
+    this.word = wordNode.word;
+    this.x = W / 2 + (Math.random() - 0.5) * W * 0.5;
+    this.y = H * 0.65 + (Math.random() - 0.5) * H * 0.15;
+    this.vy = -0.3 - Math.random() * 0.4; // Drift upward
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.born = Date.now();
+    this.duration = 15000; // 15 seconds
+    this.life = 1;
+    this.size = 14 + Math.floor(Math.random() * 4);
+  }
+
+  update(dt) {
+    const age = Date.now() - this.born;
+    this.life = Math.max(0, 1 - age / this.duration);
+    this.x += this.vx * dt * 60;
+    this.y += this.vy * dt * 60;
+    return this.life > 0;
+  }
+
+  draw(ctx) {
+    const alpha = this.life * 0.8;
+    ctx.font = `${this.size}px 'Courier New', monospace`;
+    ctx.fillStyle = `rgba(201,169,110,${alpha.toFixed(3)})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(this.word, this.x, this.y);
+  }
+}
+
+class FloatingBeat {
+  constructor(beat) {
+    this.text = beat.text;
+    this.x = W / 2;
+    this.y = H * 0.4;
+    this.born = Date.now();
+    this.duration = 20000; // 20 seconds
+    this.life = 1;
+    this.fadeIn = 0;
+  }
+
+  update(dt) {
+    const age = Date.now() - this.born;
+    this.life = Math.max(0, 1 - age / this.duration);
+    // Fade in over first second
+    this.fadeIn = Math.min(1, age / 1000);
+    return this.life > 0;
+  }
+
+  draw(ctx) {
+    const alpha = this.life * 0.7;
+    ctx.font = '17px Georgia, "Times New Roman", serif';
+    ctx.fillStyle = `rgba(230,220,195,${alpha.toFixed(3)})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Word wrap
+    const maxWidth = W * 0.65;
+    const words = this.text.split(' ');
+    let lines = [];
+    let currentLine = '';
+
+    for (const w of words) {
+      const test = currentLine ? currentLine + ' ' + w : w;
+      const metrics = ctx.measureText(test);
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = w;
+      } else {
+        currentLine = test;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+
+    const lineHeight = 26;
+    const startY = this.y - ((lines.length - 1) * lineHeight) / 2;
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillText(lines[i], this.x, startY + i * lineHeight);
+    }
+  }
+}
+
+
+// (Stars are now rendered inside drawSky)
+
+
+// ═══ 13. INPUT HANDLING ═══
+
+const input = document.getElementById('word-input');
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (text.length > 0) {
+      // Process all words at once — phrases welcome
+      const words = text.split(/\s+/);
+      for (const w of words) {
+        processWord(w);
+      }
+      input.value = '';
+    }
+  }
+});
+
+function processWord(text) {
+  const word = text.toLowerCase().trim();
+  if (!word) return;
+
+  const node = forgeWord(word);
+  if (!node) return;
+
+  // User has spoken — stop dreaming
+  lastInputTime = Date.now();
+  isDreaming = false;
+  dreamBeatCount = 0;
+
+  // Nudge the living scene
+  nudgeScene(node);
+
+  // Spawn silhouettes (figures, trees, ruins)
+  spawnSilhouettes(node);
+
+  // Generate narrative beat
+  const beat = generateBeat(node);
+
+  // Create floating word
+  floatingWords.push(new FloatingWord(node));
+
+  // Create floating beat
+  floatingBeats.push(new FloatingBeat(beat));
+
+  // Auto-crystallize dreams periodically
+  maybeAutoCrystallize();
+
+  // Update UI
+  updateStageIndicator();
+  updateWordCount();
+  updateCrystallizeButton();
+  updateSigil();
+}
+
+
+// ═══ 14. UI UPDATES ═══
+
+function updateStageIndicator() {
+  const stage = getCurrentStage();
+  const el = document.getElementById('stage-indicator');
+  el.querySelector('.hebrew').textContent = stage.hebrew;
+  el.querySelector('.stage-name').textContent = stage.name;
+}
+
+function updateWordCount() {
+  document.getElementById('word-count').textContent = wordCount > 0 ? `${wordCount} words forged` : '';
+}
+
+function updateCrystallizeButton() {
+  const btn = document.getElementById('btn-crystallize');
+  btn.disabled = wordCount < 5;
+}
+
+function updateSigil() {
+  const stage = getCurrentStage();
+  const stageIndex = NARRATIVE_STAGES.indexOf(stage);
+  const letters = ['ד', 'ק', 'י', 'ט', 'ר', 'ת'];
+  let display = '';
+
+  for (let i = 0; i < letters.length; i++) {
+    if (i === stageIndex + 1) {
+      display += `<span style="color:#5a4a3a">${letters[i]}</span>`;
+    } else if (i <= stageIndex) {
+      display += `<span style="color:#c9a96e">${letters[i]}</span>`;
+    } else {
+      display += letters[i];
+    }
+    if (i < letters.length - 1) display += ' ';
+  }
+
+  if (isDreaming) {
+    display += ' <span style="color:#3a4a5a;font-size:12px">&#9676;</span>';
+  }
+
+  document.getElementById('sigil-display').innerHTML = display;
+}
+
+
+// ═══ 15. CRYSTALLIZE / DISSOLVE (Ephemeral Privacy) ═══
+
+document.getElementById('btn-crystallize').addEventListener('click', () => {
+  if (wordCount < 2) return;
+  const dream = crystallizeDream();
+  if (dream) {
+    const btn = document.getElementById('btn-crystallize');
+    btn.textContent = 'Crystallized';
+    btn.classList.add('active');
+    setTimeout(() => { btn.textContent = 'Crystallize'; btn.classList.remove('active'); }, 2000);
+  }
+});
+
+document.getElementById('btn-dissolve').addEventListener('click', () => {
+  try {
+    localStorage.removeItem(DREAM_STORAGE_KEY);
+    const btn = document.getElementById('btn-dissolve');
+    btn.textContent = 'Dissolved';
+    setTimeout(() => { btn.textContent = 'Dissolve'; btn.style.display = 'none'; }, 2000);
+  } catch (e) {}
+});
+
+// Show dissolve if dreams exist
+try {
+  if (getDreams().length > 0) {
+    document.getElementById('btn-dissolve').style.display = '';
+  }
+} catch (e) {}
+
+
+// ═══ 16. DREAM LIBRARY — Browse and Replay Dreams ═══
+
+const DREAM_STORAGE_KEY = 'l7_morph_dreams';
+let dreamLibraryOpen = false;
+
+function getDreams() {
+  try {
+    const raw = localStorage.getItem(DREAM_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+
+function saveDream(dream) {
+  try {
+    const dreams = getDreams();
+    dreams.unshift(dream);
+    // Keep last 72 dreams — the Keys of Solomon
+    if (dreams.length > 72) dreams.length = 72;
+    localStorage.setItem(DREAM_STORAGE_KEY, JSON.stringify(dreams));
+  } catch (e) {}
+}
+
+function deleteDream(id) {
+  try {
+    const dreams = getDreams().filter(d => d.id !== id);
+    localStorage.setItem(DREAM_STORAGE_KEY, JSON.stringify(dreams));
+  } catch (e) {}
+}
+
+function crystallizeDream() {
+  if (wordCount < 2) return null;
+  const dream = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    born: new Date().toISOString(),
+    stage: getCurrentStage().name,
+    wordCount,
+    words: forgedWords.map(w => ({ word: w.word, role: w.role, coord: w.coord, known: w.known })),
+    narrative: narrativeBeats.map(b => ({ text: b.text, stage: b.stage, role: b.role })),
+    // Save the field state for visual replay
+    fieldSnapshot: fieldNodes.slice(0, 20).map(n => ({
+      coord: n.coord, mass: n.mass, astrocyte: n.astrocyte, word: n.word
+    }))
+  };
+  saveDream(dream);
+  return dream;
+}
+
+// Auto-crystallize when there are enough words (every 5 new words)
+let lastAutoCrystallize = 0;
+function maybeAutoCrystallize() {
+  if (wordCount >= 3 && wordCount - lastAutoCrystallize >= 5) {
+    crystallizeDream();
+    lastAutoCrystallize = wordCount;
+  }
+}
+
+function renderDreamLibrary() {
+  const dreams = getDreams();
+  const listEl = document.getElementById('dream-list');
+  const emptyEl = document.getElementById('dream-empty');
+
+  if (dreams.length === 0) {
+    listEl.innerHTML = '';
+    emptyEl.style.display = '';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  listEl.innerHTML = dreams.map(d => {
+    const date = new Date(d.born);
+    const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const words = d.words.map(w => w.word).join(' \u00b7 ');
+    const narrative = d.narrative.slice(0, 3).map(b => b.text).join(' ');
+    const truncNarrative = narrative.length > 200 ? narrative.slice(0, 200) + '...' : narrative;
+
+    return `<div class="dream-card" data-id="${d.id}">
+      <div class="dream-meta">${dateStr} ${timeStr} \u2014 ${d.wordCount} words \u2014 ${d.stage}</div>
+      <div class="dream-words">${words}</div>
+      ${truncNarrative ? `<div class="dream-narrative">${truncNarrative}</div>` : ''}
+      <div class="dream-actions">
+        <button onclick="replayDream('${d.id}')">Replay</button>
+        <button onclick="deleteDreamAndRefresh('${d.id}')">Dissolve</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDreamLibrary() {
+  dreamLibraryOpen = true;
+  renderDreamLibrary();
+  document.getElementById('dream-library').style.display = '';
+  document.getElementById('btn-dreams').classList.add('active');
+}
+
+function closeDreamLibrary() {
+  dreamLibraryOpen = false;
+  document.getElementById('dream-library').style.display = 'none';
+  document.getElementById('btn-dreams').classList.remove('active');
+  input.focus();
+}
+
+function deleteDreamAndRefresh(id) {
+  deleteDream(id);
+  renderDreamLibrary();
+}
+
+function replayDream(id) {
+  const dreams = getDreams();
+  const dream = dreams.find(d => d.id === id);
+  if (!dream) return;
+
+  closeDreamLibrary();
+
+  // Clear current state
+  forgedWords.length = 0;
+  fieldNodes.length = 0;
+  floatingWords.length = 0;
+  floatingBeats.length = 0;
+  narrativeBeats.length = 0;
+  wordCount = 0;
+  lastAutoCrystallize = 0;
+
+  // Replay words with staggered timing — dream unfolds again
+  let delay = 300;
+  for (const w of dream.words) {
+    setTimeout(() => {
+      processWord(w.word);
+    }, delay);
+    delay += 600 + Math.random() * 400;
+  }
+}
+
+// Wire up buttons
+document.getElementById('btn-dreams').addEventListener('click', () => {
+  if (dreamLibraryOpen) closeDreamLibrary();
+  else openDreamLibrary();
+});
+
+document.getElementById('btn-close-dreams').addEventListener('click', closeDreamLibrary);
+
+// Escape closes dream library
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && dreamLibraryOpen) closeDreamLibrary();
+});
+
+
+// ═══ 17. MAIN RENDER LOOP — Full scene rendering ═══
+
+let lastFrame = performance.now();
+let frameCount = 0;
+let breathPhase = 0;
+
+function animate(now) {
+  const dt = Math.min((now - lastFrame) / 1000, 0.05);
+  lastFrame = now;
+  frameCount++;
+
+  // Breathing animation
+  breathPhase += dt * 0.4;
+  const breath = 0.95 + Math.sin(breathPhase) * 0.05;
+
+  // Update scene state (smooth interpolation toward targets)
+  updateScene(dt);
+
+  // Law XXXVII: Dream when idle
+  tickDreaming(now);
+
+  // The field breathes on its own — no pulse needed
+
+  // ═══ RENDER LAYERS (back to front) ═══
+
+  // 1. SKY — gradient, stars, moon, sun
+  drawSky(ctx, now);
+
+  // 2. TERRAIN — far mountains, near hills, ground
+  drawTerrain(ctx, now);
+
+  // 3. FIRE GLOW — flames along horizon when Mars is high
+  drawFireGlow(ctx, now);
+
+  // 4. SILHOUETTES — figures, trees, ruins emerging from words
+  drawSilhouettes(ctx, now);
+
+  // 5. PATH — winding road when NorthNode is high
+  drawPath(ctx, now);
+
+  // 6. WATER — reflective surface when Moon/Neptune are high
+  drawWater(ctx, now);
+
+  // 7. WEATHER — rain, snow, embers, fog, lightning
+  updateWeather(dt, now);
+  drawWeather(ctx, now);
+
+  // 8. FOG OVERLAY — overall atmospheric haze
+  if (scene.fogDensity > 0.15) {
+    const fogAlpha = scene.fogDensity * 0.06;
+    ctx.fillStyle = `rgba(60,55,50,${fogAlpha.toFixed(3)})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // 9. FLOATING WORDS — user-typed, gold monospace, drifting
+  for (let i = floatingWords.length - 1; i >= 0; i--) {
+    if (!floatingWords[i].update(dt)) {
+      floatingWords.splice(i, 1);
+    }
+  }
+  for (const fw of floatingWords) {
+    fw.draw(ctx);
+  }
+
+  // 10. NARRATIVE BEATS — cream serif, center-screen
+  for (let i = floatingBeats.length - 1; i >= 0; i--) {
+    if (!floatingBeats[i].update(dt)) {
+      floatingBeats.splice(i, 1);
+    }
+  }
+  const visibleBeats = floatingBeats.slice(-2);
+  for (const fb of visibleBeats) {
+    fb.draw(ctx);
+  }
+
+  // 11. BREATHING GLOW — subtle warmth at center
+  const glowR = (80 + Math.min(forgedWords.length, 30) * 6) * breath;
+  const glow = ctx.createRadialGradient(W / 2, H * 0.45, 0, W / 2, H * 0.45, glowR);
+  const glowHue = forgedWords.length > 0 ?
+    calcWordHue(forgedWords[forgedWords.length - 1].coord) : 40;
+  glow.addColorStop(0, `hsla(${glowHue},30%,40%,${(0.02 * breath).toFixed(3)})`);
+  glow.addColorStop(1, `hsla(${glowHue},30%,40%,0)`);
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(W / 2, H * 0.45, glowR, 0, TAU);
+  ctx.fill();
+
+  requestAnimationFrame(animate);
+}
+
+// ═══ BOOT ═══
+
+updateStageIndicator();
+updateSigil();
+
+// Initial full clear
+ctx.fillStyle = '#0a0a10';
+ctx.fillRect(0, 0, W, H);
+
+requestAnimationFrame(animate);
+
+// Focus input
+input.focus();
+
+// Keep focus on input when clicking canvas
+canvas.addEventListener('click', () => input.focus());
+
+</script>
+</body>
+</html>
+
+<!-- L7:PROVENANCE
+  Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+  File: simulations/shadow-theater.html | Body-Hash: SHA-256:df5be08a8df174a6d9e18e28d1f0bd447ba636c93619ea53df41a132274e0dc2
+  Chain-Hash: SHA-256:684bf3279b7a9f4f1c343d7f9f2452d60aa1e58c02476bb684e19e99bbd9fec8 | Signed: 2026-03-01T15:09:50.014343+00:00
+  This work is the intellectual property of Alberto Valido Delgado.
+  Chain: 13 works linked. Verify: python3 provenance.py verify simulations/shadow-theater.html
+L7:PROVENANCE -->

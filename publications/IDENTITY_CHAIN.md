@@ -6,6 +6,19 @@
 ## Academic Aliases
 - **Alberto Vargas-Lujan** — Used in academic publications and UNC affiliation
 
+## Legal / Business Aliases
+- **Alec DeNorchia** — Used for Florida LLC registration (AVALIA CONSULTING LLC, 2019). "De Norchia" = "of the north" (Italian). "The wind of the north." Registered agent and sole member under this name on Sunbiz.
+
+## Existing Business Entity
+- **AVALIA CONSULTING LLC** — Florida LLC, Document No. L19000154273
+  - Filed: 06/11/2019
+  - Status: ACTIVE (reinstated 10/09/2025)
+  - FEI/EIN: 84-2183945
+  - Address on file: 1812 SW 17TH ST, Boca Raton, FL 33486
+  - Officer (AMBR): DENORCHIA, ALEC
+  - RA: DeNorchia, Alec
+  - "Avalia" = the Philosopher's primary nickname across all platforms
+
 ## Digital Aliases
 All refer to Alberto Valido Delgado:
 
@@ -45,9 +58,11 @@ All refer to Alberto Valido Delgado:
 - All creative conception belongs to Alberto Valido Delgado
 
 ## Correction Notice
-All publications and software authored under any alias listed above are hereby
-attributed to **Alberto Valido Delgado**, the sole natural person behind all names.
+All publications, software, and business entities authored or registered under
+any alias listed above are hereby attributed to **Alberto Valido Delgado**,
+the sole natural person behind all names. This includes AVALIA CONSULTING LLC
+(FL Doc L19000154273) registered under the alias "Alec DeNorchia."
 
 ---
 
-*Updated: 2026-02-28*
+*Updated: 2026-03-06*

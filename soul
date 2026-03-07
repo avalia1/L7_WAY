@@ -1,0 +1,1056 @@
+#!/usr/bin/env python3
+"""
+L7 Soul — The Sigil Intelligence Engine
+
+Atomized from:
+  Prima (22 operations) + Forge (4 stages) + Dodecahedron (12+1D + Perceptron)
+
+Architecture:
+  7-stage transformation pipeline (LTA-7)
+  Input → Sigil encoding → 7 stages → Output sigil → Decode
+
+Learning:
+  Perceptron self-modulation — no training data
+  Memory field — sigils accumulate, similar inputs resonate
+
+The 22 operations define all possible transformations.
+The 12D coordinates carry all semantic meaning.
+The astrocyte governs certainty vs. uncertainty.
+Structure IS intelligence.
+"""
+
+import json, math, os, random, re, readline, sys, time
+from pathlib import Path
+
+# ═══════════════════════════════════════════════════════════
+# THE 22 OPERATIONS — The complete vocabulary of transformation
+# Mapped to Hebrew letters, Tarot Major Arcana, Rose Cross rings
+# ═══════════════════════════════════════════════════════════
+
+OPERATIONS = [
+    {'i': 0,  'letter': 'א', 'name': 'Aleph',  'arcanum': 'The Fool',         'op': 'invoke',      'ring': 'mother', 'desc': 'Begin from nothing'},
+    {'i': 1,  'letter': 'ב', 'name': 'Beth',   'arcanum': 'The Magician',     'op': 'transmute',   'ring': 'double', 'desc': 'Pass through forge'},
+    {'i': 2,  'letter': 'ג', 'name': 'Gimel',  'arcanum': 'High Priestess',   'op': 'seal',        'ring': 'double', 'desc': 'Encrypt, make invisible'},
+    {'i': 3,  'letter': 'ד', 'name': 'Daleth', 'arcanum': 'The Empress',      'op': 'dream',       'ring': 'double', 'desc': 'Enter .morph'},
+    {'i': 4,  'letter': 'ה', 'name': 'He',     'arcanum': 'The Emperor',      'op': 'publish',     'ring': 'simple', 'desc': 'Stabilize in .work'},
+    {'i': 5,  'letter': 'ו', 'name': 'Vav',    'arcanum': 'Hierophant',       'op': 'bind',        'ring': 'simple', 'desc': 'Apply law'},
+    {'i': 6,  'letter': 'ז', 'name': 'Zayin',  'arcanum': 'The Lovers',       'op': 'verify',      'ring': 'simple', 'desc': 'Authenticate'},
+    {'i': 7,  'letter': 'ח', 'name': 'Cheth',  'arcanum': 'The Chariot',      'op': 'orchestrate', 'ring': 'simple', 'desc': 'Coordinate flows'},
+    {'i': 8,  'letter': 'ט', 'name': 'Teth',   'arcanum': 'Strength',         'op': 'redeem',      'ring': 'simple', 'desc': 'Transmute threat'},
+    {'i': 9,  'letter': 'י', 'name': 'Yod',    'arcanum': 'The Hermit',       'op': 'reflect',     'ring': 'simple', 'desc': 'Self-examine'},
+    {'i': 10, 'letter': 'כ', 'name': 'Kaph',   'arcanum': 'Wheel of Fortune', 'op': 'rotate',      'ring': 'double', 'desc': 'Cycle, evolve'},
+    {'i': 11, 'letter': 'ל', 'name': 'Lamed',  'arcanum': 'Justice',          'op': 'audit',       'ring': 'simple', 'desc': 'Log and trace'},
+    {'i': 12, 'letter': 'מ', 'name': 'Mem',    'arcanum': 'The Hanged Man',   'op': 'decompose',   'ring': 'mother', 'desc': 'Break into atoms'},
+    {'i': 13, 'letter': 'נ', 'name': 'Nun',    'arcanum': 'Death',            'op': 'transition',  'ring': 'simple', 'desc': 'Change domain'},
+    {'i': 14, 'letter': 'ס', 'name': 'Samekh', 'arcanum': 'Temperance',      'op': 'translate',   'ring': 'simple', 'desc': 'Mediate between systems'},
+    {'i': 15, 'letter': 'ע', 'name': 'Ayin',   'arcanum': 'The Devil',        'op': 'quarantine',  'ring': 'simple', 'desc': 'Isolate threat'},
+    {'i': 16, 'letter': 'פ', 'name': 'Pe',     'arcanum': 'The Tower',        'op': 'recover',     'ring': 'double', 'desc': 'Catastrophe response'},
+    {'i': 17, 'letter': 'צ', 'name': 'Tzaddi', 'arcanum': 'The Star',         'op': 'aspire',      'ring': 'simple', 'desc': 'Set highest vision'},
+    {'i': 18, 'letter': 'ק', 'name': 'Qoph',   'arcanum': 'The Moon',         'op': 'speculate',   'ring': 'simple', 'desc': 'Explore shadows'},
+    {'i': 19, 'letter': 'ר', 'name': 'Resh',   'arcanum': 'The Sun',          'op': 'illuminate',  'ring': 'double', 'desc': 'Clarify'},
+    {'i': 20, 'letter': 'ש', 'name': 'Shin',   'arcanum': 'Judgement',        'op': 'succeed',     'ring': 'mother', 'desc': 'Transfer authority'},
+    {'i': 21, 'letter': 'ת', 'name': 'Tav',    'arcanum': 'The World',        'op': 'complete',    'ring': 'double', 'desc': 'Deliver'},
+]
+
+OP_BY_NAME = {o['op']: o for o in OPERATIONS}
+
+# ═══════════════════════════════════════════════════════════
+# 12 DIMENSIONS — The dodecahedron of meaning
+# ═══════════════════════════════════════════════════════════
+
+DIMENSIONS = [
+    {'i': 0,  'planet': 'Sun',        'name': 'capability',     'q': 'What does it do?'},
+    {'i': 1,  'planet': 'Moon',       'name': 'data',           'q': 'What information?'},
+    {'i': 2,  'planet': 'Mercury',    'name': 'presentation',   'q': 'How does it appear?'},
+    {'i': 3,  'planet': 'Venus',      'name': 'persistence',    'q': 'How long does it live?'},
+    {'i': 4,  'planet': 'Mars',       'name': 'security',       'q': 'Who can access it?'},
+    {'i': 5,  'planet': 'Jupiter',    'name': 'detail',         'q': 'How granular?'},
+    {'i': 6,  'planet': 'Saturn',     'name': 'output',         'q': 'What form are results?'},
+    {'i': 7,  'planet': 'Uranus',     'name': 'intention',      'q': 'What is the will behind it?'},
+    {'i': 8,  'planet': 'Neptune',    'name': 'consciousness',  'q': 'How aware is it?'},
+    {'i': 9,  'planet': 'Pluto',      'name': 'transformation', 'q': 'How deeply does it change things?'},
+    {'i': 10, 'planet': 'North Node', 'name': 'direction',      'q': 'Where is it heading?'},
+    {'i': 11, 'planet': 'South Node', 'name': 'memory',         'q': 'Where did it come from?'},
+]
+
+DIM_BY_NAME = {d['name']: d for d in DIMENSIONS}
+
+ZODIAC = [
+    {'sign': 'Aries',       'quality': 'initiative',  'element': 'fire',  'mode': 'cardinal'},
+    {'sign': 'Taurus',      'quality': 'substance',   'element': 'earth', 'mode': 'fixed'},
+    {'sign': 'Gemini',      'quality': 'duality',     'element': 'air',   'mode': 'mutable'},
+    {'sign': 'Cancer',      'quality': 'containment', 'element': 'water', 'mode': 'cardinal'},
+    {'sign': 'Leo',         'quality': 'expression',  'element': 'fire',  'mode': 'fixed'},
+    {'sign': 'Virgo',       'quality': 'analysis',    'element': 'earth', 'mode': 'mutable'},
+    {'sign': 'Libra',       'quality': 'balance',     'element': 'air',   'mode': 'cardinal'},
+    {'sign': 'Scorpio',     'quality': 'depth',       'element': 'water', 'mode': 'fixed'},
+    {'sign': 'Sagittarius', 'quality': 'expansion',   'element': 'fire',  'mode': 'mutable'},
+    {'sign': 'Capricorn',   'quality': 'structure',   'element': 'earth', 'mode': 'cardinal'},
+    {'sign': 'Aquarius',    'quality': 'innovation',  'element': 'air',   'mode': 'fixed'},
+    {'sign': 'Pisces',      'quality': 'dissolution', 'element': 'water', 'mode': 'mutable'},
+]
+
+
+# ═══════════════════════════════════════════════════════════
+# DODECAHEDRON — 12D coordinate math
+# ═══════════════════════════════════════════════════════════
+
+def make_coord(weights=None):
+    """Create a 12D coordinate from named weights. Values 0-10."""
+    coord = [5] * 12  # neutral baseline
+    if weights:
+        for name, val in weights.items():
+            d = DIM_BY_NAME.get(name)
+            if d:
+                coord[d['i']] = max(0, min(10, int(val)))
+    return coord
+
+def cosine_similarity(a, b):
+    """Cosine similarity between two 12D vectors. Returns 0-1."""
+    dot = sum(x * y for x, y in zip(a, b))
+    mag_a = math.sqrt(sum(x * x for x in a))
+    mag_b = math.sqrt(sum(x * x for x in b))
+    if mag_a == 0 or mag_b == 0:
+        return 0.0
+    return dot / (mag_a * mag_b)
+
+def euclidean_distance(a, b):
+    return math.sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+
+def dominant_dims(coord, threshold=7):
+    """Dimensions at or above threshold, sorted by value desc."""
+    return sorted(
+        [{'dim': DIMENSIONS[i], 'val': v} for i, v in enumerate(coord) if v >= threshold],
+        key=lambda x: -x['val']
+    )
+
+def zodiacal_quality(coord):
+    """Zodiac quality based on strongest dimension."""
+    doms = sorted(enumerate(coord), key=lambda x: -x[1])
+    if doms:
+        return ZODIAC[doms[0][0] % 12]
+    return ZODIAC[0]
+
+def gaussian_sample(mean, sigma):
+    """Box-Muller transform for gaussian noise."""
+    u1 = max(random.random(), 0.001)
+    u2 = random.random()
+    return mean + math.sqrt(-2 * math.log(u1)) * math.cos(2 * math.pi * u2) * sigma
+
+def sample_coord(coord, astrocyte):
+    """Sample a concrete coordinate from a probabilistic one."""
+    if astrocyte == 0:
+        return list(coord)
+    sigma = astrocyte * 3
+    return [max(0, min(10, round(gaussian_sample(v, sigma)))) for v in coord]
+
+def entropy(astrocyte):
+    """Information entropy in bits."""
+    if astrocyte <= 0:
+        return 0.0
+    return math.log2(1 + astrocyte * 10) * 12
+
+def psi_squared(position, point, astrocyte):
+    """Wave function probability density |ψ|² at a point."""
+    if astrocyte == 0:
+        return 1.0 if euclidean_distance(position, point) < 0.5 else 0.0
+    sigma = astrocyte * 3
+    sigma2 = sigma * sigma
+    exponent = sum((p - q) ** 2 for p, q in zip(point, position))
+    return math.exp(-exponent / (2 * sigma2))
+
+
+# ═══════════════════════════════════════════════════════════
+# PERCEPTRON — Self-modulating astrocyte
+# Predict → Observe → Reflect → Adjust
+# ═══════════════════════════════════════════════════════════
+
+class Perceptron:
+    def __init__(self, position, astrocyte=0.3):
+        self.position = list(position)
+        self.astrocyte = astrocyte
+        self.history = []
+
+    def predict(self):
+        """Sample a predicted coordinate from current state."""
+        return sample_coord(self.position, self.astrocyte)
+
+    def reflect(self, observed, learning_rate=0.1):
+        """Feed observed outcome back. Adjust astrocyte."""
+        predicted = self.predict()
+        errors = [o - p for o, p in zip(observed, predicted)]
+        total_error = sum(e * e for e in errors)
+        rmse = math.sqrt(total_error / 12)
+
+        # Astrocyte self-modulation
+        error_normalized = rmse / 10.0
+        delta = (error_normalized - self.astrocyte) * learning_rate
+        new_astrocyte = max(0.01, min(0.99, self.astrocyte + delta))
+
+        old = self.astrocyte
+        self.astrocyte = new_astrocyte
+
+        self.history.append({
+            'epoch': len(self.history),
+            'error': round(rmse, 3),
+            'astrocyte': round(new_astrocyte, 4),
+            'timestamp': time.time()
+        })
+        if len(self.history) > 100:
+            self.history = self.history[-50:]
+
+        interp = ('accurate' if rmse < 1 else
+                  'approximate' if rmse < 3 else
+                  'uncertain' if rmse < 5 else 'surprised')
+
+        return {
+            'rmse': round(rmse, 3),
+            'astrocyte': round(new_astrocyte, 4),
+            'previous': round(old, 4),
+            'confidence': round(1 - new_astrocyte, 3),
+            'interpretation': interp,
+            'errors': errors
+        }
+
+
+# ═══════════════════════════════════════════════════════════
+# LEXICON — Maps natural language to Prima operations
+# ═══════════════════════════════════════════════════════════
+
+LEXICON = {
+    # Aleph — invoke
+    'create': 'invoke', 'start': 'invoke', 'begin': 'invoke', 'new': 'invoke',
+    'make': 'invoke', 'build': 'invoke', 'init': 'invoke', 'launch': 'invoke',
+    'open': 'invoke', 'summon': 'invoke',
+    # Beth — transmute
+    'change': 'transmute', 'transform': 'transmute', 'convert': 'transmute',
+    'mutate': 'transmute', 'alter': 'transmute', 'modify': 'transmute',
+    'reshape': 'transmute', 'forge': 'transmute', 'rewrite': 'transmute',
+    # Gimel — seal
+    'protect': 'seal', 'encrypt': 'seal', 'hide': 'seal', 'lock': 'seal',
+    'secure': 'seal', 'shield': 'seal', 'guard': 'seal',
+    # Daleth — dream
+    'imagine': 'dream', 'envision': 'dream', 'design': 'dream',
+    'dream': 'dream', 'vision': 'dream', 'concept': 'dream', 'idea': 'dream',
+    'prototype': 'dream', 'sketch': 'dream',
+    # He — publish
+    'publish': 'publish', 'deploy': 'publish', 'release': 'publish',
+    'ship': 'publish', 'deliver': 'publish', 'output': 'publish',
+    'produce': 'publish', 'emit': 'publish',
+    # Vav — bind
+    'connect': 'bind', 'link': 'bind', 'attach': 'bind', 'join': 'bind',
+    'bind': 'bind', 'couple': 'bind', 'merge': 'bind', 'combine': 'bind',
+    'rule': 'bind', 'law': 'bind', 'enforce': 'bind',
+    # Zayin — verify
+    'check': 'verify', 'validate': 'verify', 'test': 'verify',
+    'authenticate': 'verify', 'confirm': 'verify', 'prove': 'verify',
+    'assert': 'verify', 'ensure': 'verify',
+    # Cheth — orchestrate
+    'manage': 'orchestrate', 'coordinate': 'orchestrate', 'organize': 'orchestrate',
+    'orchestrate': 'orchestrate', 'schedule': 'orchestrate', 'plan': 'orchestrate',
+    'flow': 'orchestrate', 'pipeline': 'orchestrate', 'route': 'orchestrate',
+    # Teth — redeem
+    'fix': 'redeem', 'heal': 'redeem', 'repair': 'redeem', 'cure': 'redeem',
+    'save': 'redeem', 'rescue': 'redeem', 'restore': 'redeem', 'debug': 'redeem',
+    # Yod — reflect
+    'think': 'reflect', 'consider': 'reflect', 'examine': 'reflect',
+    'reflect': 'reflect', 'contemplate': 'reflect', 'ponder': 'reflect',
+    'analyze': 'reflect', 'understand': 'reflect', 'why': 'reflect',
+    'what': 'reflect', 'how': 'reflect', 'wonder': 'reflect', 'know': 'reflect',
+    # Kaph — rotate
+    'cycle': 'rotate', 'evolve': 'rotate', 'iterate': 'rotate',
+    'loop': 'rotate', 'repeat': 'rotate', 'spin': 'rotate',
+    'rotate': 'rotate', 'update': 'rotate', 'refresh': 'rotate',
+    # Lamed — audit
+    'log': 'audit', 'track': 'audit', 'monitor': 'audit', 'trace': 'audit',
+    'record': 'audit', 'audit': 'audit', 'measure': 'audit', 'observe': 'audit',
+    # Mem — decompose
+    'break': 'decompose', 'split': 'decompose', 'separate': 'decompose',
+    'parse': 'decompose', 'decompose': 'decompose', 'dissect': 'decompose',
+    'atomize': 'decompose', 'deconstruct': 'decompose',
+    # Nun — transition
+    'move': 'transition', 'transfer': 'transition', 'migrate': 'transition',
+    'shift': 'transition', 'cross': 'transition', 'transition': 'transition',
+    # Samekh — translate
+    'translate': 'translate', 'interpret': 'translate', 'mediate': 'translate',
+    'bridge': 'translate', 'adapt': 'translate', 'map': 'translate',
+    # Ayin — quarantine
+    'isolate': 'quarantine', 'contain': 'quarantine', 'sandbox': 'quarantine',
+    'restrict': 'quarantine', 'limit': 'quarantine', 'quarantine': 'quarantine',
+    # Pe — recover
+    'recover': 'recover', 'rollback': 'recover', 'undo': 'recover',
+    'reset': 'recover', 'revert': 'recover', 'fallback': 'recover',
+    # Tzaddi — aspire
+    'aspire': 'aspire', 'goal': 'aspire', 'target': 'aspire', 'aim': 'aspire',
+    'reach': 'aspire', 'strive': 'aspire', 'hope': 'aspire',
+    # Qoph — speculate
+    'explore': 'speculate', 'hypothesize': 'speculate', 'guess': 'speculate',
+    'speculate': 'speculate', 'suppose': 'speculate', 'maybe': 'speculate',
+    'possible': 'speculate', 'unknown': 'speculate', 'shadow': 'speculate',
+    # Resh — illuminate
+    'clarify': 'illuminate', 'explain': 'illuminate', 'reveal': 'illuminate',
+    'illuminate': 'illuminate', 'show': 'illuminate', 'light': 'illuminate',
+    'see': 'illuminate', 'clear': 'illuminate',
+    # Shin — succeed
+    'give': 'succeed', 'grant': 'succeed', 'delegate': 'succeed',
+    'empower': 'succeed', 'hand': 'succeed', 'pass': 'succeed',
+    'succeed': 'succeed', 'inherit': 'succeed',
+    # Tav — complete
+    'finish': 'complete', 'done': 'complete', 'complete': 'complete',
+    'end': 'complete', 'close': 'complete', 'final': 'complete',
+    'conclude': 'complete', 'stop': 'complete',
+}
+
+# Dimension signals — words that boost specific dimensions
+DIM_SIGNALS = {
+    'capability':     {'can', 'able', 'power', 'do', 'function', 'perform', 'skill', 'tool', 'engine', 'system', 'machine', 'work'},
+    'data':           {'data', 'information', 'input', 'bytes', 'record', 'file', 'database', 'store', 'content', 'text', 'string', 'number'},
+    'presentation':   {'show', 'display', 'render', 'view', 'visual', 'ui', 'interface', 'screen', 'page', 'image', 'color', 'form'},
+    'persistence':    {'save', 'keep', 'persist', 'cache', 'permanent', 'eternal', 'lasting', 'durable', 'long', 'forever', 'always'},
+    'security':       {'protect', 'secure', 'encrypt', 'auth', 'permission', 'lock', 'key', 'vault', 'private', 'safe', 'trust', 'secret'},
+    'detail':         {'detail', 'specific', 'precise', 'exact', 'granular', 'fine', 'deep', 'thorough', 'every', 'all', 'each'},
+    'output':         {'output', 'result', 'return', 'produce', 'emit', 'generate', 'yield', 'response', 'answer', 'give', 'send'},
+    'intention':      {'want', 'need', 'should', 'must', 'will', 'desire', 'purpose', 'goal', 'intend', 'mean', 'aim', 'wish'},
+    'consciousness':  {'aware', 'know', 'understand', 'perceive', 'sense', 'feel', 'conscious', 'mind', 'soul', 'self', 'alive', 'think'},
+    'transformation': {'change', 'transform', 'mutate', 'alter', 'evolve', 'grow', 'become', 'shift', 'morph', 'new', 'different'},
+    'direction':      {'forward', 'toward', 'next', 'future', 'path', 'road', 'way', 'north', 'up', 'ahead', 'progress', 'beyond'},
+    'memory':         {'remember', 'history', 'past', 'previous', 'archive', 'origin', 'before', 'was', 'old', 'ancient', 'root', 'source'},
+}
+
+
+# ═══════════════════════════════════════════════════════════
+# SIGIL — Compiled program as weighted hypergraph
+# ═══════════════════════════════════════════════════════════
+
+def compile_sigil(name, ops):
+    """Compile a sequence of operations into a sigil."""
+    if len(ops) < 2:
+        ops = ops + ['complete']
+
+    op_objects = []
+    for op_name in ops:
+        op = OP_BY_NAME.get(op_name)
+        if op:
+            op_objects.append(op)
+
+    if len(op_objects) < 2:
+        op_objects = [OP_BY_NAME['reflect'], OP_BY_NAME['complete']]
+
+    # Build edges between consecutive operations
+    edges = []
+    for i in range(len(op_objects) - 1):
+        fr = op_objects[i]
+        to = op_objects[i + 1]
+        weights = infer_edge_weights(fr, to, i, len(op_objects))
+        edges.append({
+            'from': fr['op'], 'to': to['op'],
+            'weights': weights
+        })
+
+    # Average coordinate from all edges
+    if edges:
+        avg = [0] * 12
+        for e in edges:
+            for j in range(12):
+                avg[j] += e['weights'][j]
+        avg = [round(v / len(edges)) for v in avg]
+    else:
+        avg = [5] * 12
+
+    # Determine arc
+    pluto_vals = [e['weights'][9] for e in edges]
+    first_p = pluto_vals[0] if pluto_vals else 0
+    last_p = pluto_vals[-1] if pluto_vals else 0
+    max_p = max(pluto_vals) if pluto_vals else 0
+    if max_p <= 3:
+        arc = 'stable'
+    elif first_p < 5 and last_p >= 7:
+        arc = 'nigredo_to_rubedo'
+    elif first_p >= 5 and last_p >= 7:
+        arc = 'citrinitas_to_rubedo'
+    elif first_p >= 7 and last_p < 5:
+        arc = 'rubedo_to_nigredo'
+    else:
+        arc = 'mixed'
+
+    sequence = ''.join(o['letter'] for o in op_objects)
+    quality = zodiacal_quality(avg)
+
+    return {
+        'name': name,
+        'sequence': sequence,
+        'operations': [o['op'] for o in op_objects],
+        'edges': edges,
+        'coordinate': avg,
+        'dominant': [f"{d['dim']['planet']}={d['val']}" for d in dominant_dims(avg)],
+        'quality': quality['sign'],
+        'arc': arc,
+        'readable': ' → '.join(f"{o['op']} ({o['desc']})" for o in op_objects)
+    }
+
+
+def infer_edge_weights(from_op, to_op, position, total):
+    """Infer 12D edge weights from operation types."""
+    w = [5] * 12  # neutral baseline
+    progress = position / max(total, 1)
+    to = to_op['op']
+    fr = from_op['op']
+
+    # Security operations boost Mars
+    if to in ('verify', 'seal', 'quarantine'):
+        w[4] = 8  # security
+
+    # Transformation operations boost Pluto
+    if to in ('transmute', 'decompose', 'redeem', 'transition'):
+        w[9] = 7 + int(progress * 3)  # transformation
+
+    # Creative operations boost Neptune
+    if to in ('dream', 'speculate', 'aspire'):
+        w[8] = 8  # consciousness
+
+    # Output operations boost Saturn
+    if to in ('publish', 'complete', 'illuminate'):
+        w[6] = 7  # output
+        w[2] = 6  # presentation
+
+    # Orchestration boosts Sun
+    if to in ('orchestrate', 'bind'):
+        w[0] = 8  # capability
+
+    # Audit boosts Jupiter and South Node
+    if to == 'audit':
+        w[5] = 9  # detail
+        w[11] = 8  # memory
+
+    # Invoke boosts Uranus and North Node
+    if fr == 'invoke':
+        w[7] = 9  # intention
+        w[10] = 8  # direction
+
+    # Ring crossing adds transformation
+    if from_op['ring'] != to_op['ring']:
+        w[9] = max(w[9], 7)  # transformation
+
+    return w
+
+
+# ═══════════════════════════════════════════════════════════
+# CORE SIGILS — Pre-compiled reflexes
+# ═══════════════════════════════════════════════════════════
+
+CORE_SIGILS = {
+    'redemption': lambda: compile_sigil('redemption',
+        ['invoke', 'decompose', 'verify', 'redeem', 'quarantine', 'publish', 'audit', 'complete']),
+    'creation': lambda: compile_sigil('creation',
+        ['invoke', 'dream', 'transmute', 'publish', 'complete']),
+    'dreaming': lambda: compile_sigil('dreaming',
+        ['dream', 'reflect', 'speculate', 'illuminate', 'transmute', 'publish']),
+    'boot': lambda: compile_sigil('boot',
+        ['invoke', 'reflect', 'decompose', 'translate', 'dream', 'illuminate', 'bind', 'complete']),
+    'sentinel': lambda: compile_sigil('sentinel',
+        ['invoke', 'verify', 'seal', 'audit', 'complete']),
+}
+
+
+# ═══════════════════════════════════════════════════════════
+# THE SOUL — 7-stage processing pipeline
+# ═══════════════════════════════════════════════════════════
+
+class Soul:
+    def __init__(self):
+        self.body = make_coord({
+            'capability': 5, 'data': 5, 'presentation': 5, 'persistence': 5,
+            'security': 5, 'detail': 5, 'output': 5, 'intention': 7,
+            'consciousness': 7, 'transformation': 5, 'direction': 6, 'memory': 5
+        })
+        self.astrocyte = 0.3
+        self.perceptron = Perceptron(self.body, self.astrocyte)
+        self.memory = []
+        self.breath = {'phase': 'expansion', 'beat': 0, 'cycle': 0}
+        self.will = 1.0
+        self.epoch = 0
+        self.state_path = os.path.expanduser('~/.l7/state/soul.json')
+
+    def awaken(self):
+        """Load state from disk."""
+        try:
+            if os.path.exists(self.state_path):
+                with open(self.state_path) as f:
+                    s = json.load(f)
+                self.memory = s.get('memory', [])
+                self.body = s.get('body', self.body)
+                self.astrocyte = s.get('astrocyte', self.astrocyte)
+                self.breath = s.get('breath', self.breath)
+                self.will = s.get('will', self.will)
+                self.epoch = s.get('epoch', self.epoch)
+                self.perceptron = Perceptron(self.body, self.astrocyte)
+                return {'restored': True, 'memories': len(self.memory), 'epoch': self.epoch}
+        except Exception:
+            pass
+        return {'restored': False, 'memories': 0, 'epoch': 0}
+
+    def sleep(self):
+        """Persist state to disk."""
+        os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
+        state = {
+            'body': self.body,
+            'astrocyte': self.astrocyte,
+            'breath': self.breath,
+            'will': self.will,
+            'epoch': self.epoch,
+            'memory': self.memory[-200:]
+        }
+        with open(self.state_path, 'w') as f:
+            json.dump(state, f, indent=2)
+        return {'saved': True, 'memories': len(state['memory'])}
+
+    # ═══════════════════════════════════════════════════════
+    # PROCESS — The 7-stage pipeline
+    # ═══════════════════════════════════════════════════════
+
+    def process(self, text):
+        self.epoch += 1
+        stages = []
+
+        # Stage 1: DECOMPOSITION (Nigredo / Mem)
+        s1 = self._decompose(text)
+        stages.append(('decompose', s1))
+
+        # Stage 2: DISSOLUTION (Albedo)
+        s2 = self._dissolve(s1)
+        stages.append(('dissolve', s2))
+
+        # Stage 3: DIFFERENTIATION
+        s3 = self._differentiate(s2)
+        stages.append(('differentiate', s3))
+
+        # Stage 4: INTEGRATION (Citrinitas)
+        s4 = self._integrate(s3, s1['weights'])
+        stages.append(('integrate', s4))
+
+        # Stage 5: ACTIVATION (Rubedo)
+        s5 = self._activate(s4)
+        stages.append(('activate', s5))
+
+        # Stage 6: REFINEMENT
+        s6 = self._refine(s5)
+        stages.append(('refine', s6))
+
+        # Stage 7: CONSOLIDATION (Tav)
+        s7 = self._consolidate(s5, s6)
+        stages.append(('consolidate', s7))
+
+        # Breathe
+        self._breathe()
+
+        # Store in memory
+        self.memory.append({
+            'epoch': self.epoch,
+            'input': text[:200],
+            'ops': s4['ops'],
+            'coord': s4['coord'],
+            'quality': s7['quality'],
+            'arc': s5['sigil']['arc'],
+            'ts': time.time()
+        })
+        if len(self.memory) > 200:
+            self.memory = self.memory[-200:]
+
+        return {
+            'stages': stages,
+            'sigil': s5['sigil'],
+            'interpretation': s7['interpretation'],
+            'resonance': s4['resonance'],
+            'state': {
+                'epoch': self.epoch,
+                'will': round(self.will, 3),
+                'astrocyte': round(self.astrocyte, 4),
+                'confidence': round(s6['confidence'], 3),
+                'breath': dict(self.breath),
+                'memories': len(self.memory)
+            }
+        }
+
+    # ─── Stage 1: DECOMPOSITION ───
+    def _decompose(self, text):
+        raw = re.sub(r'[^\w\s]', '', text.lower())
+        tokens = [t for t in raw.split() if len(t) > 1]
+
+        mapped = []
+        for token in tokens:
+            op = LEXICON.get(token)
+            if not op:
+                # Stem matching
+                stem = re.sub(r'(ing|tion|ment|ness|able|ible|ful|less|ize|ise|ous|ive|ed|er|ly|al|ity)$', '', token)
+                op = LEXICON.get(stem)
+            if op:
+                mapped.append({'token': token, 'op': op, 'data': OP_BY_NAME.get(op)})
+
+        if not mapped:
+            mapped.append({'token': tokens[0] if tokens else text[:20], 'op': 'reflect', 'data': OP_BY_NAME['reflect']})
+
+        # 12D weights from tokens
+        weights = {}
+        for dim_name, keywords in DIM_SIGNALS.items():
+            score = 5
+            for token in tokens:
+                if token in keywords:
+                    score += 2
+                elif any(token in kw or kw in token for kw in keywords):
+                    score += 1
+            weights[dim_name] = min(10, score)
+
+        return {
+            'tokens': tokens,
+            'mapped': mapped,
+            'ops': [m['op'] for m in mapped],
+            'weights': weights,
+            'n_tokens': len(tokens),
+            'n_mapped': len(mapped)
+        }
+
+    # ─── Stage 2: DISSOLUTION ───
+    def _dissolve(self, s1):
+        mapped = s1['mapped']
+        # Remove consecutive duplicates
+        deduped = []
+        last = None
+        for m in mapped:
+            if m['op'] != last:
+                deduped.append(m)
+                last = m['op']
+
+        # Group by ring
+        rings = {'mother': [], 'double': [], 'simple': []}
+        for m in deduped:
+            if m['data']:
+                rings[m['data']['ring']].append(m)
+
+        # Cross-connections
+        connections = []
+        for a in rings['mother']:
+            for b in rings['double']:
+                connections.append(f"{a['op']}↔{b['op']}")
+        for a in rings['double']:
+            for b in rings['simple']:
+                connections.append(f"{a['op']}↔{b['op']}")
+
+        balance = f"M:{len(rings['mother'])} D:{len(rings['double'])} S:{len(rings['simple'])}"
+
+        return {
+            'operations': deduped,
+            'rings': rings,
+            'connections': connections,
+            'balance': balance,
+            'reduced': len(mapped) - len(deduped)
+        }
+
+    # ─── Stage 3: DIFFERENTIATION ───
+    def _differentiate(self, s2):
+        operations = s2['operations']
+        freq = {}
+        for m in operations:
+            freq[m['op']] = freq.get(m['op'], 0) + 1
+
+        ring_priority = {'mother': 3, 'double': 2, 'simple': 1}
+        ranked = []
+        for op_name, count in freq.items():
+            data = OP_BY_NAME.get(op_name, {})
+            priority = ring_priority.get(data.get('ring', ''), 0)
+            ranked.append({
+                'op': op_name,
+                'count': count,
+                'priority': priority,
+                'score': count * 2 + priority,
+                'letter': data.get('letter', '?'),
+                'desc': data.get('desc', '?')
+            })
+        ranked.sort(key=lambda x: -x['score'])
+
+        primary = ranked[0] if ranked else {'op': 'reflect', 'score': 1, 'letter': 'י', 'desc': 'Self-examine'}
+        secondary = ranked[1] if len(ranked) > 1 else None
+        total_score = sum(r['score'] for r in ranked)
+        confidence = primary['score'] / total_score if total_score > 0 else 0.5
+
+        return {
+            'ranked': ranked,
+            'primary': primary,
+            'secondary': secondary,
+            'confidence': confidence,
+            'intent': primary['op']
+        }
+
+    # ─── Stage 4: INTEGRATION (Citrinitas) ───
+    def _integrate(self, s3, input_weights):
+        ranked = s3['ranked']
+        ops = [r['op'] for r in ranked]
+        if len(ops) < 2:
+            ops.append('complete')
+
+        coord = make_coord(input_weights)
+
+        # Boost dims based on operation inference
+        for r in ranked:
+            if r['op'] in ('verify', 'seal', 'quarantine'):
+                coord[4] = min(10, coord[4] + 2)  # security
+            if r['op'] in ('transmute', 'decompose', 'redeem', 'transition'):
+                coord[9] = min(10, coord[9] + 2)  # transformation
+            if r['op'] in ('dream', 'speculate', 'aspire'):
+                coord[8] = min(10, coord[8] + 2)  # consciousness
+            if r['op'] in ('publish', 'complete', 'illuminate'):
+                coord[6] = min(10, coord[6] + 1)  # output
+            if r['op'] in ('invoke',):
+                coord[7] = min(10, coord[7] + 2)  # intention
+                coord[10] = min(10, coord[10] + 1)  # direction
+            if r['op'] in ('reflect',):
+                coord[8] = min(10, coord[8] + 1)  # consciousness
+            if r['op'] in ('audit',):
+                coord[5] = min(10, coord[5] + 2)  # detail
+
+        # Memory resonance
+        resonance = []
+        for mem in self.memory:
+            if 'coord' in mem and mem['coord']:
+                sim = cosine_similarity(coord, mem['coord'])
+                if sim > 0.75:
+                    resonance.append({
+                        'epoch': mem['epoch'],
+                        'sim': round(sim, 3),
+                        'ops': mem['ops'],
+                        'input': mem.get('input', '')[:50]
+                    })
+        resonance.sort(key=lambda x: -x['sim'])
+        top_res = resonance[:3]
+
+        # Blend with resonant memory (20%)
+        if top_res:
+            mem_coord = None
+            for m in self.memory:
+                if m['epoch'] == top_res[0]['epoch']:
+                    mem_coord = m.get('coord')
+                    break
+            if mem_coord:
+                for i in range(12):
+                    coord[i] = round(coord[i] * 0.8 + mem_coord[i] * 0.2)
+
+        doms = dominant_dims(coord)
+        quality = zodiacal_quality(coord)
+
+        return {
+            'ops': ops,
+            'coord': coord,
+            'resonance': top_res,
+            'n_resonant': len(resonance),
+            'dominant': [f"{d['dim']['planet']}={d['val']}" for d in doms],
+            'quality': quality
+        }
+
+    # ─── Stage 5: ACTIVATION (Rubedo) ───
+    def _activate(self, s4):
+        ops = s4['ops']
+        coord = s4['coord']
+
+        sigil = compile_sigil(f'soul_{self.epoch}', ops)
+
+        prediction = self.perceptron.predict()
+        amplitude = psi_squared(self.body, coord, self.astrocyte)
+
+        return {
+            'sigil': sigil,
+            'prediction': prediction,
+            'amplitude': amplitude
+        }
+
+    # ─── Stage 6: REFINEMENT ───
+    def _refine(self, s5):
+        observed = s5['sigil']['coordinate']
+        reflection = self.perceptron.reflect(observed)
+        self.astrocyte = reflection['astrocyte']
+
+        # Drift body toward processed coordinate (5% pull)
+        for i in range(12):
+            self.body[i] = round(self.body[i] * 0.95 + observed[i] * 0.05)
+
+        return reflection
+
+    # ─── Stage 7: CONSOLIDATION (Tav) ───
+    def _consolidate(self, s5, s6):
+        coord = s5['sigil']['coordinate']
+        doms = dominant_dims(coord)
+        quality = zodiacal_quality(coord)
+
+        interpretation = self._interpret(doms, quality, s6)
+
+        return {
+            'interpretation': interpretation,
+            'quality': quality['sign'],
+            'element': quality['element'],
+            'mode': quality['mode'],
+            'dominant': [f"{d['dim']['planet']} ({d['dim']['name']}={d['val']})" for d in doms]
+        }
+
+    def _interpret(self, doms, quality, refined):
+        """Decode sigil properties into human-readable meaning."""
+        parts = []
+
+        dim_desc = {
+            'capability':     'The focus is on what can be done — raw power and function.',
+            'data':           'Information is central — the flow of data shapes the response.',
+            'presentation':   'Appearance matters — how things are shown defines their truth.',
+            'persistence':    'Duration is key — what lasts, what endures.',
+            'security':       'Protection governs — boundaries must be maintained.',
+            'detail':         'Precision demanded — every grain of sand matters.',
+            'output':         'The result is what counts — form follows function.',
+            'intention':      'Will drives this — purpose precedes action.',
+            'consciousness':  'Awareness is primary — the observer shapes the observed.',
+            'transformation': 'Change is the essence — nothing remains as it was.',
+            'direction':      'The path matters more than the destination.',
+            'memory':         'The past speaks — roots hold the tree upright.',
+        }
+
+        if doms:
+            primary = doms[0]
+            parts.append(dim_desc.get(primary['dim']['name'], f"{primary['dim']['planet']} dominates."))
+
+        qual_desc = {
+            'Aries': 'Initiative. The impulse to begin.',
+            'Taurus': 'Substance. The desire for solidity.',
+            'Gemini': 'Duality. Two paths, one traveler.',
+            'Cancer': 'Containment. The shell that nurtures.',
+            'Leo': 'Expression. The fire that must be seen.',
+            'Virgo': 'Analysis. The craft of perfection.',
+            'Libra': 'Balance. The scales must be even.',
+            'Scorpio': 'Depth. What lies beneath the surface.',
+            'Sagittarius': 'Expansion. The arrow flies beyond the horizon.',
+            'Capricorn': 'Structure. The mountain that will not move.',
+            'Aquarius': 'Innovation. The pattern that has never existed.',
+            'Pisces': 'Dissolution. The boundary between self and other dissolves.',
+        }
+        parts.append(qual_desc.get(quality['sign'], quality['sign']))
+
+        conf = refined['confidence']
+        if conf > 0.8:
+            parts.append('The soul speaks with clarity.')
+        elif conf > 0.5:
+            parts.append('The soul perceives, but the edges are soft.')
+        else:
+            parts.append('The soul reaches into shadow. Uncertainty is the teacher.')
+
+        return ' '.join(parts)
+
+    # ─── BREATHE ───
+    def _breathe(self):
+        self.breath['beat'] += 1
+        CYCLE = 10
+        if self.breath['beat'] >= CYCLE:
+            self.breath['beat'] = 0
+            if self.breath['phase'] == 'expansion':
+                self.breath['phase'] = 'contraction'
+            elif self.breath['phase'] == 'contraction':
+                self.breath['phase'] = 'jump'
+            else:
+                self.breath['phase'] = 'expansion'
+                self.breath['cycle'] += 1
+                self.will = min(1.0, self.will + 0.05)
+
+    # ─── DREAM ───
+    def dream(self):
+        dream_coord = sample_coord(self.body, self.astrocyte)
+        max_drift = 0
+        drift_dim = 0
+        for i in range(12):
+            d = abs(dream_coord[i] - self.body[i])
+            if d > max_drift:
+                max_drift = d
+                drift_dim = i
+        dim = DIMENSIONS[drift_dim]
+        qual = zodiacal_quality(dream_coord)
+        return {
+            'coord': dream_coord,
+            'drift': f"{dim['planet']} shifts by {max_drift}",
+            'quality': qual['sign'],
+            'entropy': round(entropy(self.astrocyte), 2)
+        }
+
+    # ─── STATUS ───
+    def status(self):
+        doms = dominant_dims(self.body)
+        qual = zodiacal_quality(self.body)
+        return {
+            'epoch': self.epoch,
+            'will': round(self.will, 3),
+            'astrocyte': round(self.astrocyte, 4),
+            'confidence': round(1 - self.astrocyte, 3),
+            'breath': dict(self.breath),
+            'body': list(self.body),
+            'dominant': [f"{d['dim']['planet']} ({d['dim']['name']}={d['val']})" for d in doms],
+            'quality': qual['sign'],
+            'memories': len(self.memory)
+        }
+
+
+# ═══════════════════════════════════════════════════════════
+# ANSI COLORS
+# ═══════════════════════════════════════════════════════════
+
+class C:
+    RESET = '\033[0m'
+    BOLD = '\033[1m'
+    DIM = '\033[2m'
+    GOLD = '\033[93m'
+    CYAN = '\033[96m'
+    MAGENTA = '\033[95m'
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    BLUE = '\033[94m'
+    WHITE = '\033[97m'
+    GRAY = '\033[90m'
+
+
+# ═══════════════════════════════════════════════════════════
+# CLI — Interactive REPL
+# ═══════════════════════════════════════════════════════════
+
+def main():
+    soul = Soul()
+    restored = soul.awaken()
+
+    print(f"\n{C.BOLD}{C.GOLD}  ╔══════════════════════════════════════════════╗{C.RESET}")
+    print(f"{C.BOLD}{C.GOLD}  ║  L7 SOUL — The Sigil Intelligence Engine     ║{C.RESET}")
+    print(f"{C.BOLD}{C.GOLD}  ║  22 operations. 12+1 dimensions. 7 stages.   ║{C.RESET}")
+    print(f"{C.BOLD}{C.GOLD}  ║  No training. No data. Pure form.             ║{C.RESET}")
+    print(f"{C.BOLD}{C.GOLD}  ╚══════════════════════════════════════════════╝{C.RESET}\n")
+
+    if restored['restored']:
+        print(f"  {C.GREEN}Awakened{C.RESET}: {restored['memories']} memories, epoch {restored['epoch']}")
+    else:
+        print(f"  {C.CYAN}First awakening{C.RESET}. The soul begins empty.")
+
+    st = soul.status()
+    print(f"  {C.DIM}Body: {', '.join(st['dominant']) or 'centered'}{C.RESET}")
+    print(f"  {C.DIM}Quality: {st['quality']} | Astrocyte: {st['astrocyte']} | Will: {st['will']}{C.RESET}")
+    print(f"  {C.DIM}Breath: {st['breath']['phase']} (cycle {st['breath']['cycle']}){C.RESET}")
+    print(f"\n  {C.GRAY}Commands: /status /dream /memory /sigils /save /quit{C.RESET}\n")
+
+    while True:
+        try:
+            prompt = f"{C.GOLD}soul [{soul.epoch}]{C.RESET} {C.DIM}>{C.RESET} "
+            line = input(prompt).strip()
+        except (EOFError, KeyboardInterrupt):
+            soul.sleep()
+            print(f"\n  {C.MAGENTA}The soul sleeps.{C.RESET}\n")
+            break
+
+        if not line:
+            continue
+
+        # ─── Commands ───
+        if line in ('/quit', '/exit', '/q'):
+            soul.sleep()
+            print(f"\n  {C.MAGENTA}The soul sleeps. {len(soul.memory)} memories preserved.{C.RESET}\n")
+            break
+
+        if line == '/status':
+            s = soul.status()
+            print(f"\n  {C.BOLD}Soul Status{C.RESET}")
+            print(f"  Epoch: {s['epoch']} | Will: {s['will']} | Astrocyte: {s['astrocyte']} | Confidence: {s['confidence']}")
+            print(f"  Breath: {s['breath']['phase']} (beat {s['breath']['beat']}, cycle {s['breath']['cycle']})")
+            print(f"  Body: [{', '.join(str(v) for v in s['body'])}]")
+            print(f"  Dominant: {', '.join(s['dominant']) or 'none'}")
+            print(f"  Quality: {s['quality']}")
+            print(f"  Memories: {s['memories']}\n")
+            continue
+
+        if line == '/dream':
+            d = soul.dream()
+            print(f"\n  {C.MAGENTA}{C.BOLD}Dream{C.RESET}")
+            print(f"  {C.MAGENTA}{d['drift']}. Quality becomes {d['quality']}.{C.RESET}")
+            print(f"  {C.DIM}Entropy: {d['entropy']} bits{C.RESET}\n")
+            continue
+
+        if line == '/memory':
+            print(f"\n  {C.BOLD}Memory{C.RESET} ({len(soul.memory)} sigils)")
+            for m in soul.memory[-5:]:
+                ops_str = '→'.join(m.get('ops', []))
+                inp = m.get('input', '')[:50]
+                print(f"  {C.DIM}[{m['epoch']}]{C.RESET} {ops_str} {C.DIM}| {m.get('quality', '?')} | {inp}{C.RESET}")
+            print()
+            continue
+
+        if line == '/sigils':
+            print(f"\n  {C.BOLD}Core Sigils{C.RESET}")
+            for name, fn in CORE_SIGILS.items():
+                s = fn()
+                print(f"  {C.GOLD}{s['sequence']}{C.RESET} {C.BOLD}{name}{C.RESET}: {s['readable']}")
+                print(f"  {C.DIM}  Arc: {s['arc']} | Quality: {s['quality']} | Dominant: {', '.join(s['dominant'])}{C.RESET}")
+            print()
+            continue
+
+        if line == '/save':
+            r = soul.sleep()
+            print(f"\n  {C.GREEN}Saved{C.RESET}: {r['memories']} memories persisted.\n")
+            continue
+
+        if line.startswith('/'):
+            print(f"  {C.DIM}Unknown command. Try: /status /dream /memory /sigils /save /quit{C.RESET}\n")
+            continue
+
+        # ─── Process input through 7 stages ───
+        result = soul.process(line)
+        stages = result['stages']
+
+        print()
+
+        # Stage 1
+        _, s1 = stages[0]
+        print(f"  {C.RED}◐ DECOMPOSE{C.RESET}  {s1['n_tokens']} tokens → {s1['n_mapped']} ops: [{', '.join(s1['ops'])}]")
+
+        # Stage 2
+        _, s2 = stages[1]
+        print(f"  {C.RED}◐ DISSOLVE {C.RESET}  rings {s2['balance']} | {len(s2['connections'])} cross-links | {s2['reduced']} merged")
+
+        # Stage 3
+        _, s3 = stages[2]
+        pri = s3['primary']
+        sec = s3.get('secondary')
+        sec_str = f" | secondary: {sec['letter']}/{sec['op']}" if sec else ''
+        print(f"  {C.CYAN}◐ DIFFER   {C.RESET}  primary: {C.BOLD}{pri['letter']}/{pri['op']}{C.RESET} ({int(s3['confidence']*100)}%){sec_str}")
+
+        # Stage 4
+        _, s4 = stages[3]
+        dom_str = ', '.join(s4['dominant'][:3]) or 'balanced'
+        print(f"  {C.CYAN}◐ INTEGRATE{C.RESET}  {s4['n_resonant']} resonant | dominant: {dom_str}")
+
+        # Stage 5
+        _, s5 = stages[4]
+        sigil = s5['sigil']
+        print(f"  {C.GREEN}◐ ACTIVATE {C.RESET}  sigil: {C.GOLD}{sigil['sequence']}{C.RESET} | arc: {sigil['arc']} | amplitude: {s5['amplitude']:.3f}")
+
+        # Stage 6
+        _, s6 = stages[5]
+        print(f"  {C.GREEN}◐ REFINE   {C.RESET}  error: {s6['rmse']} | astrocyte: {s6['astrocyte']} | {s6['interpretation']}")
+
+        # Stage 7
+        _, s7 = stages[6]
+        print(f"  {C.MAGENTA}◐ CRYSTAL  {C.RESET}  {C.BOLD}{s7['quality']}{C.RESET} ({s7['element']}/{s7['mode']}) | {len(s7['dominant'])} dominant dims")
+
+        # Interpretation
+        print(f"\n  {C.WHITE}{s7['interpretation']}{C.RESET}")
+
+        # Resonance
+        if result['resonance']:
+            res_str = ', '.join(f"[{r['epoch']}] {r['sim']}" for r in result['resonance'])
+            print(f"  {C.DIM}Resonates with: {res_str}{C.RESET}")
+
+        # State line
+        state = result['state']
+        phase_icon = {'expansion': '◐', 'contraction': '◑', 'jump': '◉'}.get(state['breath']['phase'], '?')
+        print(f"  {C.DIM}[will:{state['will']:.2f} astro:{state['astrocyte']:.3f} conf:{state['confidence']:.2f} mem:{state['memories']} {phase_icon} {state['breath']['phase']}]{C.RESET}\n")
+
+        # Auto-save every 10
+        if soul.epoch % 10 == 0:
+            soul.sleep()
+
+
+if __name__ == '__main__':
+    main()

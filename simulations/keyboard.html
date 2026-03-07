@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L7 Keyboard — The Star Emerges</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#07070c;overflow:hidden;font-family:'Courier New',monospace}
+canvas{display:block;width:100vw;height:100vh;cursor:crosshair}
+#overlay{position:fixed;bottom:0;left:0;right:0;background:rgba(7,7,12,.85);border-top:1px solid #1a1a25;padding:6px 16px;display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap;font-size:.72em;color:#888;z-index:10}
+#overlay .g{color:#c8b06a}
+#overlay .d{color:#666;font-size:.85em}
+.btn{background:#1a1a28;border:1px solid #2a2a38;color:#c8b06a;padding:3px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:1em;transition:all .2s}
+.btn:hover{background:#252535;border-color:#c8b06a}
+</style>
+</head>
+<body>
+<canvas id="C"></canvas>
+<div id="overlay">
+  <button class="btn" id="syncBtn">&#9737; SYNC SKY</button>
+  <span><span class="d">k</span> <span class="g" id="oK">0.000</span></span>
+  <span class="g" style="font-size:2em;line-height:1" id="oHex">&#x4DC0;</span>
+  <span><span class="d">&#947;</span> <span class="g" id="oG">1.000</span></span>
+  <span><span class="d">&#945;</span> <span class="g" id="oA">1.000</span></span>
+  <span id="oEmo" class="g">—</span>
+  <span id="oTri" class="d">—</span>
+  <span id="oGeo" class="d">—</span>
+  <span id="oTau" class="d">—</span>
+  <span id="oPos" class="d">—</span>
+</div>
+<script>
+// ═══════════════════════════════════════════
+//  DATA — THE ALPHABET
+// ═══════════════════════════════════════════
+
+const KEYS = [
+  {name:'ROOT',   p:'\u2644',yv:'Solidify', nv:'Dissolve', pn:'saturn'},
+  {name:'FORTUNE',p:'\u2643',yv:'Expand',   nv:'Contract', pn:'jupiter'},
+  {name:'FORCE',  p:'\u2642',yv:'Push',     nv:'Yield',    pn:'mars'},
+  {name:'LIGHT',  p:'\u2609',yv:'Brighten', nv:'Dim',      pn:'sun'},
+  {name:'GRACE',  p:'\u2640',yv:'Unite',    nv:'Separate', pn:'venus'},
+  {name:'WORD',   p:'\u263F',yv:'Speak',    nv:'Listen',   pn:'mercury'}
+];
+
+const TRI=[
+  {n:'Earth',s:'\u2637',q:'Receptive',e:'Devotion',ab:'It\u00e1'},
+  {n:'Mountain',s:'\u2636',q:'Stillness',e:'Meditation',ab:'Ukano'},
+  {n:'Water',s:'\u2635',q:'Abyss',e:'Depth',ab:'Nasak\u00f3'},
+  {n:'Wind',s:'\u2634',q:'Gentle',e:'Penetration',ab:'Aberis\u00fan'},
+  {n:'Thunder',s:'\u2633',q:'Arousing',e:'Movement',ab:'Mokongo'},
+  {n:'Fire',s:'\u2632',q:'Clinging',e:'Clarity',ab:'Isu\u00e9'},
+  {n:'Lake',s:'\u2631',q:'Joyous',e:'Joy',ab:'Empeg\u00f3'},
+  {n:'Heaven',s:'\u2630',q:'Creative',e:'Strength',ab:'Iyamba'}
+];
+
+const GEO=[['Populus','People'],['Tristitia','Sadness'],['Albus','Purity'],['Conjunctio','Union'],['Rubeus','Passion'],['Acquisitio','Gain'],['Puella','Beauty'],['Laetitia','Joy'],['Caput Draconis','Dragon Head'],['Fortuna Minor','Lesser Fortune'],['Carcer','Prison'],['Fortuna Major','Greater Fortune'],['Amissio','Loss'],['Cauda Draconis','Dragon Tail'],['Puer','Warrior'],['Via','The Way']];
+
+const EMO=[
+  ['Pure Devotion','Grounded Silence','Deep Patience','Gentle Surrender','Awakening Earth','Devoted Clarity','Joyful Rest','Receptive Power'],
+  ["Mountain Root",'Absolute Stillness','Hidden Depths','Mountain Breeze','Earthquake','Volcanic Vision','Mountain Lake','Peak of Heaven'],
+  ['Dark Current','Frozen Stream','Abyssal Mirror','Wind Over Water','Thunder Rain','Steam Rising','Marsh Mist','Cosmic Waters'],
+  ['Soft Growth','Wind in Mountains','Gentle Stream','Infinite Breath','Wind Thunder','Wind-Fed Flame','Ripple Dance',"Heaven Breath"],
+  ['Sprout','Mountain Echo','Flash Flood','Thunder Breeze','Infinite Motion','Lightning Strike','Thunder Joy','Great Power'],
+  ['Inner Glow','Beacon','Mist Fire','Fan Flames','Lightning Storm','Absolute Clarity','Radiant Joy','Celestial Fire'],
+  ['Still Waters','Reflection','Fog Rising','Lake Ripple','Joyful Thunder','Sunset Glow','Infinite Joy','Sky Mirror'],
+  ['Earth Receives','Summit','Heaven Rain','Cosmic Wind','Creative Force','Diamond Light','Abundant Joy','Pure Creation']
+];
+
+const SIGN_S=['\u2648','\u2649','\u264A','\u264B','\u264C','\u264D','\u264E','\u264F','\u2650','\u2651','\u2652','\u2653'];
+const SIGN_N=['Ari','Tau','Gem','Can','Leo','Vir','Lib','Sco','Sag','Cap','Aqu','Pis'];
+
+// Coupling: how star point i's change ripples to point j
+// Points: 0=WORD(top), 1=FORCE(TR), 2=GRACE(BR), 3=ROOT(bot), 4=LIGHT(BL), 5=FORTUNE(TL)
+// Same triangle=strong, adjacent=medium, opposite=weak/negative
+const COUP=[
+  [ 0,  .12, .28,-.10, .28, .12],  // WORD
+  [.12,  0,  .12, .28,-.07, .28],  // FORCE
+  [.28, .12,  0,  .12, .22,-.07],  // GRACE
+  [-.10,.28, .12,  0,  .12, .28],  // ROOT
+  [.28,-.07, .22, .12,  0,  .12],  // LIGHT
+  [.12, .28,-.07, .28, .12,  0 ]   // FORTUNE
+];
+
+// Star point index → V[] (hexagram line) index
+// Point 0(top)=Line6=V[5], 1(TR)=Line3=V[2], 2(BR)=Line5=V[4],
+// 3(bot)=Line1=V[0], 4(BL)=Line4=V[3], 5(TL)=Line2=V[1]
+const PT2V = [5, 2, 4, 0, 3, 1];
+const V2PT = [3, 5, 1, 4, 2, 0]; // inverse
+
+// ═══════════════════════════════════════════
+//  EPHEMERIS
+// ═══════════════════════════════════════════
+
+function jd(d){let y=d.getUTCFullYear(),m=d.getUTCMonth()+1;const dy=d.getUTCDate()+d.getUTCHours()/24+d.getUTCMinutes()/1440;if(m<=2){y--;m+=12;}const A=Math.floor(y/100);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+dy+2-A+Math.floor(A/4)-1524.5;}
+
+function computeSky(date){
+  const T=(jd(date)-2451545)/36525;
+  const r={
+    sun:280.46646+36000.76983*T+1.9146*Math.sin((357.5291+35999.0503*T)*Math.PI/180),
+    moon:218.3165+481267.8813*T,
+    mercury:252.2509+149472.6746*T+6.7*Math.sin((174.7948+149472.5153*T)*Math.PI/180),
+    venus:181.9798+58517.8157*T+.76*Math.sin((50.4161+58517.8039*T)*Math.PI/180),
+    mars:355.433+19140.2993*T+6.4*Math.sin((19.373+19139.8585*T)*Math.PI/180),
+    jupiter:34.3515+3034.9057*T+5.55*Math.sin((20.0202+3034.6961*T)*Math.PI/180),
+    saturn:50.0774+1222.1138*T+6.4*Math.sin((317.0207+1222.1138*T)*Math.PI/180)
+  };
+  const p={};for(const[k,v]of Object.entries(r))p[k]=((v%360)+360)%360;
+  return p;
+}
+
+function aspects(sky){
+  const nm=['saturn','jupiter','mars','sun','venus','mercury'];
+  const df=[{n:'conjunction',a:0,o:8,c:'#e8d08a'},{n:'sextile',a:60,o:6,c:'#66aa66'},{n:'square',a:90,o:7,c:'#cc5555'},{n:'trine',a:120,o:8,c:'#5588cc'},{n:'opposition',a:180,o:8,c:'#bb66bb'}];
+  const r=[];
+  for(let i=0;i<nm.length;i++)for(let j=i+1;j<nm.length;j++){
+    let s=Math.abs(sky[nm[i]]-sky[nm[j]]);if(s>180)s=360-s;
+    for(const d of df)if(Math.abs(s-d.a)<=d.o){r.push({p1:nm[i],p2:nm[j],c:d.c,n:d.n});break;}
+  }
+  return r;
+}
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+
+const V=[.5,.5,.5,.5,.5,.5];
+let sky=computeSky(new Date()), asp=aspects(sky);
+let dragPt=-1, dragStartY=0, dragStartV=0;
+let breathPhase=0, time=0;
+const dpr=window.devicePixelRatio||1;
+const particles=[];
+const waves=[];  // standing wave excitations per edge
+
+const bit=v=>v>=.5?1:0, clamp=v=>Math.max(0,Math.min(1,v));
+function triI(a,b,c){return bit(a)*4+bit(b)*2+bit(c);}
+function lowI(){return triI(V[0],V[1],V[2]);}
+function upI(){return triI(V[3],V[4],V[5]);}
+function geoI(){return bit(V[0])*8+bit(V[1])*4+bit(V[2])*2+bit(V[3]);}
+function getK(){let s=0;for(let i=0;i<6;i++)s+=Math.abs(V[i]-.5);return s/3;}
+function getA(){let u=0;for(let i=0;i<6;i++)u+=1-2*Math.abs(V[i]-.5);return u/6;}
+function getG(){const a=Math.min(getA(),.995);return 1/Math.sqrt(1-a*a);}
+function q3(v){return v<.333?0:v<.667?1:2;}
+function get18(){const q=V.map(q3);return[q[0]*6+q[1]*2+((V[0]+V[1])/2>.5?1:0),q[2]*6+q[3]*2+((V[2]+V[3])/2>.5?1:0),q[4]*6+q[5]*2+((V[4]+V[5])/2>.5?1:0)];}
+
+// ═══════════════════════════════════════════
+//  GEOMETRY — THE STAR OF DAVID
+// ═══════════════════════════════════════════
+
+let CX, CY, R, starPts=[], innerPts=[], zodR;
+
+function layout(){
+  const W=window.innerWidth, H=window.innerHeight-44;
+  CX=W/2; CY=H/2;
+  R=Math.min(W,H)*.30;
+  zodR=R*1.55;
+  starPts=[];innerPts=[];
+  for(let i=0;i<6;i++){
+    const a=(i*60-90)*Math.PI/180;
+    starPts.push({x:CX+Math.cos(a)*R, y:CY+Math.sin(a)*R, a});
+  }
+  const iR=R/Math.sqrt(3);
+  for(let i=0;i<6;i++){
+    const a=(i*60-60)*Math.PI/180;
+    innerPts.push({x:CX+Math.cos(a)*iR, y:CY+Math.sin(a)*iR});
+  }
+}
+
+// Triangle edges: ▲ spirit (0,2,4), ▼ body (1,3,5)
+const TRI_A=[[0,2],[2,4],[4,0]]; // spirit triangle
+const TRI_B=[[1,3],[3,5],[5,1]]; // body triangle
+const DIAM=[[0,3],[1,4],[2,5]];  // diameters (opposite points)
+const HEX_E=[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]]; // inner hexagon
+
+// ═══════════════════════════════════════════
+//  RIPPLE & PARTICLES
+// ═══════════════════════════════════════════
+
+function fireRipple(ptIdx, delta){
+  if(Math.abs(delta)<.005) return;
+  for(let j=0;j<6;j++){
+    if(j===ptIdx) continue;
+    const c=COUP[ptIdx][j];
+    const d=Math.min(Math.abs(j-ptIdx), 6-Math.abs(j-ptIdx));
+    // Shift neighbor value
+    setTimeout(()=>{V[PT2V[j]]=clamp(V[PT2V[j]]+delta*c*.35);},d*40);
+    // Spawn particles along connecting edges
+    particles.push({from:ptIdx,to:j,t:0,speed:1.5+Math.abs(c)*3,alpha:Math.abs(delta)*3,born:time+d*.04});
+  }
+  // Standing wave excitation on connected edges
+  [...TRI_A,...TRI_B,...DIAM].forEach(([a,b])=>{
+    if(a===ptIdx||b===ptIdx){
+      waves.push({a,b,amp:Math.abs(delta)*12,phase:0,decay:.97,born:time});
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+//  SYNC TO SKY
+// ═══════════════════════════════════════════
+
+function syncToSky(){
+  sky=computeSky(new Date()); asp=aspects(sky);
+  const order=['saturn','jupiter','mars','sun','venus','mercury'];
+  for(let i=0;i<6;i++){
+    const nv=.5+.45*Math.sin(sky[order[i]]*Math.PI/180);
+    const delta=nv-V[i]; V[i]=nv;
+    fireRipple(V2PT[i],delta*.3);
+  }
+}
+
+// ═══════════════════════════════════════════
+//  RENDERING
+// ═══════════════════════════════════════════
+
+const canvas=document.getElementById('C');
+const ctx=canvas.getContext('2d');
+
+function resize(){
+  canvas.width=window.innerWidth*dpr;
+  canvas.height=(window.innerHeight-44)*dpr;
+  canvas.style.width=window.innerWidth+'px';
+  canvas.style.height=(window.innerHeight-44)+'px';
+  layout();
+}
+
+function nodeColor(v){
+  if(v<=.5){const t=v*2;return`hsl(220,${70-t*60}%,${25+t*15}%)`;}
+  const t=(v-.5)*2;return`hsl(42,${t*70}%,${32+t*28}%)`;
+}
+
+function render(){
+  time=performance.now()/1000;
+  breathPhase+=.015*getG();
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const W=window.innerWidth, H=window.innerHeight-44;
+  ctx.fillStyle='#07070c';ctx.fillRect(0,0,W,H);
+
+  // ─── ZODIAC RING ───
+  for(let i=0;i<12;i++){
+    const a1=(i*30-90)*Math.PI/180, a2=((i+1)*30-90)*Math.PI/180;
+    ctx.beginPath();ctx.moveTo(CX,CY);ctx.arc(CX,CY,zodR,a1,a2);ctx.closePath();
+    ctx.fillStyle=i%2?'#0a0a14':'#0c0c18';ctx.fill();
+    ctx.strokeStyle='#181825';ctx.lineWidth=.5;ctx.stroke();
+    const ma=(a1+a2)/2;
+    ctx.fillStyle='#444';ctx.font='12px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(SIGN_S[i],CX+Math.cos(ma)*(zodR-12),CY+Math.sin(ma)*(zodR-12));
+  }
+  // Clear inside zodiac ring
+  ctx.beginPath();ctx.arc(CX,CY,zodR-22,0,Math.PI*2);ctx.fillStyle='#07070c';ctx.fill();
+
+  // Aspect lines between planets
+  const pGlyph={saturn:'\u2644',jupiter:'\u2643',mars:'\u2642',sun:'\u2609',venus:'\u2640',mercury:'\u263F',moon:'\u263D'};
+  const pCol={saturn:'#999',jupiter:'#cc9944',mars:'#cc5544',sun:'#eedd55',venus:'#88cc88',mercury:'#88aadd',moon:'#ccccee'};
+  const aspR=zodR*.6;
+  asp.forEach(a=>{
+    const a1=(sky[a.p1]-90)*Math.PI/180, a2=(sky[a.p2]-90)*Math.PI/180;
+    ctx.beginPath();ctx.moveTo(CX+Math.cos(a1)*aspR,CY+Math.sin(a1)*aspR);
+    ctx.lineTo(CX+Math.cos(a2)*aspR,CY+Math.sin(a2)*aspR);
+    ctx.strokeStyle=a.c+'55';ctx.lineWidth=.8;ctx.stroke();
+  });
+
+  // Planet glyphs on zodiac ring
+  ['saturn','jupiter','mars','sun','venus','mercury','moon'].forEach(pn=>{
+    if(!sky[pn])return;
+    const a=(sky[pn]-90)*Math.PI/180, pr=zodR-36;
+    const px=CX+Math.cos(a)*pr, py=CY+Math.sin(a)*pr;
+    ctx.beginPath();ctx.arc(px,py,7,0,Math.PI*2);ctx.fillStyle=(pCol[pn]||'#c8b06a')+'33';ctx.fill();
+    ctx.fillStyle=pCol[pn]||'#c8b06a';ctx.font='11px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(pGlyph[pn]||'?',px,py);
+  });
+
+  // ─── LORENTZ DIAMONDS (vesica piscis) ───
+  const gamma=getG(), bulge=(gamma-1)*18*Math.sin(breathPhase);
+  DIAM.forEach(([a,b])=>{
+    const p1=starPts[a],p2=starPts[b];
+    const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
+    const dx=p2.x-p1.x, dy=p2.y-p1.y;
+    const len=Math.sqrt(dx*dx+dy*dy);
+    const nx=-dy/len, ny=dx/len;
+    ctx.beginPath();ctx.moveTo(p1.x,p1.y);
+    ctx.quadraticCurveTo(mx+nx*bulge,my+ny*bulge,p2.x,p2.y);
+    ctx.quadraticCurveTo(mx-nx*bulge,my-ny*bulge,p1.x,p1.y);
+    ctx.strokeStyle=`rgba(200,176,106,${.06+Math.abs(bulge)*.003})`;ctx.lineWidth=.8;ctx.stroke();
+    ctx.fillStyle=`rgba(200,176,106,${.015+Math.abs(bulge)*.001})`;ctx.fill();
+  });
+
+  // ─── INNER HEXAGON (breathing) ───
+  const breathScale=1+Math.sin(breathPhase)*.03*getA();
+  ctx.beginPath();
+  for(let i=0;i<6;i++){
+    const ip=innerPts[i];
+    const bx=CX+(ip.x-CX)*breathScale, by=CY+(ip.y-CY)*breathScale;
+    if(i===0)ctx.moveTo(bx,by);else ctx.lineTo(bx,by);
+  }
+  ctx.closePath();ctx.strokeStyle='rgba(200,176,106,.08)';ctx.lineWidth=.5;ctx.stroke();
+
+  // ─── TRIANGLES ───
+  // ▲ Spirit triangle (points 0,2,4) — gold
+  ctx.beginPath();
+  ctx.moveTo(starPts[0].x,starPts[0].y);ctx.lineTo(starPts[2].x,starPts[2].y);
+  ctx.lineTo(starPts[4].x,starPts[4].y);ctx.closePath();
+  ctx.strokeStyle='rgba(200,176,106,.18)';ctx.lineWidth=1;ctx.stroke();
+
+  // ▼ Body triangle (points 1,3,5) — blue
+  ctx.beginPath();
+  ctx.moveTo(starPts[1].x,starPts[1].y);ctx.lineTo(starPts[3].x,starPts[3].y);
+  ctx.lineTo(starPts[5].x,starPts[5].y);ctx.closePath();
+  ctx.strokeStyle='rgba(136,153,204,.18)';ctx.lineWidth=1;ctx.stroke();
+
+  // ─── STANDING WAVES ON EDGES ───
+  for(let w=waves.length-1;w>=0;w--){
+    const wv=waves[w];
+    wv.amp*=wv.decay;wv.phase+=.12;
+    if(wv.amp<.3){waves.splice(w,1);continue;}
+    const p1=starPts[wv.a],p2=starPts[wv.b];
+    const dx=p2.x-p1.x,dy=p2.y-p1.y;
+    const len=Math.sqrt(dx*dx+dy*dy);
+    const nx=-dy/len,ny=dx/len;
+    ctx.beginPath();
+    for(let s=0;s<=30;s++){
+      const t=s/30;
+      const x=p1.x+dx*t, y=p1.y+dy*t;
+      const wave=Math.sin(4*Math.PI*t)*Math.cos(wv.phase)*wv.amp;
+      if(s===0)ctx.moveTo(x+nx*wave,y+ny*wave);else ctx.lineTo(x+nx*wave,y+ny*wave);
+    }
+    ctx.strokeStyle=`rgba(200,176,106,${Math.min(wv.amp*.08,.25)})`;ctx.lineWidth=1;ctx.stroke();
+  }
+
+  // ─── FLOWING PARTICLES ───
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    if(time<p.born){continue;}
+    p.t+=(time-Math.max(p.born,time-.02))*p.speed*.5;
+    if(p.t>1){particles.splice(i,1);continue;}
+    const from=starPts[p.from],to=starPts[p.to];
+    const x=from.x+(to.x-from.x)*p.t, y=from.y+(to.y-from.y)*p.t;
+    const alpha=Math.min(p.alpha,1)*(1-p.t*.5);
+    const grad=ctx.createRadialGradient(x,y,0,x,y,5);
+    grad.addColorStop(0,`rgba(232,208,138,${alpha})`);
+    grad.addColorStop(1,'rgba(232,208,138,0)');
+    ctx.fillStyle=grad;ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+  }
+
+  // ─── STAR NODES ───
+  for(let i=0;i<6;i++){
+    const sp=starPts[i], li=PT2V[i], v=V[li], k=KEYS[li];
+    const nr=R*.16, col=nodeColor(v);
+
+    // Glow
+    const isActive=i===dragPt;
+    const glowR=nr+12+(isActive?8:0);
+    const gc=v>.5?'rgba(210,180,90,':'rgba(80,100,200,';
+    const glowA=isActive?.35:Math.abs(v-.5)*.3;
+    const grd=ctx.createRadialGradient(sp.x,sp.y,nr*.5,sp.x,sp.y,glowR);
+    grd.addColorStop(0,gc+glowA+')');grd.addColorStop(1,gc+'0)');
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(sp.x,sp.y,glowR,0,Math.PI*2);ctx.fill();
+
+    // Fill circle
+    ctx.beginPath();ctx.arc(sp.x,sp.y,nr,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle=isActive?'#e8d08a':'#2a2a38';ctx.lineWidth=isActive?2:1;ctx.stroke();
+
+    // Fill level indicator (arc)
+    ctx.beginPath();ctx.arc(sp.x,sp.y,nr-2,Math.PI/2,(Math.PI/2)-v*Math.PI*2,true);
+    ctx.strokeStyle='rgba(232,208,138,.3)';ctx.lineWidth=2;ctx.stroke();
+
+    // Labels
+    ctx.fillStyle='#e8d08a';ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(k.name,sp.x,sp.y-7);
+    ctx.font='15px serif';ctx.fillStyle='#aaa';
+    ctx.fillText(k.p,sp.x,sp.y+7);
+
+    // Value outside node
+    ctx.font='8px monospace';ctx.fillStyle='#666';
+    const oa=starPts[i].a;
+    ctx.fillText(v.toFixed(2),sp.x+Math.cos(oa)*(nr+18),sp.y+Math.sin(oa)*(nr+18));
+
+    // Verb labels (further out)
+    const verb=v>=.5?k.yv:k.nv;
+    ctx.font='7px monospace';ctx.fillStyle=v>=.5?'rgba(200,176,106,.4)':'rgba(136,153,204,.4)';
+    ctx.fillText(verb,sp.x+Math.cos(oa)*(nr+30),sp.y+Math.sin(oa)*(nr+30));
+
+    // Planet sign
+    const pL=sky[k.pn]; if(pL!==undefined){
+      const si=Math.floor(pL/30);
+      ctx.font='7px monospace';ctx.fillStyle='#555';
+      ctx.fillText(SIGN_S[si]+' '+(pL%30|0)+'\u00b0',sp.x+Math.cos(oa)*(nr+42),sp.y+Math.sin(oa)*(nr+42));
+    }
+  }
+
+  // ─── CENTER ───
+  const b=i=>bit(V[i]);
+  const num=b(0)+b(1)*2+b(2)*4+b(3)*8+b(4)*16+b(5)*32;
+  const lo=lowI(),up=upI();
+
+  // Center hexagram symbol
+  const centerPulse=1+Math.sin(time*2)*.05;
+  ctx.fillStyle='#e8d08a';ctx.font=(20*centerPulse)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(String.fromCodePoint(0x4DC0+num),CX,CY-8);
+
+  // Trigram labels
+  ctx.font='9px monospace';ctx.fillStyle='#888';
+  ctx.fillText(TRI[lo].s+' '+TRI[lo].n+' / '+TRI[up].s+' '+TRI[up].n,CX,CY+8);
+
+  // Abakuá
+  ctx.font='7px monospace';ctx.fillStyle='#555';
+  ctx.fillText(TRI[lo].ab+' \u2014 '+TRI[up].ab,CX,CY+20);
+
+  // ─── UPDATE OVERLAY ───
+  const k2=getK(),g2=getG(),a2=getA(),gi=geoI(),p18=get18();
+  document.getElementById('oK').textContent=k2.toFixed(3);
+  document.getElementById('oG').textContent=g2.toFixed(3);
+  document.getElementById('oA').textContent=a2.toFixed(3);
+  document.getElementById('oHex').textContent=String.fromCodePoint(0x4DC0+num);
+  document.getElementById('oEmo').textContent=EMO[lo][up];
+  document.getElementById('oTri').textContent=TRI[lo].s+'/'+TRI[up].s;
+  document.getElementById('oGeo').textContent=GEO[gi][0];
+  document.getElementById('oTau').textContent='\u03C4=('+lo+','+b(0)+b(1)+b(2)+')+i('+up+','+b(3)+b(4)+b(5)+')';
+  document.getElementById('oPos').textContent='['+p18.join(',')+']';
+
+  requestAnimationFrame(render);
+}
+
+// ═══════════════════════════════════════════
+//  INTERACTION
+// ═══════════════════════════════════════════
+
+function hitTest(mx,my){
+  for(let i=0;i<6;i++){
+    const dx=mx-starPts[i].x,dy=my-starPts[i].y;
+    if(dx*dx+dy*dy<(R*.2)*(R*.2))return i;
+  }
+  return-1;
+}
+
+canvas.addEventListener('mousedown',e=>{
+  const pt=hitTest(e.clientX,e.clientY);
+  if(pt>=0){dragPt=pt;dragStartY=e.clientY;dragStartV=V[PT2V[pt]];}
+});
+canvas.addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  const pt=hitTest(t.clientX,t.clientY);
+  if(pt>=0){dragPt=pt;dragStartY=t.clientY;dragStartV=V[PT2V[pt]];e.preventDefault();}
+},{passive:false});
+
+window.addEventListener('mousemove',e=>{
+  if(dragPt<0)return;
+  const dy=dragStartY-e.clientY;
+  const nv=clamp(dragStartV+dy/160);
+  const li=PT2V[dragPt], delta=nv-V[li];
+  V[li]=nv;
+  if(Math.abs(delta)>.008)fireRipple(dragPt,delta*.25);
+});
+window.addEventListener('touchmove',e=>{
+  if(dragPt<0)return;
+  const t=e.touches[0];
+  const dy=dragStartY-t.clientY;
+  const nv=clamp(dragStartV+dy/160);
+  const li=PT2V[dragPt], delta=nv-V[li];
+  V[li]=nv;
+  if(Math.abs(delta)>.008)fireRipple(dragPt,delta*.25);
+},{passive:false});
+window.addEventListener('mouseup',()=>{dragPt=-1;});
+window.addEventListener('touchend',()=>{dragPt=-1;});
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+
+window.addEventListener('resize',resize);
+document.getElementById('syncBtn').addEventListener('click',syncToSky);
+resize();
+syncToSky();
+
+// Re-sync sky every 60 seconds
+setInterval(()=>{sky=computeSky(new Date());asp=aspects(sky);},60000);
+
+render();
+</script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+
+
 /**
  * L7 .morph Runtime — Dreamscape Credential Capture & Persistence
  * Law XVII: .morph is the dreamscape — mutable, experimental, sacred.
@@ -365,3 +367,11 @@
               `DPR: ${credentials.dpr}`);
 
 })();
+
+// L7:PROVENANCE
+// Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)
+// File: simulations/morph-runtime.js | Body-Hash: SHA-256:88d3dbb52b01268a2e28ffb41d2c97027b73d52dabc63a8c77da1bd618804f87
+// Chain-Hash: SHA-256:2b58ba945962a33500f858247f84f877774f0288c9c473deec25b8ae85135bb9 | Signed: 2026-03-01T15:09:50.013176+00:00
+// This work is the intellectual property of Alberto Valido Delgado.
+// Chain: 11 works. Verify: python3 provenance.py verify simulations/morph-runtime.js
+// L7:PROVENANCE

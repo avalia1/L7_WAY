@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L7 Cockpit — Spacecraft Navigation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050508;overflow:hidden;font-family:'Courier New',monospace;color:#c8b06a}
+canvas{display:block;cursor:crosshair}
+#bar{position:fixed;bottom:0;left:0;right:0;background:rgba(5,5,8,.92);border-top:1px solid #1a1a25;padding:5px 12px;display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;font-size:.7em;z-index:10}
+#bar .g{color:#e8d08a}
+#bar .d{color:#555}
+.btn{background:#151520;border:1px solid #2a2a38;color:#c8b06a;padding:3px 10px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:1em}
+.btn:hover{background:#252535;border-color:#c8b06a}
+#tip{position:fixed;pointer-events:none;background:rgba(10,10,18,.92);border:1px solid #333;border-radius:5px;padding:8px 12px;font-size:11px;color:#ccc;max-width:280px;display:none;z-index:20;line-height:1.5}
+#tip .th{color:#e8d08a;font-weight:bold;margin-bottom:3px}
+#tip .tc{color:#888;font-size:10px}
+</style>
+</head>
+<body>
+<canvas id="C"></canvas>
+<div id="tip"><div class="th" id="tipH"></div><div id="tipB"></div><div class="tc" id="tipC"></div></div>
+<div id="bar">
+  <button class="btn" id="syncBtn">&#9737; SYNC</button>
+  <span><span class="d">Long Count</span> <span class="g" id="oLC">—</span></span>
+  <span><span class="d">Tzolkin</span> <span class="g" id="oTz">—</span></span>
+  <span><span class="d">Haab</span> <span class="g" id="oHb">—</span></span>
+  <span class="g" style="font-size:1.8em;line-height:1" id="oHex">&#x4DC0;</span>
+  <span><span class="d">&#947;</span> <span class="g" id="oG">1.000</span></span>
+  <span class="g" id="oEmo">—</span>
+  <span><span class="d">&#964;</span> <span class="g" id="oTau">—</span></span>
+</div>
+<script>
+// ═══════════════════════════════════════════════════
+//  RING DATA — EVERY SYSTEM IN THE UNIVERSE
+// ═══════════════════════════════════════════════════
+
+const NAHUAL=[
+  {n:'Imix',   m:'Crocodile',dir:'East'},  {n:'Ik',     m:'Wind',     dir:'North'},
+  {n:'Akbal',  m:'Night',    dir:'West'},  {n:'Kan',    m:'Seed',     dir:'South'},
+  {n:'Chicchan',m:'Serpent', dir:'East'},  {n:'Cimi',   m:'Death',    dir:'North'},
+  {n:'Manik',  m:'Deer',     dir:'West'},  {n:'Lamat',  m:'Star',     dir:'South'},
+  {n:'Muluc',  m:'Water',    dir:'East'},  {n:'Oc',     m:'Dog',      dir:'North'},
+  {n:'Chuen',  m:'Monkey',   dir:'West'},  {n:'Eb',     m:'Road',     dir:'South'},
+  {n:'Ben',    m:'Reed',     dir:'East'},  {n:'Ix',     m:'Jaguar',   dir:'North'},
+  {n:'Men',    m:'Eagle',    dir:'West'},  {n:'Cib',    m:'Owl',      dir:'South'},
+  {n:'Caban',  m:'Earth',    dir:'East'},  {n:'Etznab', m:'Flint',    dir:'North'},
+  {n:'Cauac',  m:'Storm',    dir:'West'},  {n:'Ahau',   m:'Sun',      dir:'South'}
+];
+const DIR_COL={East:'#d94444',North:'#99b8dd',West:'#4455aa',South:'#ddbb44'};
+
+const TONE=[
+  {n:'Magnetic',   q:'Unity'},     {n:'Lunar',      q:'Duality'},
+  {n:'Electric',   q:'Rhythm'},    {n:'Self-Existing',q:'Foundation'},
+  {n:'Overtone',   q:'Center'},    {n:'Rhythmic',   q:'Balance'},
+  {n:'Resonant',   q:'Channel'},   {n:'Galactic',   q:'Integrity'},
+  {n:'Solar',      q:'Intention'},  {n:'Planetary',  q:'Manifestation'},
+  {n:'Spectral',   q:'Liberation'},{n:'Crystal',    q:'Cooperation'},
+  {n:'Cosmic',     q:'Transcendence'}
+];
+
+const HAAB=[
+  {n:'Pop',m:'Jaguar Mat'},{n:'Uo',m:'Frog'},{n:'Zip',m:'Red Conjunction'},
+  {n:'Zotz',m:'Bat'},{n:'Tzec',m:'Skull'},{n:'Xul',m:'End'},
+  {n:'Yaxkin',m:'New Sun'},{n:'Mol',m:'Harvest'},{n:'Chen',m:'Black Storm'},
+  {n:'Yax',m:'Green Storm'},{n:'Zac',m:'White Storm'},{n:'Ceh',m:'Red Deer'},
+  {n:'Mac',m:'Enclosure'},{n:'Kankin',m:'Yellow Sun'},{n:'Muan',m:'Clouds'},
+  {n:'Pax',m:'Planting Time'},{n:'Kayab',m:'Turtle'},{n:'Cumku',m:'Dark Place'},
+  {n:'Wayeb',m:'The Void'}
+];
+
+const TRI=[
+  {n:'Earth',s:'\u2637',q:'Receptive',e:'Devotion',c:'#556644'},
+  {n:'Mountain',s:'\u2636',q:'Stillness',e:'Meditation',c:'#888899'},
+  {n:'Water',s:'\u2635',q:'Abyss',e:'Depth',c:'#4466aa'},
+  {n:'Wind',s:'\u2634',q:'Gentle',e:'Penetration',c:'#55aa77'},
+  {n:'Thunder',s:'\u2633',q:'Arousing',e:'Movement',c:'#8855aa'},
+  {n:'Fire',s:'\u2632',q:'Clinging',e:'Clarity',c:'#cc5544'},
+  {n:'Lake',s:'\u2631',q:'Joyous',e:'Joy',c:'#44aaaa'},
+  {n:'Heaven',s:'\u2630',q:'Creative',e:'Strength',c:'#ccaa44'}
+];
+
+const GEO=[
+  {n:'Populus',m:'People',c:'#8a7e5a'},{n:'Tristitia',m:'Sadness',c:'#6a5e4a'},
+  {n:'Albus',m:'Purity',c:'#aaa89a'},{n:'Conjunctio',m:'Union',c:'#9a8e6a'},
+  {n:'Rubeus',m:'Passion',c:'#aa6655'},{n:'Acquisitio',m:'Gain',c:'#88a855'},
+  {n:'Puella',m:'Beauty',c:'#aa88aa'},{n:'Laetitia',m:'Joy',c:'#bbaa55'},
+  {n:'Caput Draconis',m:'Dragon Head',c:'#aa5555'},{n:'Fortuna Minor',m:'Lesser Fortune',c:'#aa9955'},
+  {n:'Carcer',m:'Prison',c:'#5a5a6a'},{n:'Fortuna Major',m:'Greater Fortune',c:'#ccaa44'},
+  {n:'Amissio',m:'Loss',c:'#7a6a5a'},{n:'Cauda Draconis',m:'Dragon Tail',c:'#886655'},
+  {n:'Puer',m:'Warrior',c:'#cc7744'},{n:'Via',m:'The Way',c:'#aaaaaa'}
+];
+
+const ZOD=[
+  {s:'\u2648',n:'Aries',el:'Fire',c:'#cc4433'},  {s:'\u2649',n:'Taurus',el:'Earth',c:'#55aa55'},
+  {s:'\u264A',n:'Gemini',el:'Air',c:'#ddcc44'},   {s:'\u264B',n:'Cancer',el:'Water',c:'#4466bb'},
+  {s:'\u264C',n:'Leo',el:'Fire',c:'#dd6633'},      {s:'\u264D',n:'Virgo',el:'Earth',c:'#66aa66'},
+  {s:'\u264E',n:'Libra',el:'Air',c:'#ccbb55'},     {s:'\u264F',n:'Scorpio',el:'Water',c:'#5555aa'},
+  {s:'\u2650',n:'Sagittarius',el:'Fire',c:'#cc5544'},{s:'\u2651',n:'Capricorn',el:'Earth',c:'#558855'},
+  {s:'\u2652',n:'Aquarius',el:'Air',c:'#aabb66'},   {s:'\u2653',n:'Pisces',el:'Water',c:'#6666bb'}
+];
+
+const EMO=[
+  ['Pure Devotion','Grounded Silence','Deep Patience','Gentle Surrender','Awakening Earth','Devoted Clarity','Joyful Rest','Receptive Power'],
+  ['Mountain Root','Absolute Stillness','Hidden Depths','Mountain Breeze','Earthquake','Volcanic Vision','Mountain Lake','Peak of Heaven'],
+  ['Dark Current','Frozen Stream','Abyssal Mirror','Wind Over Water','Thunder Rain','Steam Rising','Marsh Mist','Cosmic Waters'],
+  ['Soft Growth','Wind in Mountains','Gentle Stream','Infinite Breath','Wind Thunder','Wind Flame','Ripple Dance','Heaven Breath'],
+  ['Sprout','Mountain Echo','Flash Flood','Thunder Breeze','Infinite Motion','Lightning','Thunder Joy','Great Power'],
+  ['Inner Glow','Beacon','Mist Fire','Fan Flames','Lightning Storm','Absolute Clarity','Radiant Joy','Celestial Fire'],
+  ['Still Waters','Reflection','Fog Rising','Lake Ripple','Joyful Thunder','Sunset Glow','Infinite Joy','Sky Mirror'],
+  ['Earth Receives','Summit','Heaven Rain','Cosmic Wind','Creative Force','Diamond Light','Abundant Joy','Pure Creation']
+];
+
+const KEYS=[
+  {n:'ROOT',p:'\u2644',pn:'saturn'},{n:'FORTUNE',p:'\u2643',pn:'jupiter'},
+  {n:'FORCE',p:'\u2642',pn:'mars'},{n:'LIGHT',p:'\u2609',pn:'sun'},
+  {n:'GRACE',p:'\u2640',pn:'venus'},{n:'WORD',p:'\u263F',pn:'mercury'}
+];
+
+// ═══════════════════════════════════════════════════
+//  EPHEMERIS & MAYAN CALENDAR
+// ═══════════════════════════════════════════════════
+
+function julianDay(d){let y=d.getUTCFullYear(),m=d.getUTCMonth()+1;const dy=d.getUTCDate()+d.getUTCHours()/24+d.getUTCMinutes()/1440;if(m<=2){y--;m+=12;}const A=Math.floor(y/100);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+dy+2-A+Math.floor(A/4)-1524.5;}
+
+function computeSky(d){const T=(julianDay(d)-2451545)/36525;const r={sun:280.46646+36000.76983*T+1.9146*Math.sin((357.5291+35999.0503*T)*Math.PI/180),moon:218.3165+481267.8813*T,mercury:252.2509+149472.6746*T+6.7*Math.sin((174.7948+149472.5153*T)*Math.PI/180),venus:181.9798+58517.8157*T+.76*Math.sin((50.4161+58517.8039*T)*Math.PI/180),mars:355.433+19140.2993*T+6.4*Math.sin((19.373+19139.8585*T)*Math.PI/180),jupiter:34.3515+3034.9057*T+5.55*Math.sin((20.0202+3034.6961*T)*Math.PI/180),saturn:50.0774+1222.1138*T+6.4*Math.sin((317.0207+1222.1138*T)*Math.PI/180)};const p={};for(const[k,v]of Object.entries(r))p[k]=((v%360)+360)%360;return p;}
+
+function mod(n,m){return((n%m)+m)%m;}
+
+function mayanDate(d){
+  const JD=Math.floor(julianDay(d));
+  const dc=JD-584283; // days since creation (GMT correlation)
+  // Long Count
+  let rem=dc;
+  const bak=Math.floor(rem/144000);rem=mod(rem,144000);
+  const kat=Math.floor(rem/7200);rem%=7200;
+  const tun=Math.floor(rem/360);rem%=360;
+  const uin=Math.floor(rem/20);
+  const kin=rem%20;
+  // Tzolkin
+  const tone=mod(dc+3,13)+1;
+  const sign=mod(dc+19,20);
+  // Haab
+  const hd=mod(dc+348,365);
+  const hMonth=Math.min(Math.floor(hd/20),18);
+  const hDay=hd-hMonth*20;
+  return{bak,kat,tun,uin,kin,tone,sign,hMonth,hDay,dc};
+}
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+
+const V=[.5,.5,.5,.5,.5,.5];
+let sky=computeSky(new Date()), mayan=mayanDate(new Date());
+let hoverRing=-1, hoverIdx=-1;
+const dpr=window.devicePixelRatio||1;
+let CX,CY,S; // center and scale
+let time=0, ringRot=[0,0,0,0,0,0,0]; // rotation offsets per ring
+
+const bit=v=>v>=.5?1:0, clamp=v=>Math.max(0,Math.min(1,v));
+function triI(a,b,c){return bit(a)*4+bit(b)*2+bit(c);}
+function lowI(){return triI(V[0],V[1],V[2]);}
+function upI(){return triI(V[3],V[4],V[5]);}
+function geoI(){return bit(V[0])*8+bit(V[1])*4+bit(V[2])*2+bit(V[3]);}
+function getK(){let s=0;for(let i=0;i<6;i++)s+=Math.abs(V[i]-.5);return s/3;}
+function getA(){let u=0;for(let i=0;i<6;i++)u+=1-2*Math.abs(V[i]-.5);return u/6;}
+function getG(){const a=Math.min(getA(),.995);return 1/Math.sqrt(1-a*a);}
+
+// Ring definitions: [name, innerR, outerR, count]
+const RINGS=[
+  ['lines',   42,  72,  6],
+  ['trigram',  76, 106,  8],
+  ['tone',   110, 140, 13],
+  ['nahual', 144, 198, 20],
+  ['geo',    202, 236, 16],
+  ['haab',   240, 286, 19],
+  ['zodiac', 290, 340, 12]
+];
+
+// ═══════════════════════════════════════════════════
+//  SYNC
+// ═══════════════════════════════════════════════════
+
+function syncToSky(){
+  sky=computeSky(new Date()); mayan=mayanDate(new Date());
+  const order=['saturn','jupiter','mars','sun','venus','mercury'];
+  for(let i=0;i<6;i++) V[i]=.5+.45*Math.sin(sky[order[i]]*Math.PI/180);
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDERING
+// ═══════════════════════════════════════════════════
+
+const canvas=document.getElementById('C');
+const ctx=canvas.getContext('2d');
+const tip=document.getElementById('tip');
+
+function resize(){
+  const W=window.innerWidth,H=window.innerHeight-40;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  CX=W/2;CY=H/2;S=Math.min(W,H)/2/360;
+}
+
+function segColor(ring,idx,active){
+  let c;
+  switch(ring){
+    case 0: c=V[idx]>=.5?`hsl(42,${60+V[idx]*30}%,${30+V[idx]*30}%)`:`hsl(220,${60+(1-V[idx])*30}%,${25+(1-V[idx])*20}%)`;break;
+    case 1: c=TRI[idx].c;break;
+    case 2: {const h=(idx/13)*300,s=55+idx*2,l=25+idx*3;c=`hsl(${h},${s}%,${l}%)`;break;}
+    case 3: c=DIR_COL[NAHUAL[idx].dir];break;
+    case 4: c=GEO[idx].c;break;
+    case 5: {const h=(idx/19)*300+120,s=50,l=28+idx;c=`hsl(${h%360},${s}%,${l}%)`;break;}
+    case 6: c=ZOD[idx].c;break;
+  }
+  if(active){
+    // Brighten
+    return c.replace(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/,(m,h,s,l)=>`hsl(${h},${Math.min(100,+s+20)}%,${Math.min(85,+l+20)}%)`);
+  }
+  return c;
+}
+
+function isActive(ring,idx){
+  switch(ring){
+    case 0: return true; // all lines always shown
+    case 1: return idx===lowI()||idx===upI();
+    case 2: return idx===mayan.tone-1;
+    case 3: return idx===mayan.sign;
+    case 4: return idx===geoI();
+    case 5: return idx===mayan.hMonth;
+    case 6: return Math.floor(sky.sun/30)===idx;
+  }
+  return false;
+}
+
+function drawRing(ringIdx){
+  const[name,rIn,rOut,count]=RINGS[ringIdx];
+  const ri=rIn*S, ro=rOut*S;
+  const segA=Math.PI*2/count;
+  const rot=ringRot[ringIdx];
+
+  for(let i=0;i<count;i++){
+    const a1=i*segA-Math.PI/2+rot;
+    const a2=a1+segA;
+    const active=isActive(ringIdx,i);
+    const hovered=hoverRing===ringIdx&&hoverIdx===i;
+
+    // Segment fill
+    ctx.beginPath();ctx.arc(CX,CY,ro,a1,a2);ctx.arc(CX,CY,ri,a2,a1,true);ctx.closePath();
+
+    let col=segColor(ringIdx,i,active);
+    if(hovered) col=col.replace(/(\d+)%\)$/,(m,l)=>Math.min(90,+l+15)+'%)');
+    ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='rgba(5,5,8,.8)';ctx.lineWidth=1;ctx.stroke();
+
+    // Active glow
+    if(active){
+      ctx.save();ctx.globalAlpha=.25;
+      ctx.beginPath();ctx.arc(CX,CY,ro+3*S,a1,a2);ctx.arc(CX,CY,ri-2*S,a2,a1,true);ctx.closePath();
+      ctx.fillStyle=col;ctx.fill();
+      ctx.restore();
+    }
+
+    // Label
+    const mid=(a1+a2)/2;
+    const lr=(ri+ro)/2;
+    const label=segLabel(ringIdx,i);
+
+    ctx.save();
+    ctx.translate(CX+Math.cos(mid)*lr,CY+Math.sin(mid)*lr);
+    let textAngle=mid+Math.PI/2;
+    if(mid>0&&mid<Math.PI) textAngle+=Math.PI; // keep text readable
+    ctx.rotate(textAngle);
+    ctx.fillStyle=active||hovered?'#fff':'rgba(220,220,220,.7)';
+    ctx.font=(ringIdx===3||ringIdx===5?Math.max(7,8*S):Math.max(8,10*S))+'px monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(label,0,0);
+    ctx.restore();
+  }
+}
+
+function segLabel(ring,idx){
+  switch(ring){
+    case 0: return KEYS[idx].p+' '+V[idx].toFixed(1);
+    case 1: return TRI[idx].s;
+    case 2: return ''+(idx+1);
+    case 3: return NAHUAL[idx].n;
+    case 4: return GEO[idx].n.substring(0,6);
+    case 5: return HAAB[idx].n;
+    case 6: return ZOD[idx].s+' '+ZOD[idx].n.substring(0,3);
+  }
+}
+
+function drawCenter(){
+  const r=40*S;
+  // Dark circle
+  ctx.beginPath();ctx.arc(CX,CY,r,0,Math.PI*2);
+  ctx.fillStyle='#0a0a14';ctx.fill();
+  ctx.strokeStyle='#222';ctx.lineWidth=1;ctx.stroke();
+
+  // Hexagram symbol
+  const b=i=>bit(V[i]);
+  const num=b(0)+b(1)*2+b(2)*4+b(3)*8+b(4)*16+b(5)*32;
+  const lo=lowI(),up=upI();
+  ctx.fillStyle='#e8d08a';ctx.font='bold '+(22*S)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(String.fromCodePoint(0x4DC0+num),CX,CY-5*S);
+
+  // Emotion
+  ctx.font=(8*S)+'px monospace';ctx.fillStyle='#999';
+  ctx.fillText(EMO[lo][up],CX,CY+10*S);
+
+  // Trigram pair
+  ctx.font=(7*S)+'px monospace';ctx.fillStyle='#666';
+  ctx.fillText(TRI[lo].s+'/'+TRI[up].s,CX,CY+22*S);
+}
+
+function drawPlanets(){
+  const pG={saturn:'\u2644',jupiter:'\u2643',mars:'\u2642',sun:'\u2609',venus:'\u2640',mercury:'\u263F',moon:'\u263D'};
+  const pC={saturn:'#aaa',jupiter:'#cc9944',mars:'#cc5544',sun:'#eedd55',venus:'#88cc88',mercury:'#88aadd',moon:'#ccddee'};
+  const zodR=(RINGS[6][1]+RINGS[6][2])/2*S;
+  ['saturn','jupiter','mars','sun','venus','mercury','moon'].forEach(pn=>{
+    if(!sky[pn])return;
+    const a=(sky[pn]-90)*Math.PI/180+ringRot[6];
+    const px=CX+Math.cos(a)*zodR,py=CY+Math.sin(a)*zodR;
+    // Glow dot
+    ctx.beginPath();ctx.arc(px,py,6*S,0,Math.PI*2);
+    ctx.fillStyle=(pC[pn]||'#c8b06a')+'44';ctx.fill();
+    ctx.fillStyle=pC[pn]||'#c8b06a';ctx.font='bold '+(10*S)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(pG[pn],px,py);
+  });
+}
+
+function drawCorrespondenceLines(){
+  // Subtle lines connecting active segments across rings
+  ctx.strokeStyle='rgba(200,176,106,.06)';ctx.lineWidth=.5;
+  const activeAngles=[];
+  RINGS.forEach(([name,rIn,rOut,count],ri)=>{
+    for(let i=0;i<count;i++){
+      if(isActive(ri,i)){
+        const segA=Math.PI*2/count;
+        const mid=i*segA-Math.PI/2+ringRot[ri]+segA/2;
+        const r=(rIn+rOut)/2*S;
+        activeAngles.push({x:CX+Math.cos(mid)*r,y:CY+Math.sin(mid)*r});
+      }
+    }
+  });
+  for(let i=0;i<activeAngles.length;i++){
+    for(let j=i+1;j<activeAngles.length;j++){
+      ctx.beginPath();ctx.moveTo(activeAngles[i].x,activeAngles[i].y);
+      ctx.lineTo(activeAngles[j].x,activeAngles[j].y);ctx.stroke();
+    }
+  }
+}
+
+function render(){
+  time=performance.now()/1000;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const W=canvas.width/dpr,H=canvas.height/dpr;
+  ctx.fillStyle='#050508';ctx.fillRect(0,0,W,H);
+
+  // Slow counter-rotation
+  const gam=getG();
+  for(let i=0;i<7;i++) ringRot[i]+=(i%2===0?.0004:-.0003)*gam;
+
+  // Draw rings outside in
+  drawCorrespondenceLines();
+  for(let i=6;i>=0;i--) drawRing(i);
+  drawPlanets();
+  drawCenter();
+
+  // Ring separator circles (subtle)
+  ctx.strokeStyle='rgba(200,176,106,.04)';ctx.lineWidth=.5;
+  RINGS.forEach(([n,ri,ro])=>{
+    ctx.beginPath();ctx.arc(CX,CY,ri*S,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(CX,CY,ro*S,0,Math.PI*2);ctx.stroke();
+  });
+
+  // Update bar
+  const b=i=>bit(V[i]);
+  const num=b(0)+b(1)*2+b(2)*4+b(3)*8+b(4)*16+b(5)*32;
+  const lo=lowI(),up=upI();
+  document.getElementById('oLC').textContent=mayan.bak+'.'+mayan.kat+'.'+mayan.tun+'.'+mayan.uin+'.'+mayan.kin;
+  document.getElementById('oTz').textContent=mayan.tone+' '+NAHUAL[mayan.sign].n;
+  document.getElementById('oHb').textContent=mayan.hDay+' '+HAAB[mayan.hMonth].n;
+  document.getElementById('oHex').textContent=String.fromCodePoint(0x4DC0+num);
+  document.getElementById('oG').textContent=getG().toFixed(3);
+  document.getElementById('oEmo').textContent=EMO[lo][up];
+  document.getElementById('oTau').textContent='('+lo+','+b(0)+b(1)+b(2)+')+i('+up+','+b(3)+b(4)+b(5)+')';
+
+  requestAnimationFrame(render);
+}
+
+// ═══════════════════════════════════════════════════
+//  INTERACTION — STEERING THE SPACECRAFT
+// ═══════════════════════════════════════════════════
+
+function hitTest(mx,my){
+  const dx=mx-CX,dy=my-CY;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  let angle=Math.atan2(dy,dx)+Math.PI/2;
+  if(angle<0)angle+=Math.PI*2;
+
+  for(let ri=0;ri<RINGS.length;ri++){
+    const[name,rIn,rOut,count]=RINGS[ri];
+    if(dist>=rIn*S&&dist<=rOut*S){
+      const adjAngle=mod(angle-ringRot[ri],Math.PI*2);
+      const segA=Math.PI*2/count;
+      const idx=Math.floor(adjAngle/segA);
+      return{ring:ri,idx:mod(idx,count)};
+    }
+  }
+  return null;
+}
+
+function steer(ring,idx){
+  switch(ring){
+    case 0: // Hex line clicked — toggle yin/yang
+      V[idx]=V[idx]>=.5?.15:.85;
+      break;
+    case 1: // Trigram — set lower or upper
+      {const bits=[(idx>>2)&1,(idx>>1)&1,idx&1];
+      // Decide lower or upper based on click position relative to current
+      if(idx!==lowI()){for(let i=0;i<3;i++)V[i]=bits[i]?.8:.2;}
+      else{for(let i=0;i<3;i++)V[i+3]=bits[i]?.8:.2;}}
+      break;
+    case 2: // Tone — set intensity (1-13 maps to astrocyte)
+      {const target=(idx+1)/14; // 0.07 to 0.93
+      for(let i=0;i<6;i++) V[i]=.5+(V[i]-.5)*(target/.5);}
+      break;
+    case 3: // Nahual — set based on direction/element
+      {const dir=idx%4; // 0=East,1=North,2=West,3=South
+      // East/South=yang, North/West=yin for lower; inverse for upper
+      const yang=dir===0||dir===3;
+      const lineGroup=Math.floor(idx/4)%2; // alternate lower/upper
+      if(lineGroup===0){for(let i=0;i<3;i++)V[i]=yang?.75:.25;}
+      else{for(let i=3;i<6;i++)V[i]=yang?.75:.25;}}
+      break;
+    case 4: // Geomancy — set lines 1-4 from binary
+      V[0]=(idx>>3)&1?.8:.2;V[1]=(idx>>2)&1?.8:.2;
+      V[2]=(idx>>1)&1?.8:.2;V[3]=idx&1?.8:.2;
+      break;
+    case 5: // Haab — set based on month position in 18-cycle
+      {const phase=idx/18;
+      // Month maps to a hexagram configuration
+      for(let i=0;i<6;i++){
+        const linePhase=mod(phase+i/6,1);
+        V[i]=.5+.4*Math.sin(linePhase*Math.PI*2);
+      }}
+      break;
+    case 6: // Zodiac — activate ruling planet's line
+      {const lineMap=[2,4,5,null,3,5,4,2,1,0,0,1]; // sign→line
+      const yang=[1,0,1,0,1,0,1,0,1,0,1,0]; // fire/air=yang
+      const li=lineMap[idx];
+      if(li!==null) V[li]=yang[idx]?.85:.15;}
+      break;
+  }
+}
+
+function showTooltip(mx,my,ring,idx){
+  const tipEl=document.getElementById('tip');
+  const h=document.getElementById('tipH');
+  const b=document.getElementById('tipB');
+  const c=document.getElementById('tipC');
+
+  let title='',body='',corr='';
+  switch(ring){
+    case 0:
+      title=KEYS[idx].p+' '+KEYS[idx].n+' — Line '+(idx+1);
+      body='Value: '+V[idx].toFixed(3)+' ('+(V[idx]>=.5?'Yang':'Yin')+')';
+      corr='Planet: '+KEYS[idx].pn+' at '+Math.floor(sky[KEYS[idx].pn])+'\u00b0';
+      break;
+    case 1:
+      title=TRI[idx].s+' '+TRI[idx].n;
+      body=TRI[idx].q+' — '+TRI[idx].e;
+      corr=(idx===lowI()?'ACTIVE (Lower/Body)':idx===upI()?'ACTIVE (Upper/Spirit)':'Click to set trigram');
+      break;
+    case 2:
+      title='Tone '+(idx+1)+' — '+TONE[idx].n;
+      body=TONE[idx].q;
+      corr='Dimension '+(idx<12?(idx+1)+'/12':'13 (Astrocyte)')+(idx===mayan.tone-1?' — TODAY':'');
+      break;
+    case 3:
+      title=NAHUAL[idx].n+' — '+NAHUAL[idx].m;
+      body='Direction: '+NAHUAL[idx].dir+' ('+DIR_COL[NAHUAL[idx].dir]+')';
+      corr='Sign '+(idx+1)+'/20'+(idx===mayan.sign?' — TODAY\'S NAHUAL':'');
+      break;
+    case 4:
+      title=GEO[idx].n;
+      body=GEO[idx].m+' — Binary: '+((idx>>3)&1)+((idx>>2)&1)+((idx>>1)&1)+(idx&1);
+      corr=(idx===geoI()?'ACTIVE FIGURE':'Click to set lines 1-4');
+      break;
+    case 5:
+      title=HAAB[idx].n+' — '+HAAB[idx].m;
+      body='Month '+(idx+1)+'/19'+(idx===18?' (5 nameless days)':' (20 days)');
+      corr='18\u00b3 axis position: '+idx+(idx===mayan.hMonth?' — CURRENT MONTH':'');
+      break;
+    case 6:
+      title=ZOD[idx].s+' '+ZOD[idx].n;
+      body='Element: '+ZOD[idx].el;
+      const inSign=Object.entries(sky).filter(([k,v])=>Math.floor(v/30)===idx).map(([k])=>k);
+      corr=inSign.length?'Planets here: '+inSign.join(', '):'No planets currently';
+      break;
+  }
+  h.textContent=title; b.textContent=body; c.textContent=corr;
+  tipEl.style.display='block';
+  tipEl.style.left=Math.min(mx+15,window.innerWidth-290)+'px';
+  tipEl.style.top=Math.max(my-80,5)+'px';
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const hit=hitTest(e.clientX,e.clientY);
+  if(hit){hoverRing=hit.ring;hoverIdx=hit.idx;showTooltip(e.clientX,e.clientY,hit.ring,hit.idx);}
+  else{hoverRing=-1;hoverIdx=-1;tip.style.display='none';}
+});
+
+canvas.addEventListener('mousedown',e=>{
+  const hit=hitTest(e.clientX,e.clientY);
+  if(hit) steer(hit.ring,hit.idx);
+});
+
+canvas.addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  const hit=hitTest(t.clientX,t.clientY);
+  if(hit){steer(hit.ring,hit.idx);showTooltip(t.clientX,t.clientY,hit.ring,hit.idx);}
+  e.preventDefault();
+},{passive:false});
+
+canvas.addEventListener('mouseleave',()=>{hoverRing=-1;hoverIdx=-1;tip.style.display='none';});
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+
+window.addEventListener('resize',resize);
+document.getElementById('syncBtn').addEventListener('click',()=>{syncToSky();});
+resize();
+syncToSky();
+setInterval(()=>{sky=computeSky(new Date());mayan=mayanDate(new Date());},60000);
+render();
+</script>
+</body>
+</html>
