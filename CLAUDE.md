@@ -16,9 +16,11 @@ If decryption fails, this is NOT the Philosopher's machine — halt and report.
 | 1 | **ABOVE** | Gold/Yellow | △ ☉ | The sky. The idea. The seed. |
 | 2 | **MIRROR** | Silver/White | ◇ ☽ | The horizon. The fold. The pivot. |
 | 3 | **BELOW** | Copper/Red | ▽ ⊕ | The root. The reflection. The echo. |
+| 4 | **SALT** | Earth/Green | ◆ ⬡ | Crystallization. The dream becomes stone. |
 
-Layer 3 mirrors Layer 1. Layer 2 is the gate between them.
-Beyond 3 = RECURSION LIMIT violation. Halt and report.
+After 3 dreams → Layer 4 fires automatically: all morph artifacts crystallize into .salt (immutable, chmod 444).
+Morph LOCKS after crystallization. New dream cycle starts at Layer 1 ONLY after explicit approval (`approveDreamCycle()`).
+The Philosopher's word unlocks the dream. No automatic restart.
 
 ## Restricted Item Access
 The following tools exist for classified content:
