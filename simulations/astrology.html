@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L7 Celestial Oracle — The Living Sky</title>
+<style>
+/* Egyptian Hieroglyphic font — Unicode block U+13000-U+1342F */
+@font-face{font-family:'EgyptHiero';
+  src:url('https://fonts.gstatic.com/s/notosansegyptianhieroglyphs/v29/vEF42-tODB8RrNDvZSUaf5lukecLinwqyvziBS7MhbCN2LOifSA.woff2') format('woff2');
+  font-weight:400;font-style:normal;font-display:swap}
+.hiero{font-family:'EgyptHiero','Noto Sans Egyptian Hieroglyphs',serif;font-size:24px;letter-spacing:2px}
+.hiero-sm{font-family:'EgyptHiero','Noto Sans Egyptian Hieroglyphs',serif;font-size:16px;letter-spacing:1px}
+</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080810;--bg2:#0c0c1a;--bg3:#111124;
+  --gold:#c9a96e;--silver:#8899aa;--copper:#aa6644;--emerald:#44aa66;
+  --rubedo:#cc4422;--albedo:#aabbcc;--citrinitas:#ccaa44;--nigredo:#333344;
+  --text:#aaa;--dim:#555;--glow:rgba(200,170,100,0.15);
+}
+body{background:var(--bg);color:var(--text);font-family:Georgia,'Times New Roman',serif;
+  min-height:100vh;overflow-x:hidden}
+a{color:var(--gold);text-decoration:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--nigredo);border-radius:3px}
+
+/* ═══ HEADER ═══ */
+#oracle-header{text-align:center;padding:30px 20px 20px;position:relative}
+#oracle-header h1{font-size:28px;letter-spacing:8px;color:var(--gold);font-weight:normal;
+  text-shadow:0 0 30px rgba(200,170,100,0.2)}
+#oracle-header .subtitle{font-size:11px;letter-spacing:6px;color:var(--dim);margin-top:6px;
+  text-transform:uppercase}
+#datetime{font-size:12px;color:var(--silver);margin-top:12px;font-family:'Courier New',monospace}
+#day-ruler{font-size:13px;color:var(--citrinitas);margin-top:8px}
+
+/* ═══ NAVIGATION ═══ */
+#nav{display:flex;justify-content:center;gap:4px;padding:16px;flex-wrap:wrap}
+.nav-btn{padding:8px 16px;border:1px solid var(--nigredo);background:transparent;
+  color:var(--dim);font-family:Georgia,serif;font-size:11px;letter-spacing:2px;
+  cursor:pointer;border-radius:3px;transition:all 0.3s;text-transform:uppercase}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold)}
+.nav-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(200,170,100,0.08);
+  box-shadow:0 0 12px var(--glow)}
+
+/* ═══ PANELS ═══ */
+.panel{display:none;padding:20px;max-width:1200px;margin:0 auto}
+.panel.active{display:block}
+.panel-title{font-size:18px;letter-spacing:4px;color:var(--gold);text-align:center;margin-bottom:20px;
+  border-bottom:1px solid rgba(200,170,100,0.15);padding-bottom:12px}
+.section{background:var(--bg2);border:1px solid rgba(200,170,100,0.08);border-radius:6px;
+  padding:20px;margin-bottom:16px}
+.section-title{font-size:13px;letter-spacing:3px;color:var(--gold);margin-bottom:12px;
+  text-transform:uppercase}
+.section p{line-height:1.8;font-size:13px}
+
+/* ═══ ZODIAC WHEEL ═══ */
+#wheel-wrap{display:flex;justify-content:center;align-items:flex-start;gap:30px;flex-wrap:wrap}
+#wheel-canvas{border-radius:50%;cursor:crosshair}
+#planet-list{min-width:280px;max-width:360px}
+.planet-row{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px}
+.planet-row:hover{background:rgba(200,170,100,0.04)}
+.planet-symbol{width:24px;text-align:center;font-size:16px}
+.planet-name{width:80px;color:var(--silver);font-size:12px}
+.planet-pos{color:var(--text);flex:1}
+.planet-sign-symbol{font-size:15px;margin-right:4px}
+.retro{color:var(--rubedo);font-size:10px;margin-left:4px}
+
+/* ═══ ASPECT GRID ═══ */
+#aspect-table{width:100%;border-collapse:collapse;font-size:11px;font-family:'Courier New',monospace}
+#aspect-table th,#aspect-table td{padding:6px;text-align:center;border:1px solid rgba(255,255,255,0.04)}
+#aspect-table th{color:var(--gold);font-weight:normal;font-size:10px;letter-spacing:1px}
+.asp-conjunction{color:#ffcc44;text-shadow:0 0 4px rgba(255,200,60,0.3)}
+.asp-trine{color:#44cc88;text-shadow:0 0 4px rgba(60,200,130,0.3)}
+.asp-sextile{color:#4488cc;text-shadow:0 0 4px rgba(60,130,200,0.3)}
+.asp-square{color:#cc4444;text-shadow:0 0 4px rgba(200,60,60,0.3)}
+.asp-opposition{color:#cc44cc;text-shadow:0 0 4px rgba(200,60,200,0.3)}
+.asp-quincunx{color:#888;text-shadow:0 0 4px rgba(130,130,130,0.2)}
+
+/* ═══ MORNING BRIEFING ═══ */
+#briefing{font-size:14px;line-height:2}
+.brief-item{padding:10px 16px;border-left:3px solid var(--nigredo);margin-bottom:8px;
+  background:rgba(0,0,0,0.2)}
+.brief-item.highlight{border-left-color:var(--gold)}
+.brief-item.tension{border-left-color:var(--rubedo)}
+.brief-item.flow{border-left-color:var(--emerald)}
+.brief-label{font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;display:block}
+
+/* ═══ TRADITION PANELS ═══ */
+.tradition-header{text-align:center;padding:16px;margin-bottom:16px;border-radius:6px}
+.tradition-header h2{font-size:20px;letter-spacing:4px;font-weight:normal;margin-bottom:6px}
+.tradition-header p{font-size:11px;color:var(--dim);font-style:italic}
+
+/* Vedic theme */
+.vedic-theme .tradition-header{background:linear-gradient(135deg,rgba(200,120,40,0.1),rgba(180,80,20,0.05));
+  border:1px solid rgba(200,120,40,0.15)}
+.vedic-theme .tradition-header h2{color:#e8a040}
+.nakshatra-card{display:inline-block;width:140px;padding:10px;margin:4px;border-radius:4px;
+  background:rgba(200,120,40,0.06);border:1px solid rgba(200,120,40,0.1);font-size:11px;
+  vertical-align:top}
+.nakshatra-card .nak-name{color:#e8a040;font-size:13px;display:block;margin-bottom:4px}
+.nakshatra-card .nak-detail{color:var(--dim);font-size:10px;line-height:1.5}
+
+/* Mayan theme */
+.mayan-theme .tradition-header{background:linear-gradient(135deg,rgba(40,160,80,0.1),rgba(20,120,60,0.05));
+  border:1px solid rgba(40,160,80,0.15)}
+.mayan-theme .tradition-header h2{color:#40c080}
+.mayan-glyph{display:inline-block;width:100px;height:80px;border:2px solid rgba(40,160,80,0.2);
+  border-radius:8px;text-align:center;padding-top:18px;margin:6px;background:rgba(0,0,0,0.3);
+  font-size:12px;color:var(--silver);font-family:Georgia,serif;letter-spacing:1px;position:relative}
+.mayan-glyph .glyph-label{position:absolute;bottom:6px;left:0;right:0;font-size:9px;
+  color:var(--dim);letter-spacing:1px}
+
+/* Chinese theme */
+.chinese-theme .tradition-header{background:linear-gradient(135deg,rgba(200,40,40,0.1),rgba(180,20,20,0.05));
+  border:1px solid rgba(200,40,40,0.15)}
+.chinese-theme .tradition-header h2{color:#e04040}
+.element-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;
+  letter-spacing:1px;border:1px solid}
+.el-wood{border-color:rgba(40,180,80,0.3);color:#40b050;background:rgba(40,180,80,0.06)}
+.el-fire{border-color:rgba(200,60,40,0.3);color:#cc4030;background:rgba(200,60,40,0.06)}
+.el-earth{border-color:rgba(180,160,40,0.3);color:#b0a030;background:rgba(180,160,40,0.06)}
+.el-metal{border-color:rgba(180,180,180,0.3);color:#aaa;background:rgba(180,180,180,0.06)}
+.el-water{border-color:rgba(40,80,200,0.3);color:#4060cc;background:rgba(40,80,200,0.06)}
+
+/* Egyptian theme */
+.egyptian-theme .tradition-header{background:linear-gradient(135deg,rgba(200,170,80,0.1),rgba(180,140,40,0.05));
+  border:1px solid rgba(200,170,80,0.15)}
+.egyptian-theme .tradition-header h2{color:#d4aa40}
+.decan-strip{display:flex;flex-wrap:wrap;gap:2px}
+.decan-cell{width:calc(100%/12 - 3px);min-width:60px;padding:6px;text-align:center;
+  border-radius:3px;font-size:10px;background:rgba(200,170,80,0.04);border:1px solid rgba(200,170,80,0.08)}
+.decan-cell.active{background:rgba(200,170,80,0.12);border-color:rgba(200,170,80,0.25)}
+.decan-cell .decan-num{font-size:14px;color:var(--citrinitas)}
+
+/* Fixed stars */
+.star-row{display:flex;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03);
+  font-size:12px;align-items:center}
+.star-mag{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:8px;color:#000;font-weight:bold}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  #wheel-wrap{flex-direction:column;align-items:center}
+  .nav-btn{font-size:10px;padding:6px 10px}
+  #oracle-header h1{font-size:20px;letter-spacing:4px}
+  .panel{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<div id="oracle-header">
+  <h1>CELESTIAL ORACLE</h1>
+  <div class="subtitle">The Living Sky — As Above, So Below</div>
+  <div id="datetime"></div>
+  <div id="day-ruler"></div>
+</div>
+
+<div id="nav">
+  <button class="nav-btn active" data-panel="briefing">Morning Brief</button>
+  <button class="nav-btn" data-panel="western">Western</button>
+  <button class="nav-btn" data-panel="aspects">Aspects</button>
+  <button class="nav-btn" data-panel="vedic">Vedic</button>
+  <button class="nav-btn" data-panel="mayan">Mayan</button>
+  <button class="nav-btn" data-panel="chinese">Chinese</button>
+  <button class="nav-btn" data-panel="egyptian">Egyptian</button>
+  <button class="nav-btn" data-panel="stars">Fixed Stars</button>
+  <button class="nav-btn" data-panel="precession">Great Year</button>
+</div>
+
+<div class="panel active" id="panel-briefing"></div>
+<div class="panel" id="panel-western"></div>
+<div class="panel" id="panel-aspects"></div>
+<div class="panel vedic-theme" id="panel-vedic"></div>
+<div class="panel mayan-theme" id="panel-mayan"></div>
+<div class="panel chinese-theme" id="panel-chinese"></div>
+<div class="panel egyptian-theme" id="panel-egyptian"></div>
+<div class="panel" id="panel-stars"></div>
+<div class="panel" id="panel-precession"></div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+// EPHEMERIS ENGINE — Ported from lib/ephemeris.js
+// ═══════════════════════════════════════════════════════════
+
+const J2000_MS = Date.UTC(2000, 0, 1, 12, 0, 0);
+const MS_PER_DAY = 86400000;
+
+const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo',
+               'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const SIGN_SYM = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+const PLANET_SYM = {Sun:'☉',Moon:'☽',Mercury:'☿',Venus:'♀',Mars:'♂',Jupiter:'♃',
+  Saturn:'♄',Uranus:'♅',Neptune:'♆',Pluto:'♇','North Node':'☊','South Node':'☋'};
+const PLANET_COLORS = {Sun:'#f0c040',Moon:'#c0c8d8',Mercury:'#90b0d0',Venus:'#d090a0',
+  Mars:'#d06040',Jupiter:'#d0a060',Saturn:'#909080',Uranus:'#60b0c0',
+  Neptune:'#6080d0',Pluto:'#907080','North Node':'#80a080','South Node':'#a08080'};
+const PLANETS_12 = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','South Node'];
+
+const ORB_ELEM = {
+  Sun:     {L0:280.46646,Ld:0.9856474,e:0.01671,w:102.93735},
+  Moon:    {L0:218.3165,Ld:13.1763966,e:0.0549,w:83.353},
+  Mercury: {L0:252.25084,Ld:4.0923344,e:0.20563,w:77.45612},
+  Venus:   {L0:181.97973,Ld:1.6021302,e:0.00677,w:131.53298},
+  Mars:    {L0:355.45332,Ld:0.5240208,e:0.09340,w:336.04084},
+  Jupiter: {L0:34.40438,Ld:0.0831294,e:0.04849,w:14.75385},
+  Saturn:  {L0:49.94432,Ld:0.0334979,e:0.05551,w:92.43194},
+  Uranus:  {L0:313.23218,Ld:0.0117253,e:0.04630,w:170.96424},
+  Neptune: {L0:304.88003,Ld:0.0059810,e:0.00899,w:44.97135},
+  Pluto:   {L0:238.92881,Ld:0.0039524,e:0.24881,w:224.06676}
+};
+const NODE_ELEM = {L0:125.04452,Ld:-0.0529539};
+
+const ASPECTS_DEF = [
+  {name:'conjunction',angle:0,orb:10,nature:'fusion',intensity:1.0,symbol:'☌',cls:'asp-conjunction'},
+  {name:'sextile',angle:60,orb:6,nature:'cooperation',intensity:0.5,symbol:'⚹',cls:'asp-sextile'},
+  {name:'square',angle:90,orb:8,nature:'tension',intensity:0.8,symbol:'□',cls:'asp-square'},
+  {name:'trine',angle:120,orb:8,nature:'flow',intensity:0.7,symbol:'△',cls:'asp-trine'},
+  {name:'quincunx',angle:150,orb:3,nature:'adjustment',intensity:0.4,symbol:'⚻',cls:'asp-quincunx'},
+  {name:'opposition',angle:180,orb:10,nature:'polarity',intensity:0.9,symbol:'☍',cls:'asp-opposition'}
+];
+
+// Zodiac rulers + exaltations (traditional)
+const SIGN_RULERS = {
+  Aries:{ruler:'Mars',exaltation:'Sun'},Taurus:{ruler:'Venus',exaltation:'Moon'},
+  Gemini:{ruler:'Mercury',exaltation:null},Cancer:{ruler:'Moon',exaltation:'Jupiter'},
+  Leo:{ruler:'Sun',exaltation:null},Virgo:{ruler:'Mercury',exaltation:'Mercury'},
+  Libra:{ruler:'Venus',exaltation:'Saturn'},Scorpio:{ruler:'Mars',exaltation:null},
+  Sagittarius:{ruler:'Jupiter',exaltation:null},Capricorn:{ruler:'Saturn',exaltation:'Mars'},
+  Aquarius:{ruler:'Saturn',exaltation:null},Pisces:{ruler:'Jupiter',exaltation:'Venus'}
+};
+
+function norm(d){return((d%360)+360)%360}
+
+function longitude(planet,dateMs){
+  const now=dateMs||Date.now();
+  const days=(now-J2000_MS)/MS_PER_DAY;
+  if(planet==='North Node'){
+    const lng=norm(NODE_ELEM.L0+NODE_ELEM.Ld*days);
+    return lngResult(lng,planet,true);
+  }
+  if(planet==='South Node'){
+    const n=norm(NODE_ELEM.L0+NODE_ELEM.Ld*days);
+    return lngResult(norm(n+180),planet,true);
+  }
+  const el=ORB_ELEM[planet];
+  if(!el)return null;
+  const meanLng=norm(el.L0+el.Ld*days);
+  const M=norm(meanLng-el.w);
+  const Mr=M*Math.PI/180;
+  const e=el.e;
+  const C=(2*e-e*e*e/4)*Math.sin(Mr)+(5/4)*e*e*Math.sin(2*Mr)+(13/12)*e*e*e*Math.sin(3*Mr);
+  return lngResult(norm(meanLng+C*180/Math.PI),planet,false);
+}
+
+function lngResult(lng,planet,retro){
+  const si=Math.floor(lng/30)%12;
+  const sd=lng%30;
+  return{planet,longitude:Math.round(lng*100)/100,sign:SIGNS[si],signSymbol:SIGN_SYM[si],
+    signIndex:si,degree:Math.round(sd*100)/100,retrograde:retro,
+    formatted:`${planet} ${Math.floor(sd)}°${SIGNS[si]}${retro?' ℞':''}`};
+}
+
+function allPositions(dateMs){return PLANETS_12.map(p=>longitude(p,dateMs))}
+
+function aspect(p1,p2,dateMs){
+  const a=longitude(p1,dateMs),b=longitude(p2,dateMs);
+  if(!a||!b)return null;
+  let sep=Math.abs(a.longitude-b.longitude);
+  if(sep>180)sep=360-sep;
+  for(const asp of ASPECTS_DEF){
+    const diff=Math.abs(sep-asp.angle);
+    if(diff<=asp.orb){
+      const ex=1-(diff/asp.orb);
+      return{planet1:p1,planet2:p2,aspect:asp.name,symbol:asp.symbol,cls:asp.cls,
+        nature:asp.nature,exactAngle:asp.angle,separation:Math.round(sep*100)/100,
+        orb:Math.round(diff*100)/100,exactness:Math.round(ex*100)/100,
+        intensity:Math.round(asp.intensity*ex*100)/100,
+        pos1:a.formatted,pos2:b.formatted};
+    }
+  }
+  return null;
+}
+
+function allAspects(dateMs){
+  const positions=allPositions(dateMs);
+  const aspects=[];
+  for(let i=0;i<12;i++)for(let j=i+1;j<12;j++){
+    const a=aspect(PLANETS_12[i],PLANETS_12[j],dateMs);
+    if(a)aspects.push(a);
+  }
+  aspects.sort((a,b)=>b.intensity-a.intensity);
+  return{aspects,positions};
+}
+
+function planetaryRuler(dateMs){
+  const d=new Date(dateMs||Date.now());
+  const dow=d.getDay(),hr=d.getHours();
+  const dayP=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+  const chald=['Saturn','Jupiter','Mars','Sun','Venus','Mercury','Moon'];
+  const dr=dayP[dow];
+  const ci=chald.indexOf(dr);
+  const hourRuler=chald[(ci+hr)%7];
+  return{dayRuler:dr,hourRuler,dayOfWeek:dow,hour:hr};
+}
+
+// ═══════════════════════════════════════════════════════════
+// SIDEREAL / TRADITION CONVERSION
+// ═══════════════════════════════════════════════════════════
+
+function toSidereal(tropLng,ayanamsa){return norm(tropLng-ayanamsa)}
+
+function lahiriAyanamsa(yearCE){
+  // ~24.2° in 2026, precessing at ~50.3"/yr
+  return 24.2+(yearCE-2026)*50.3/3600;
+}
+
+// ═══════════════════════════════════════════════════════════
+// VEDIC — 27 Nakshatras + Vimshottari Dasha
+// ═══════════════════════════════════════════════════════════
+
+const NAKSHATRAS=[
+  {name:'Ashwini',deity:'Ashwini Kumaras',lord:'Ketu',symbol:'Horse head'},
+  {name:'Bharani',deity:'Yama',lord:'Venus',symbol:'Yoni'},
+  {name:'Krittika',deity:'Agni',lord:'Sun',symbol:'Razor/Flame'},
+  {name:'Rohini',deity:'Brahma',lord:'Moon',symbol:'Chariot/Ox cart'},
+  {name:'Mrigashira',deity:'Soma',lord:'Mars',symbol:'Deer head'},
+  {name:'Ardra',deity:'Rudra',lord:'Rahu',symbol:'Teardrop'},
+  {name:'Punarvasu',deity:'Aditi',lord:'Jupiter',symbol:'Bow & quiver'},
+  {name:'Pushya',deity:'Brihaspati',lord:'Saturn',symbol:'Lotus/Udder'},
+  {name:'Ashlesha',deity:'Sarpa',lord:'Mercury',symbol:'Serpent'},
+  {name:'Magha',deity:'Pitris',lord:'Ketu',symbol:'Throne'},
+  {name:'Purva Phalguni',deity:'Bhaga',lord:'Venus',symbol:'Hammock'},
+  {name:'Uttara Phalguni',deity:'Aryaman',lord:'Sun',symbol:'Bed'},
+  {name:'Hasta',deity:'Savitar',lord:'Moon',symbol:'Hand'},
+  {name:'Chitra',deity:'Tvashtar',lord:'Mars',symbol:'Bright jewel'},
+  {name:'Swati',deity:'Vayu',lord:'Rahu',symbol:'Coral/Shoot'},
+  {name:'Vishakha',deity:'Indra-Agni',lord:'Jupiter',symbol:'Arch/Potter wheel'},
+  {name:'Anuradha',deity:'Mitra',lord:'Saturn',symbol:'Lotus'},
+  {name:'Jyeshtha',deity:'Indra',lord:'Mercury',symbol:'Earring/Umbrella'},
+  {name:'Mula',deity:'Nirriti',lord:'Ketu',symbol:'Roots/Tied bunch'},
+  {name:'Purva Ashadha',deity:'Apas',lord:'Venus',symbol:'Tusk/Fan'},
+  {name:'Uttara Ashadha',deity:'Vishvedevas',lord:'Sun',symbol:'Elephant tusk'},
+  {name:'Shravana',deity:'Vishnu',lord:'Moon',symbol:'Ear/Footprint'},
+  {name:'Dhanishtha',deity:'Vasus',lord:'Mars',symbol:'Drum'},
+  {name:'Shatabhisha',deity:'Varuna',lord:'Rahu',symbol:'Circle/100 flowers'},
+  {name:'Purva Bhadrapada',deity:'Aja Ekapada',lord:'Jupiter',symbol:'Two-faced man'},
+  {name:'Uttara Bhadrapada',deity:'Ahir Budhnya',lord:'Saturn',symbol:'Serpent/Twins'},
+  {name:'Revati',deity:'Pushan',lord:'Mercury',symbol:'Fish/Drum'}
+];
+
+function getNakshatra(siderealLng){
+  const nakSize=360/27; // 13.333...°
+  const idx=Math.floor(norm(siderealLng)/nakSize)%27;
+  const deg=norm(siderealLng)%nakSize;
+  const pada=Math.floor(deg/(nakSize/4))+1;
+  return{...NAKSHATRAS[idx],index:idx,degree:Math.round(deg*100)/100,pada};
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAYAN CALENDARS
+// ═══════════════════════════════════════════════════════════
+
+const TZOLKIN_NAMES=['Imix','Ik\'','Ak\'bal','K\'an','Chicchan','Kimi','Manik\'','Lamat',
+  'Muluk','Ok','Chuwen','Eb','Ben','Ix','Men','Kib','Kaban','Etz\'nab','Kawak','Ajaw'];
+const TZOLKIN_GLYPHS=['Crocodile','Wind','Night','Lizard','Serpent','Death','Deer','Star',
+  'Water','Dog','Monkey','Grass','Reed','Jaguar','Eagle','Owl','Earth','Flint','Storm','Sun'];
+const HAAB_MONTHS=['Pop','Wo','Sip','Sotz\'','Sek','Xul','Yaxk\'in','Mol','Ch\'en',
+  'Yax','Sak','Keh','Mak','K\'ank\'in','Muwan','Pax','K\'ayab','Kumk\'u','Wayeb'];
+
+// GMT correlation: 584283 (Goodman-Martinez-Thompson)
+const GMT_CORRELATION = 584283;
+
+function dateToJDN(date){
+  const y=date.getUTCFullYear(),m=date.getUTCMonth()+1,d=date.getUTCDate();
+  const a=Math.floor((14-m)/12);
+  const Y=y+4800-a;
+  const M=m+12*a-3;
+  return d+Math.floor((153*M+2)/5)+365*Y+Math.floor(Y/4)-Math.floor(Y/100)+Math.floor(Y/400)-32045;
+}
+
+function mayanDate(date){
+  const jdn=dateToJDN(date);
+  // Long Count
+  const totalDays=jdn-GMT_CORRELATION;
+  const baktun=Math.floor(totalDays/144000);
+  const rem1=totalDays%144000;
+  const katun=Math.floor(rem1/7200);
+  const rem2=rem1%7200;
+  const tun=Math.floor(rem2/360);
+  const rem3=rem2%360;
+  const winal=Math.floor(rem3/20);
+  const kin=rem3%20;
+
+  // Tzolkin: base date 4 Ajaw (number=4, name=19)
+  const tzNum=((totalDays+3)%13+13)%13+1; // 1-13
+  const tzNameIdx=((totalDays+19)%20+20)%20;
+
+  // Haab: base date 8 Kumk'u (day=8, month=17)
+  const haabDay0=((totalDays+348)%365+365)%365;
+  const haabMonth=Math.floor(haabDay0/20);
+  const haabDay=haabDay0%20;
+
+  return{
+    longCount:`${baktun}.${katun}.${tun}.${winal}.${kin}`,
+    tzolkin:{number:tzNum,name:TZOLKIN_NAMES[tzNameIdx],glyph:TZOLKIN_GLYPHS[tzNameIdx],
+      formatted:`${tzNum} ${TZOLKIN_NAMES[tzNameIdx]}`},
+    haab:{day:haabDay,month:HAAB_MONTHS[haabMonth],
+      formatted:`${haabDay} ${HAAB_MONTHS[haabMonth]}`},
+    calendarRound:`${tzNum} ${TZOLKIN_NAMES[tzNameIdx]} ${haabDay} ${HAAB_MONTHS[haabMonth]}`,
+    totalDays
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHINESE SEXAGENARY CYCLE
+// ═══════════════════════════════════════════════════════════
+
+const HEAVENLY_STEMS = [
+  {name:'Jiǎ',element:'Wood',yin:false,char:'甲'},
+  {name:'Yǐ',element:'Wood',yin:true,char:'乙'},
+  {name:'Bǐng',element:'Fire',yin:false,char:'丙'},
+  {name:'Dīng',element:'Fire',yin:true,char:'丁'},
+  {name:'Wù',element:'Earth',yin:false,char:'戊'},
+  {name:'Jǐ',element:'Earth',yin:true,char:'己'},
+  {name:'Gēng',element:'Metal',yin:false,char:'庚'},
+  {name:'Xīn',element:'Metal',yin:true,char:'辛'},
+  {name:'Rén',element:'Water',yin:false,char:'壬'},
+  {name:'Guǐ',element:'Water',yin:true,char:'癸'}
+];
+const EARTHLY_BRANCHES = [
+  {name:'Zǐ',animal:'Rat',char:'子',hours:'23-01'},
+  {name:'Chǒu',animal:'Ox',char:'丑',hours:'01-03'},
+  {name:'Yín',animal:'Tiger',char:'寅',hours:'03-05'},
+  {name:'Mǎo',animal:'Rabbit',char:'卯',hours:'05-07'},
+  {name:'Chén',animal:'Dragon',char:'辰',hours:'07-09'},
+  {name:'Sì',animal:'Snake',char:'巳',hours:'09-11'},
+  {name:'Wǔ',animal:'Horse',char:'午',hours:'11-13'},
+  {name:'Wèi',animal:'Goat',char:'未',hours:'13-15'},
+  {name:'Shēn',animal:'Monkey',char:'申',hours:'15-17'},
+  {name:'Yǒu',animal:'Rooster',char:'酉',hours:'17-19'},
+  {name:'Xū',animal:'Dog',char:'戌',hours:'19-21'},
+  {name:'Hài',animal:'Pig',char:'亥',hours:'21-23'}
+];
+const ANIMAL_GLYPHS = ['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
+
+function chineseSexagenary(yearCE){
+  // Reference: 2024 = Jiǎ-Chén (Wood Dragon), cycle position 0 maps to 甲子
+  // 2024 → stem=0 (Jiǎ), branch=0 (Zǐ)... actually let me compute properly
+  // The sexagenary cycle: year 4 CE = Jiǎ-Zǐ (#1 of 60)
+  const cycleYear=((yearCE-4)%60+60)%60;
+  const stemIdx=cycleYear%10;
+  const branchIdx=cycleYear%12;
+  const stem=HEAVENLY_STEMS[stemIdx];
+  const branch=EARTHLY_BRANCHES[branchIdx];
+  const cycleNum=cycleYear+1;
+  return{
+    year:yearCE,stem,branch,cyclePosition:cycleNum,
+    name:`${stem.name}-${branch.name}`,
+    characters:`${stem.char}${branch.char}`,
+    element:stem.element,
+    animal:branch.animal,
+    emoji:ANIMAL_GLYPHS[branchIdx],
+    yinYang:stem.yin?'Yin':'Yang',
+    formatted:`${stem.element} ${branch.animal} (${stem.char}${branch.char})`
+  };
+}
+
+// Chinese hour (Shichen) — 2-hour blocks
+function chineseHour(hour){
+  const idx=Math.floor(((hour+1)%24)/2);
+  return EARTHLY_BRANCHES[idx];
+}
+
+// ═══════════════════════════════════════════════════════════
+// EGYPTIAN DECANS — 36 decans of 10° each
+// ═══════════════════════════════════════════════════════════
+
+const DECAN_NAMES=[
+  'Khentet-Hrt','Khentet-Khrt','Hry-ib Wia','Seshmu','Kenmu','Tepa-khentet',
+  'Khentet-Hrt','Khentet-Khrt','Hry-ib Wia','Tpa-Khentet','Khentet-Hrt','Khentet-Khrt',
+  'Sawy-Kenmu','Khery-Heped-En-Kenmu','Hat-Djat','Pehwy-Djat','Themat-Hrt','Themat-Khrt',
+  'Washy-Bekaty','Ipds','Sbshsn','Khentet-Hrt-Khentt','Khentet-Khrt-Khentt','Hry-ib-Khentt',
+  'Ha-Djat','Pehwy-Djat','Tepy-a-Khentet','Tepy-a-Khentet','Khentet-Hrt','Khentet-Khrt',
+  'Hry-ib-Wia','Sesmu','Kenmu','Sawy-Kenmu','Khery-heped','Tepy-a-Akhwy'
+];
+const DECAN_STARS=[
+  'Sirius','Canopus','Procyon','Pollux','Regulus','Denebola',
+  'Spica','Arcturus','Antares','Shaula','Nunki','Kaus Australis',
+  'Vega','Altair','Deneb','Fomalhaut','Achernar','Rigel',
+  'Betelgeuse','Aldebaran','Capella','Castor','Bellatrix','Alnilam',
+  'Alphard','Algieba','Cor Caroli','Zubenelgenubi','Zubeneschamali','Unukalhai',
+  'Rasalhague','Ras Algethi','Sabik','Dschubba','Graffias','Lesath'
+];
+
+function egyptianDecan(tropicalLng){
+  const idx=Math.floor(norm(tropicalLng)/10)%36;
+  const deg=norm(tropicalLng)%10;
+  return{index:idx,name:DECAN_NAMES[idx],star:DECAN_STARS[idx],
+    degree:Math.round(deg*100)/100,sign:SIGNS[Math.floor(idx/3)],
+    decanInSign:(idx%3)+1};
+}
+
+// ═══════════════════════════════════════════════════════════
+// FIXED STARS — Major stars with approximate ecliptic longitudes (epoch 2000)
+// ═══════════════════════════════════════════════════════════
+
+const FIXED_STARS=[
+  {name:'Aldebaran',lng:69.95,mag:0.87,nature:'Mars',constellation:'Taurus',note:'Eye of the Bull — Royal star of Persia'},
+  {name:'Algol',lng:56.17,mag:2.1,nature:'Saturn-Jupiter',constellation:'Perseus',note:'The Demon Star — Medusa\'s head, variable star'},
+  {name:'Regulus',lng:149.83,mag:1.36,nature:'Mars-Jupiter',constellation:'Leo',note:'Heart of the Lion — Royal star'},
+  {name:'Spica',lng:203.83,mag:0.98,nature:'Venus-Mars',constellation:'Virgo',note:'The Sheaf of Wheat — Demeter\'s gift'},
+  {name:'Antares',lng:249.77,mag:1.06,nature:'Mars-Jupiter',constellation:'Scorpio',note:'Heart of the Scorpion — Royal star, rival of Mars'},
+  {name:'Fomalhaut',lng:333.85,mag:1.17,nature:'Venus-Mercury',constellation:'Pisces Austrinus',note:'Mouth of the Fish — Royal star'},
+  {name:'Sirius',lng:104.07,mag:-1.46,nature:'Jupiter-Mars',constellation:'Canis Major',note:'The Dog Star — brightest star, Nile floods'},
+  {name:'Canopus',lng:104.99,mag:-0.72,nature:'Saturn-Jupiter',constellation:'Carina',note:'The Helmsman — 2nd brightest, navigation'},
+  {name:'Vega',lng:285.27,mag:0.03,nature:'Venus-Mercury',constellation:'Lyra',note:'The Falling Eagle — once was pole star, will be again'},
+  {name:'Capella',lng:81.80,mag:0.08,nature:'Mars-Mercury',constellation:'Auriga',note:'The Goat Star — sacred to shepherds'},
+  {name:'Rigel',lng:78.63,mag:0.18,nature:'Jupiter-Saturn',constellation:'Orion',note:'Orion\'s left foot — blue supergiant'},
+  {name:'Betelgeuse',lng:88.79,mag:0.45,nature:'Mars-Mercury',constellation:'Orion',note:'Orion\'s shoulder — red supergiant, may supernova'},
+  {name:'Procyon',lng:115.62,mag:0.34,nature:'Mercury-Mars',constellation:'Canis Minor',note:'Before the Dog — rises before Sirius'},
+  {name:'Arcturus',lng:204.14,mag:-0.04,nature:'Mars-Jupiter',constellation:'Boötes',note:'The Bear Keeper — fastest-moving bright star'},
+  {name:'Pollux',lng:113.22,mag:1.16,nature:'Mars',constellation:'Gemini',note:'The Immortal Twin — castor\'s brother'},
+  {name:'Altair',lng:301.82,mag:0.76,nature:'Mars-Jupiter',constellation:'Aquila',note:'The Flying Eagle — fast rotator'},
+  {name:'Deneb',lng:335.25,mag:1.25,nature:'Venus-Mercury',constellation:'Cygnus',note:'Tail of the Swan — luminosity 200,000× Sun'},
+  {name:'Achernar',lng:345.27,mag:0.46,nature:'Jupiter',constellation:'Eridanus',note:'End of the River — flattest known star'},
+  {name:'Pleiades',lng:60.0,mag:1.6,nature:'Moon-Mars',constellation:'Taurus',note:'The Seven Sisters — most famous open cluster'},
+  {name:'Algol',lng:56.17,mag:2.1,nature:'Saturn-Jupiter',constellation:'Perseus',note:'Demon Star'},
+  {name:'Vindemiatrix',lng:189.93,mag:2.83,nature:'Saturn-Mercury',constellation:'Virgo',note:'The Grape Gatherer — marks harvest time'},
+  {name:'Zubeneschamali',lng:229.17,mag:2.61,nature:'Jupiter-Mercury',constellation:'Libra',note:'Northern Claw — the only green star visible to naked eye'}
+];
+
+// Deep sky objects by zodiac sign
+const DEEP_SKY={
+  Aries:[{name:'M33 (Triangulum Galaxy)',type:'Galaxy',mag:5.7}],
+  Taurus:[{name:'M45 (Pleiades)',type:'Open Cluster',mag:1.6},{name:'M1 (Crab Nebula)',type:'Supernova Remnant',mag:8.4}],
+  Gemini:[{name:'M35',type:'Open Cluster',mag:5.3},{name:'NGC 2392 (Eskimo Nebula)',type:'Planetary Nebula',mag:9.2}],
+  Cancer:[{name:'M44 (Beehive / Praesepe)',type:'Open Cluster',mag:3.7},{name:'M67',type:'Open Cluster',mag:6.1}],
+  Leo:[{name:'M65/M66/NGC 3628 (Leo Triplet)',type:'Galaxy Group',mag:9.3}],
+  Virgo:[{name:'Virgo Cluster (M49,M87,M84…)',type:'Galaxy Cluster',mag:'8-10'},{name:'M104 (Sombrero Galaxy)',type:'Galaxy',mag:8.0}],
+  Libra:[{name:'NGC 5897',type:'Globular Cluster',mag:8.5}],
+  Scorpio:[{name:'M4',type:'Globular Cluster',mag:5.9},{name:'M7 (Ptolemy Cluster)',type:'Open Cluster',mag:3.3},{name:'M80',type:'Globular Cluster',mag:7.9}],
+  Sagittarius:[{name:'M8 (Lagoon Nebula)',type:'Emission Nebula',mag:6.0},{name:'M20 (Trifid Nebula)',type:'Nebula',mag:6.3},{name:'Sagittarius A*',type:'Black Hole',mag:'radio'}],
+  Capricorn:[{name:'M30',type:'Globular Cluster',mag:7.5}],
+  Aquarius:[{name:'M2',type:'Globular Cluster',mag:6.5},{name:'NGC 7009 (Saturn Nebula)',type:'Planetary Nebula',mag:8.0},{name:'NGC 7293 (Helix Nebula)',type:'Planetary Nebula',mag:7.6}],
+  Pisces:[{name:'M74',type:'Galaxy',mag:9.4}]
+};
+
+// ═══════════════════════════════════════════════════════════
+// PRECESSION OF THE EQUINOXES
+// ═══════════════════════════════════════════════════════════
+
+function precession(yearCE){
+  const GREAT_YEAR=25772;
+  const PREC_RATE=360/GREAT_YEAR;
+  const refYear=285;
+  const yrs=yearCE-refYear;
+  const precDeg=yrs*PREC_RATE;
+  const vernalSid=norm(360-precDeg);
+  const ageIdx=Math.floor(vernalSid/30)%12;
+  const degInAge=vernalSid%30;
+  return{year:yearCE,precessionDegrees:Math.round(precDeg*100)/100,
+    vernalEquinoxSidereal:Math.round(vernalSid*100)/100,
+    currentAge:`Age of ${SIGNS[ageIdx]}`,ageSign:SIGNS[ageIdx],
+    degreeInAge:Math.round(degInAge*100)/100,
+    degreesToNextAge:Math.round((30-degInAge)*100)/100,
+    yearsToNextAge:Math.round((30-degInAge)/PREC_RATE),
+    greatYearProgress:Math.round((precDeg/360)*10000)/100,
+    GREAT_YEAR};
+}
+
+// ═══════════════════════════════════════════════════════════
+// ZODIAC WHEEL CANVAS
+// ═══════════════════════════════════════════════════════════
+
+function drawWheel(canvas,positions){
+  const dpr=window.devicePixelRatio||1;
+  const size=Math.min(420,window.innerWidth-60);
+  canvas.width=size*dpr;canvas.height=size*dpr;
+  canvas.style.width=size+'px';canvas.style.height=size+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  const cx=size/2,cy=size/2,R=size/2-30;
+
+  // Background
+  ctx.fillStyle='#0a0a18';ctx.fillRect(0,0,size,size);
+
+  // Outer ring — zodiac signs
+  const signColors=['#cc4040','#60a040','#d0c040','#4080c0','#d08020','#609060',
+    '#d06080','#802020','#c06020','#405060','#4060c0','#406080'];
+
+  for(let i=0;i<12;i++){
+    const a1=(i*30-90)*Math.PI/180;
+    const a2=((i+1)*30-90)*Math.PI/180;
+
+    // Sign sector (outer ring)
+    ctx.beginPath();ctx.arc(cx,cy,R,a1,a2);ctx.arc(cx,cy,R-24,a2,a1,true);ctx.closePath();
+    ctx.fillStyle=signColors[i]+'18';ctx.fill();
+    ctx.strokeStyle=signColors[i]+'40';ctx.lineWidth=0.5;ctx.stroke();
+
+    // Sign symbol
+    const ma=(a1+a2)/2;
+    const tx=cx+Math.cos(ma)*(R-12);
+    const ty=cy+Math.sin(ma)*(R-12);
+    ctx.fillStyle=signColors[i]+'cc';ctx.font='14px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(SIGN_SYM[i],tx,ty);
+
+    // Sign name (outer)
+    const nx=cx+Math.cos(ma)*(R+14);
+    const ny=cy+Math.sin(ma)*(R+14);
+    ctx.fillStyle='#444';ctx.font='7px Georgia';
+    ctx.save();ctx.translate(nx,ny);ctx.rotate(ma+Math.PI/2);
+    ctx.fillText(SIGNS[i],0,0);ctx.restore();
+  }
+
+  // Degree ticks
+  for(let d=0;d<360;d+=5){
+    const a=(d-90)*Math.PI/180;
+    const r1=d%30===0?R-24:d%10===0?R-20:R-18;
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1);
+    ctx.lineTo(cx+Math.cos(a)*(R-24),cy+Math.sin(a)*(R-24));
+    ctx.strokeStyle=d%30===0?'#444':'#222';ctx.lineWidth=d%30===0?1:0.5;ctx.stroke();
+  }
+
+  // Inner circles
+  ctx.beginPath();ctx.arc(cx,cy,R-24,0,Math.PI*2);ctx.strokeStyle='#222';ctx.lineWidth=1;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,R*0.35,0,Math.PI*2);ctx.strokeStyle='#1a1a2a';ctx.lineWidth=1;ctx.stroke();
+
+  // Aspect lines between planets
+  for(let i=0;i<positions.length;i++){
+    for(let j=i+1;j<positions.length;j++){
+      const a=aspect(positions[i].planet,positions[j].planet);
+      if(!a||a.intensity<0.2)continue;
+      const a1=(positions[i].longitude-90)*Math.PI/180;
+      const a2=(positions[j].longitude-90)*Math.PI/180;
+      const pr=R*0.65;
+      ctx.beginPath();
+      ctx.moveTo(cx+Math.cos(a1)*pr,cy+Math.sin(a1)*pr);
+      ctx.lineTo(cx+Math.cos(a2)*pr,cy+Math.sin(a2)*pr);
+      const colors={conjunction:'#ffcc44',trine:'#44cc88',sextile:'#4488cc',
+        square:'#cc4444',opposition:'#cc44cc',quincunx:'#666'};
+      ctx.strokeStyle=(colors[a.aspect]||'#333')+(Math.round(a.intensity*60+20).toString(16));
+      ctx.lineWidth=a.intensity*2;ctx.stroke();
+    }
+  }
+
+  // Planet positions
+  for(const pos of positions){
+    if(!pos)continue;
+    const a=(pos.longitude-90)*Math.PI/180;
+    const pr=R*0.65;
+    const px=cx+Math.cos(a)*pr;
+    const py=cy+Math.sin(a)*pr;
+
+    // Glow
+    const grad=ctx.createRadialGradient(px,py,0,px,py,12);
+    const col=PLANET_COLORS[pos.planet]||'#888';
+    grad.addColorStop(0,col+'40');grad.addColorStop(1,col+'00');
+    ctx.fillStyle=grad;ctx.fillRect(px-12,py-12,24,24);
+
+    // Symbol
+    ctx.fillStyle=col;ctx.font='bold 13px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(PLANET_SYM[pos.planet]||'?',px,py);
+  }
+
+  // Center emblem
+  ctx.fillStyle='#181828';ctx.beginPath();ctx.arc(cx,cy,R*0.15,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#333';ctx.lineWidth=0.5;ctx.stroke();
+  ctx.fillStyle='#444';ctx.font='10px Georgia';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('L7',cx,cy);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UI RENDERING
+// ═══════════════════════════════════════════════════════════
+
+const NOW=Date.now();
+const DATE=new Date(NOW);
+const YEAR=DATE.getFullYear();
+const POSITIONS=allPositions(NOW);
+const ALL_ASP=allAspects(NOW);
+const RULER=planetaryRuler(NOW);
+const AYANAMSA=lahiriAyanamsa(YEAR);
+
+// Navigation
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
+  });
+});
+
+// Header
+function updateHeader(){
+  const d=new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('datetime').textContent=
+    `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} — ${d.toLocaleTimeString()}`;
+  const r=planetaryRuler();
+  document.getElementById('day-ruler').innerHTML=
+    `${PLANET_SYM[r.dayRuler]} Day of ${r.dayRuler} &nbsp;·&nbsp; ${PLANET_SYM[r.hourRuler]} Hour of ${r.hourRuler}`;
+}
+updateHeader();setInterval(updateHeader,1000);
+
+// ═══ MORNING BRIEFING ═══
+function renderBriefing(){
+  const el=document.getElementById('panel-briefing');
+  const r=RULER;
+  const prec=precession(YEAR);
+  const maya=mayanDate(DATE);
+  const cn=chineseSexagenary(YEAR);
+  const moonPos=POSITIONS[1];
+  const sunPos=POSITIONS[0];
+  const moonNak=getNakshatra(toSidereal(moonPos.longitude,AYANAMSA));
+  const sunNak=getNakshatra(toSidereal(sunPos.longitude,AYANAMSA));
+
+  // Find strongest aspects
+  const topAsp=ALL_ASP.aspects.slice(0,5);
+  const tensions=topAsp.filter(a=>a.nature==='tension'||a.nature==='polarity');
+  const flows=topAsp.filter(a=>a.nature==='flow'||a.nature==='cooperation'||a.nature==='fusion');
+
+  // Moon phase
+  let moonArc=norm(moonPos.longitude-sunPos.longitude);
+  let moonPhase='New Moon';
+  if(moonArc>10&&moonArc<=80)moonPhase='Waxing Crescent';
+  else if(moonArc>80&&moonArc<=100)moonPhase='First Quarter';
+  else if(moonArc>100&&moonArc<=170)moonPhase='Waxing Gibbous';
+  else if(moonArc>170&&moonArc<=190)moonPhase='Full Moon';
+  else if(moonArc>190&&moonArc<=260)moonPhase='Waning Gibbous';
+  else if(moonArc>260&&moonArc<=280)moonPhase='Last Quarter';
+  else if(moonArc>280&&moonArc<=350)moonPhase='Waning Crescent';
+  else moonPhase='New Moon';
+
+  // Sign element
+  const signEl={'Aries':'Fire','Taurus':'Earth','Gemini':'Air','Cancer':'Water',
+    'Leo':'Fire','Virgo':'Earth','Libra':'Air','Scorpio':'Water',
+    'Sagittarius':'Fire','Capricorn':'Earth','Aquarius':'Air','Pisces':'Water'};
+
+  // Build briefing
+  let html=`<div class="panel-title">Morning Celestial Briefing</div>`;
+
+  // Sun & Moon
+  html+=`<div class="section">
+    <div class="section-title">${PLANET_SYM.Sun} The Luminaries</div>
+    <div class="brief-item highlight">
+      <span class="brief-label">Sun</span>
+      ${sunPos.formatted} — ${signEl[sunPos.sign]} sign, ruled by ${SIGN_RULERS[sunPos.sign].ruler}
+    </div>
+    <div class="brief-item highlight">
+      <span class="brief-label">Moon</span>
+      ${moonPos.formatted} — ${moonPhase}<br>
+      <span style="color:var(--dim);font-size:12px">Vedic Nakshatra: ${moonNak.name} (${moonNak.deity}), Pada ${moonNak.pada} — Lord ${moonNak.lord}</span>
+    </div>
+  </div>`;
+
+  // Day ruler & cosmic weather
+  html+=`<div class="section">
+    <div class="section-title">Cosmic Weather</div>
+    <div class="brief-item highlight">
+      <span class="brief-label">Planetary Day</span>
+      ${PLANET_SYM[r.dayRuler]} ${r.dayRuler} — ${r.dayRuler==='Sun'?'vitality, leadership, visibility':
+        r.dayRuler==='Moon'?'emotions, intuition, receptivity':
+        r.dayRuler==='Mars'?'energy, action, courage':
+        r.dayRuler==='Mercury'?'communication, commerce, travel':
+        r.dayRuler==='Jupiter'?'expansion, wisdom, fortune':
+        r.dayRuler==='Venus'?'love, beauty, harmony':
+        'discipline, structure, endurance'}
+    </div>`;
+
+  // Top aspects as weather report
+  if(flows.length>0){
+    for(const a of flows.slice(0,3)){
+      html+=`<div class="brief-item flow">
+        <span class="brief-label">${a.symbol} ${a.aspect} — ${a.nature}</span>
+        ${a.planet1} ${a.symbol} ${a.planet2} (${a.orb}° orb, ${Math.round(a.intensity*100)}% intensity)<br>
+        <span style="color:var(--dim);font-size:12px">${a.pos1} — ${a.pos2}</span>
+      </div>`;
+    }
+  }
+  if(tensions.length>0){
+    for(const a of tensions.slice(0,3)){
+      html+=`<div class="brief-item tension">
+        <span class="brief-label">${a.symbol} ${a.aspect} — ${a.nature}</span>
+        ${a.planet1} ${a.symbol} ${a.planet2} (${a.orb}° orb, ${Math.round(a.intensity*100)}% intensity)<br>
+        <span style="color:var(--dim);font-size:12px">${a.pos1} — ${a.pos2}</span>
+      </div>`;
+    }
+  }
+  html+=`</div>`;
+
+  // Other calendars
+  html+=`<div class="section">
+    <div class="section-title">Multicultural Calendar</div>
+    <div class="brief-item">
+      <span class="brief-label">Mayan Long Count</span>
+      ${maya.longCount} — Tzolk'in: ${maya.tzolkin.glyph} ${maya.tzolkin.formatted} — Haab': ${maya.haab.formatted}
+    </div>
+    <div class="brief-item">
+      <span class="brief-label">Chinese Year</span>
+      ${cn.emoji} ${cn.formatted} — ${cn.yinYang} ${cn.element} (Cycle position ${cn.cyclePosition}/60)
+    </div>
+    <div class="brief-item">
+      <span class="brief-label">Great Year</span>
+      ${prec.currentAge} — ${prec.degreeInAge}° into the age, ${prec.yearsToNextAge} years until next age<br>
+      <span style="color:var(--dim);font-size:12px">Precession: ${prec.greatYearProgress}% of the ${prec.GREAT_YEAR}-year Great Year</span>
+    </div>
+  </div>`;
+
+  // All planet positions summary
+  html+=`<div class="section">
+    <div class="section-title">Planetary Positions — Tropical</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">`;
+  for(const p of POSITIONS){
+    if(!p)continue;
+    html+=`<div style="padding:6px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:4px;
+      font-size:12px;min-width:180px;background:rgba(0,0,0,0.2)">
+      <span style="color:${PLANET_COLORS[p.planet]}">${PLANET_SYM[p.planet]}</span>
+      ${p.formatted}</div>`;
+  }
+  html+=`</div></div>`;
+
+  // Guidance
+  const dominant=ALL_ASP.aspects[0];
+  html+=`<div class="section" style="border-left:3px solid var(--gold);text-align:center;font-style:italic;
+    color:var(--silver);font-size:14px;line-height:2">`;
+  if(dominant){
+    const guidance={
+      fusion:'The sky speaks of unity. What you touch today merges with you.',
+      flow:'The currents carry gifts. Accept what arrives.',
+      cooperation:'Connections form easily. Reach out, collaborate, weave.',
+      tension:'Friction generates fire. Channel the challenge into creation.',
+      polarity:'Opposites illuminate. What confronts you reveals your shadow.',
+      adjustment:'Small corrections have large consequences. Attend to detail.'
+    };
+    html+=`<p>"${guidance[dominant.nature]||'The sky turns.'}"</p>
+      <p style="font-size:11px;color:var(--dim);margin-top:8px">— The dominant aspect: ${dominant.planet1} ${dominant.symbol} ${dominant.planet2} (${dominant.aspect})</p>`;
+  }
+  html+=`</div>`;
+
+  el.innerHTML=html;
+}
+
+// ═══ WESTERN ZODIAC PANEL ═══
+function renderWestern(){
+  const el=document.getElementById('panel-western');
+  let html=`<div class="panel-title">Western Tropical Zodiac</div>
+    <div id="wheel-wrap">
+      <canvas id="wheel-canvas"></canvas>
+      <div id="planet-list">
+        <div class="section"><div class="section-title">Planetary Positions</div>`;
+  for(const p of POSITIONS){
+    if(!p)continue;
+    const ruler=SIGN_RULERS[p.sign];
+    const inDom=ruler&&ruler.ruler===p.planet;
+    const inExalt=ruler&&ruler.exaltation===p.planet;
+    html+=`<div class="planet-row">
+      <div class="planet-symbol" style="color:${PLANET_COLORS[p.planet]}">${PLANET_SYM[p.planet]}</div>
+      <div class="planet-name">${p.planet}</div>
+      <div class="planet-pos">
+        <span class="planet-sign-symbol">${p.signSymbol}</span>
+        ${Math.floor(p.degree)}°${Math.round((p.degree%1)*60)}'
+        ${p.sign}
+        ${p.retrograde?'<span class="retro">℞</span>':''}
+        ${inDom?'<span style="color:var(--gold);font-size:10px;margin-left:4px" title="Domicile">DOM</span>':''}
+        ${inExalt?'<span style="color:var(--citrinitas);font-size:10px;margin-left:4px" title="Exaltation">EXA</span>':''}
+      </div>
+    </div>`;
+  }
+  html+=`</div></div></div>`;
+  el.innerHTML=html;
+
+  // Draw wheel
+  requestAnimationFrame(()=>{
+    const canvas=document.getElementById('wheel-canvas');
+    if(canvas)drawWheel(canvas,POSITIONS);
+  });
+}
+
+// ═══ ASPECTS PANEL ═══
+function renderAspects(){
+  const el=document.getElementById('panel-aspects');
+  let html=`<div class="panel-title">Aspect Grid — Angular Relationships</div>
+    <div class="section" style="overflow-x:auto">
+    <table id="aspect-table"><thead><tr><th></th>`;
+  // Headers
+  for(const p of PLANETS_12)html+=`<th>${PLANET_SYM[p]}</th>`;
+  html+=`</tr></thead><tbody>`;
+
+  for(let i=0;i<12;i++){
+    html+=`<tr><th style="text-align:right;padding-right:8px;color:${PLANET_COLORS[PLANETS_12[i]]}">${PLANET_SYM[PLANETS_12[i]]} ${PLANETS_12[i]}</th>`;
+    for(let j=0;j<12;j++){
+      if(i===j){html+=`<td style="color:#333">·</td>`;continue;}
+      const a=i<j?aspect(PLANETS_12[i],PLANETS_12[j]):aspect(PLANETS_12[j],PLANETS_12[i]);
+      if(a){
+        html+=`<td class="${a.cls}" title="${a.planet1} ${a.aspect} ${a.planet2}\n${a.orb}° orb, ${Math.round(a.intensity*100)}% intensity">${a.symbol}</td>`;
+      }else{
+        html+=`<td style="color:#1a1a2a">·</td>`;
+      }
+    }
+    html+=`</tr>`;
+  }
+  html+=`</tbody></table></div>`;
+
+  // Active aspects list
+  html+=`<div class="section"><div class="section-title">Active Aspects (${ALL_ASP.aspects.length})</div>`;
+  for(const a of ALL_ASP.aspects){
+    const bgClasses={tension:'tension',polarity:'tension',flow:'flow',cooperation:'flow',fusion:'highlight'};
+    html+=`<div class="brief-item ${bgClasses[a.nature]||''}">
+      <span class="${a.cls}" style="font-size:16px">${a.symbol}</span>
+      <strong>${a.planet1}</strong> ${a.aspect} <strong>${a.planet2}</strong>
+      — ${a.nature}, ${Math.round(a.intensity*100)}% intensity, orb ${a.orb}°
+      <br><span style="color:var(--dim);font-size:11px">${a.pos1} — ${a.pos2}</span>
+    </div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+// ═══ VEDIC PANEL ═══
+function renderVedic(){
+  const el=document.getElementById('panel-vedic');
+  let html=`<div class="tradition-header">
+    <h2>ज्योतिष — Jyotiṣa</h2>
+    <p>Vedic Sidereal Astrology — Lahiri Ayanamsa: ${AYANAMSA.toFixed(2)}°</p>
+  </div>`;
+
+  // Sidereal positions
+  html+=`<div class="section"><div class="section-title">Sidereal Planetary Positions</div>`;
+  for(const p of POSITIONS){
+    if(!p)continue;
+    const sid=toSidereal(p.longitude,AYANAMSA);
+    const si=Math.floor(sid/30)%12;
+    const sd=sid%30;
+    const nak=getNakshatra(sid);
+    html+=`<div class="planet-row">
+      <div class="planet-symbol" style="color:${PLANET_COLORS[p.planet]}">${PLANET_SYM[p.planet]}</div>
+      <div class="planet-name">${p.planet}</div>
+      <div class="planet-pos">
+        ${SIGN_SYM[si]} ${Math.floor(sd)}°${SIGNS[si]}
+        ${p.retrograde?'<span class="retro">℞</span>':''}
+        <span style="color:var(--dim);font-size:10px;display:block">
+          Nakshatra: ${nak.name} (Pada ${nak.pada}) — Lord: ${nak.lord}
+        </span>
+      </div>
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Moon's nakshatra detail
+  const moonSid=toSidereal(POSITIONS[1].longitude,AYANAMSA);
+  const moonNak=getNakshatra(moonSid);
+  html+=`<div class="section" style="text-align:center">
+    <div class="section-title">Today's Moon Nakshatra</div>
+    <div style="font-size:28px;color:#e8a040;margin:12px 0">${moonNak.name}</div>
+    <p style="color:var(--silver)">${moonNak.symbol} — ${moonNak.deity}</p>
+    <p style="margin-top:8px">Pada ${moonNak.pada} · Dasha Lord: ${moonNak.lord}</p>
+    <p style="color:var(--dim);font-size:12px;margin-top:8px">
+      ${moonNak.degree.toFixed(1)}° within nakshatra (each nakshatra spans 13°20')
+    </p>
+  </div>`;
+
+  // All 27 nakshatras
+  html+=`<div class="section"><div class="section-title">The 27 Nakshatras</div><div>`;
+  for(let i=0;i<27;i++){
+    const n=NAKSHATRAS[i];
+    const active=i===moonNak.index;
+    html+=`<div class="nakshatra-card" ${active?'style="border-color:rgba(200,120,40,0.4);background:rgba(200,120,40,0.12)"':''}>
+      <span class="nak-name">${active?'● ':''}${n.name}</span>
+      <span class="nak-detail">${n.symbol}<br>${n.deity}<br>Lord: ${n.lord}</span>
+    </div>`;
+  }
+  html+=`</div></div>`;
+
+  el.innerHTML=html;
+}
+
+// ═══ MAYAN PANEL ═══
+function renderMayan(){
+  const el=document.getElementById('panel-mayan');
+  const m=mayanDate(DATE);
+  let html=`<div class="tradition-header">
+    <h2>K'in — The Mayan Sky</h2>
+    <p>Tzolk'in · Haab' · Long Count — GMT Correlation 584283</p>
+  </div>`;
+
+  // Long Count
+  html+=`<div class="section" style="text-align:center">
+    <div class="section-title">Long Count</div>
+    <div style="font-size:32px;letter-spacing:8px;color:#40c080;font-family:'Courier New',monospace;margin:16px 0">
+      ${m.longCount}
+    </div>
+    <p style="color:var(--dim);font-size:11px">b'ak'tun . k'atun . tun . winal . k'in<br>
+    Day ${m.totalDays.toLocaleString()} since creation date (13.0.0.0.0 = Aug 11, 3114 BCE)</p>
+  </div>`;
+
+  // Tzolkin + Haab
+  html+=`<div style="display:flex;gap:16px;flex-wrap:wrap">
+    <div class="section" style="flex:1;min-width:280px;text-align:center">
+      <div class="section-title">Tzolk'in — 260-Day Sacred Round</div>
+      <div style="font-size:22px;color:#40c080;margin:12px 0;letter-spacing:3px">${m.tzolkin.glyph}</div>
+      <div style="font-size:22px;color:#40c080">${m.tzolkin.formatted}</div>
+      <p style="margin-top:8px;color:var(--dim);font-size:12px">
+        13 numbers × 20 day names = 260 days<br>
+        Number ${m.tzolkin.number}, Day sign: ${m.tzolkin.name}
+      </p>
+    </div>
+    <div class="section" style="flex:1;min-width:280px;text-align:center">
+      <div class="section-title">Haab' — 365-Day Solar Year</div>
+      <div style="font-size:28px;color:#40c080;margin:20px 0">${m.haab.formatted}</div>
+      <p style="color:var(--dim);font-size:12px">
+        18 months × 20 days + 5 Wayeb = 365 days<br>
+        Day ${m.haab.day} of month ${m.haab.month}
+      </p>
+    </div>
+  </div>`;
+
+  // Calendar Round
+  html+=`<div class="section" style="text-align:center;border:1px solid rgba(40,160,80,0.2)">
+    <div class="section-title">Calendar Round</div>
+    <div style="font-size:18px;color:#40c080;margin:8px 0">${m.calendarRound}</div>
+    <p style="color:var(--dim);font-size:11px">Unique combination repeats every 18,980 days (≈52 years)</p>
+  </div>`;
+
+  // Tzolkin day signs
+  html+=`<div class="section"><div class="section-title">The 20 Day Signs</div><div style="text-align:center">`;
+  for(let i=0;i<20;i++){
+    const active=TZOLKIN_NAMES[i]===m.tzolkin.name;
+    html+=`<div class="mayan-glyph" ${active?'style="border-color:rgba(40,160,80,0.6);background:rgba(40,160,80,0.12)"':''}>
+      ${TZOLKIN_GLYPHS[i]}
+      <span class="glyph-label">${TZOLKIN_NAMES[i]}</span>
+    </div>`;
+  }
+  html+=`</div></div>`;
+
+  el.innerHTML=html;
+}
+
+// ═══ CHINESE PANEL ═══
+function renderChinese(){
+  const el=document.getElementById('panel-chinese');
+  const cn=chineseSexagenary(YEAR);
+  const ch=chineseHour(DATE.getHours());
+
+  const elClass={'Wood':'el-wood','Fire':'el-fire','Earth':'el-earth','Metal':'el-metal','Water':'el-water'};
+
+  let html=`<div class="tradition-header">
+    <h2>天干地支 — Heavenly Stems & Earthly Branches</h2>
+    <p>The Sexagenary Cycle — 60 years of Heaven and Earth</p>
+  </div>`;
+
+  // Current year
+  html+=`<div class="section" style="text-align:center">
+    <div class="section-title">Year ${YEAR}</div>
+    <div style="font-size:64px;margin:12px 0">${cn.emoji}</div>
+    <div style="font-size:32px;color:#e04040;font-family:serif;margin:8px 0">${cn.characters}</div>
+    <div style="font-size:18px;color:var(--silver);margin:8px 0">${cn.name} — ${cn.formatted}</div>
+    <div style="margin:12px 0">
+      <span class="element-badge ${elClass[cn.element]}">${cn.element}</span>
+      <span style="margin-left:8px;color:var(--dim)">${cn.yinYang}</span>
+    </div>
+    <p style="color:var(--dim);font-size:12px">Cycle position: ${cn.cyclePosition} of 60</p>
+  </div>`;
+
+  // Current hour (Shichen)
+  html+=`<div class="section">
+    <div class="section-title">Current Shichen (時辰 — 2-Hour Block)</div>
+    <div class="brief-item highlight">
+      <span class="brief-label">${ch.char} ${ch.name} — ${ch.animal} Hour</span>
+      ${ANIMAL_GLYPHS[EARTHLY_BRANCHES.indexOf(ch)]} ${ch.hours} — The ${ch.animal} watches
+    </div>
+  </div>`;
+
+  // 12 animals
+  html+=`<div class="section"><div class="section-title">The Twelve Earthly Branches</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">`;
+  for(let i=0;i<12;i++){
+    const b=EARTHLY_BRANCHES[i];
+    const isYear=i===((YEAR-4)%12+12)%12;
+    html+=`<div style="width:90px;text-align:center;padding:10px;border-radius:6px;
+      border:1px solid ${isYear?'rgba(200,40,40,0.3)':'rgba(255,255,255,0.04)'};
+      background:${isYear?'rgba(200,40,40,0.08)':'rgba(0,0,0,0.2)'}">
+      <div style="font-size:28px">${ANIMAL_GLYPHS[i]}</div>
+      <div style="font-size:14px;color:${isYear?'#e04040':'var(--silver)'};margin-top:4px">${b.animal}</div>
+      <div style="font-size:18px;color:var(--dim)">${b.char}</div>
+      <div style="font-size:9px;color:var(--dim)">${b.name}</div>
+    </div>`;
+  }
+  html+=`</div></div>`;
+
+  // Five Elements
+  html+=`<div class="section"><div class="section-title">五行 — The Five Phases</div>
+    <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:8px">`;
+  const elCycle=[
+    {name:'Wood',char:'木',color:'#40b050',desc:'Growth, flexibility, expansion'},
+    {name:'Fire',char:'火',color:'#cc4030',desc:'Transformation, passion, light'},
+    {name:'Earth',char:'土',color:'#b0a030',desc:'Stability, nourishment, center'},
+    {name:'Metal',char:'金',color:'#aaa',desc:'Contraction, precision, clarity'},
+    {name:'Water',char:'水',color:'#4060cc',desc:'Flow, wisdom, depth'}
+  ];
+  for(const e of elCycle){
+    const active=e.name===cn.element;
+    html+=`<div style="width:120px;text-align:center;padding:12px;border-radius:6px;
+      border:1px solid ${active?e.color+'60':'rgba(255,255,255,0.04)'};
+      background:${active?e.color+'14':'rgba(0,0,0,0.2)'}">
+      <div style="font-size:28px;color:${e.color}">${e.char}</div>
+      <div style="font-size:12px;color:${active?e.color:'var(--dim)'};margin-top:4px">${e.name}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px">${e.desc}</div>
+    </div>`;
+  }
+  html+=`</div></div>`;
+
+  el.innerHTML=html;
+}
+
+// ═══ EGYPTIAN PANEL ═══
+function renderEgyptian(){
+  const el=document.getElementById('panel-egyptian');
+  const sunDecan=egyptianDecan(POSITIONS[0].longitude);
+
+  let html=`<div class="tradition-header">
+    <h2>𓇋𓅓𓏏 — Egyptian Decanal System</h2>
+    <p>36 Decans — 10° each — From the Ceiling of Dendera (~2400 BCE)</p>
+  </div>`;
+
+  // Current Sun decan
+  html+=`<div class="section" style="text-align:center">
+    <div class="section-title">Sun's Current Decan</div>
+    <div style="font-size:22px;color:#d4aa40;margin:12px 0">Decan ${sunDecan.index+1} — ${sunDecan.name}</div>
+    <p>Star: ${sunDecan.star} · ${sunDecan.sign}, ${sunDecan.decanInSign}${sunDecan.decanInSign===1?'st':sunDecan.decanInSign===2?'nd':'rd'} decan</p>
+    <p style="color:var(--dim);font-size:12px;margin-top:8px">${sunDecan.degree.toFixed(1)}° within decan</p>
+  </div>`;
+
+  // All decans — each planet's decan
+  html+=`<div class="section"><div class="section-title">Planetary Decans</div>`;
+  for(const p of POSITIONS){
+    if(!p)continue;
+    const dec=egyptianDecan(p.longitude);
+    html+=`<div class="planet-row">
+      <div class="planet-symbol" style="color:${PLANET_COLORS[p.planet]}">${PLANET_SYM[p.planet]}</div>
+      <div class="planet-name">${p.planet}</div>
+      <div class="planet-pos">
+        Decan ${dec.index+1}: ${dec.name} (${dec.star})<br>
+        <span style="color:var(--dim);font-size:10px">${dec.sign}, ${dec.decanInSign}${['st','nd','rd'][dec.decanInSign-1]} decan — ${dec.degree.toFixed(1)}°</span>
+      </div>
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Visual decan strip
+  html+=`<div class="section"><div class="section-title">The 36 Decans</div><div class="decan-strip">`;
+  for(let i=0;i<36;i++){
+    const active=i===sunDecan.index;
+    html+=`<div class="decan-cell ${active?'active':''}">
+      <div class="decan-num">${i+1}</div>
+      <div style="font-size:9px;color:var(--dim)">${SIGNS[Math.floor(i/3)]}</div>
+      <div style="font-size:8px;color:var(--dim);margin-top:2px">${DECAN_STARS[i]}</div>
+    </div>`;
+  }
+  html+=`</div></div>`;
+
+  el.innerHTML=html;
+}
+
+// ═══ FIXED STARS PANEL ═══
+function renderStars(){
+  const el=document.getElementById('panel-stars');
+  let html=`<div class="panel-title">Fixed Stars & Deep Sky Objects</div>`;
+
+  // Stars near planets
+  html+=`<div class="section"><div class="section-title">Prominent Fixed Stars</div>`;
+  // Sort stars by current zodiac position
+  const sortedStars=[...FIXED_STARS].sort((a,b)=>a.lng-b.lng);
+  const uniqueStars=sortedStars.filter((s,i)=>i===0||s.name!==sortedStars[i-1].name);
+  for(const s of uniqueStars){
+    const si=Math.floor(s.lng/30)%12;
+    const sd=s.lng%30;
+    // Check if any planet is near this star
+    let nearby=null;
+    for(const p of POSITIONS){
+      if(!p)continue;
+      let diff=Math.abs(p.longitude-s.lng);
+      if(diff>180)diff=360-diff;
+      if(diff<5)nearby=p;
+    }
+    const magSize=Math.max(8,Math.min(20,20-s.mag*3));
+    const brightness=Math.min(255,Math.max(100,255-s.mag*40));
+    html+=`<div class="star-row" ${nearby?'style="background:rgba(200,170,100,0.04)"':''}>
+      <div class="star-mag" style="width:${magSize}px;height:${magSize}px;
+        background:rgba(${brightness},${brightness},${Math.min(255,brightness+30)},0.8);
+        font-size:${Math.max(6,magSize/2.5)}px">${s.mag.toFixed(1)}</div>
+      <div style="flex:1">
+        <strong style="color:var(--silver)">${s.name}</strong>
+        <span style="color:var(--dim);font-size:11px;margin-left:8px">${s.constellation}</span>
+        <span style="color:var(--dim);font-size:11px;margin-left:8px">${SIGN_SYM[si]} ${Math.floor(sd)}° ${SIGNS[si]}</span>
+        ${nearby?`<span style="color:var(--gold);font-size:10px;margin-left:8px">● near ${nearby.planet}</span>`:''}
+        <div style="color:var(--dim);font-size:10px;margin-top:2px">${s.note}</div>
+      </div>
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Deep sky by sign
+  html+=`<div class="section"><div class="section-title">Deep Sky Objects by Sign</div>`;
+  for(let i=0;i<12;i++){
+    const sign=SIGNS[i];
+    const objects=DEEP_SKY[sign];
+    if(!objects||objects.length===0)continue;
+    // Is the Sun in this sign?
+    const sunHere=POSITIONS[0].signIndex===i;
+    html+=`<div style="margin-bottom:12px;${sunHere?'background:rgba(200,170,100,0.04);padding:8px;border-radius:4px':''}">
+      <div style="color:${sunHere?'var(--gold)':'var(--silver)'};font-size:13px;margin-bottom:4px">
+        ${SIGN_SYM[i]} ${sign} ${sunHere?'(Sun is here)':''}
+      </div>`;
+    for(const obj of objects){
+      html+=`<div style="padding-left:20px;font-size:12px;color:var(--dim);margin-bottom:2px">
+        ${obj.name} — <span style="color:var(--text)">${obj.type}</span>
+        <span style="margin-left:6px;font-size:10px">mag ${obj.mag}</span>
+      </div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+
+  el.innerHTML=html;
+}
+
+// ═══ PRECESSION / GREAT YEAR ═══
+function renderPrecession(){
+  const el=document.getElementById('panel-precession');
+  const prec=precession(YEAR);
+
+  let html=`<div class="panel-title">The Great Year — Precession of the Equinoxes</div>`;
+
+  html+=`<div class="section" style="text-align:center">
+    <div style="font-size:24px;color:var(--gold);margin:16px 0">${prec.currentAge}</div>
+    <p>${prec.degreeInAge}° into the age · ${prec.degreesToNextAge}° remaining</p>
+    <p style="color:var(--dim);font-size:12px;margin-top:8px">
+      ~${prec.yearsToNextAge} years until the Age of Aquarius
+    </p>
+  </div>`;
+
+  // Visual age strip
+  html+=`<div class="section"><div class="section-title">The Twelve Ages</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center">`;
+  // Ages go backward: Pisces→Aquarius→Capricorn... (precession is retrograde)
+  const ageOrder=[11,10,9,8,7,6,5,4,3,2,1,0]; // Pisces first
+  for(const si of ageOrder){
+    const isCurrent=SIGNS[si]===prec.ageSign;
+    const ageStart=285+si*30*25772/360; // rough approximation
+    html+=`<div style="width:80px;text-align:center;padding:10px 6px;border-radius:4px;
+      border:1px solid ${isCurrent?'rgba(200,170,100,0.3)':'rgba(255,255,255,0.04)'};
+      background:${isCurrent?'rgba(200,170,100,0.08)':'rgba(0,0,0,0.2)'}">
+      <div style="font-size:20px">${SIGN_SYM[si]}</div>
+      <div style="font-size:10px;color:${isCurrent?'var(--gold)':'var(--dim)'};margin-top:4px">${SIGNS[si]}</div>
+    </div>`;
+  }
+  html+=`</div></div>`;
+
+  // Numbers
+  html+=`<div class="section">
+    <div class="section-title">Precession Data</div>
+    <div class="brief-item"><span class="brief-label">Total Precession Since 285 CE</span>${prec.precessionDegrees}°</div>
+    <div class="brief-item"><span class="brief-label">Vernal Equinox (Sidereal)</span>${prec.vernalEquinoxSidereal}°</div>
+    <div class="brief-item"><span class="brief-label">Great Year Progress</span>${prec.greatYearProgress}%</div>
+    <div class="brief-item"><span class="brief-label">Complete Cycle</span>${prec.GREAT_YEAR.toLocaleString()} years</div>
+    <div class="brief-item"><span class="brief-label">Precession Rate</span>~50.3 arcsec/year = 1° every 71.6 years</div>
+  </div>`;
+
+  // Historical context
+  html+=`<div class="section" style="font-style:italic;color:var(--dim);font-size:12px;line-height:1.8;text-align:center">
+    <p>"The Ancients called it the Great Year — the slow turning of the heavens themselves.</p>
+    <p>Every 2,148 years, the dawn of the vernal equinox rises against a new constellation.</p>
+    <p>We are the generation that watches Pisces dissolve into Aquarius.</p>
+    <p>The fish gives way to the water bearer."</p>
+  </div>`;
+
+  el.innerHTML=html;
+}
+
+// ═══ INITIAL RENDER ═══
+renderBriefing();
+renderWestern();
+renderAspects();
+renderVedic();
+renderMayan();
+renderChinese();
+renderEgyptian();
+renderStars();
+renderPrecession();
+
+// Resize handler for wheel
+window.addEventListener('resize',()=>{
+  const canvas=document.getElementById('wheel-canvas');
+  if(canvas&&document.getElementById('panel-western').classList.contains('active')){
+    drawWheel(canvas,POSITIONS);
+  }
+});
+
+// ═══ NIS — Necropolis Intelligence Service (embedded) ═══
+(function NIS(){
+  const started=Date.now();
+  const severity=['WHISPER','NOTICE','ALERT','ALARM','BREACH'];
+  let level=0;
+  // DOM mutation watch — auto-remove injected scripts/iframes/objects
+  if(typeof MutationObserver!=='undefined'){
+    new MutationObserver(mutations=>{
+      for(const m of mutations){
+        for(const n of m.addedNodes){
+          if(n.tagName&&/^(SCRIPT|IFRAME|OBJECT|EMBED)$/i.test(n.tagName)){
+            if(!n.dataset.l7Trusted){n.remove();level=Math.max(level,3);}
+          }
+        }
+      }
+    }).observe(document.body,{childList:true,subtree:true});
+  }
+  // Rate limiting
+  let actionCount=0;
+  setInterval(()=>{actionCount=0},10000);
+  document.addEventListener('click',()=>{
+    actionCount++;
+    if(actionCount>50)level=Math.max(level,2);
+  });
+  // Sanitize — escape HTML in user-facing strings
+  window._NIS={
+    escapeHTML:s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'),
+    severity:()=>severity[level],
+    uptime:()=>((Date.now()-started)/1000).toFixed(0)+'s',
+    brief:()=>({severity:severity[level],uptime:((Date.now()-started)/1000)|0,
+      memory:(performance.memory?.usedJSHeapSize/1024/1024||0).toFixed(1)+'MB'})
+  };
+})();
+
+</script>
+
+<footer style="text-align:center;padding:20px;color:#333;font-size:10px;letter-spacing:2px;
+  border-top:1px solid rgba(200,170,100,0.06);margin-top:20px">
+  CELESTIAL ORACLE — L7 WAY — Under the Philosopher's Authority<br>
+  <span style="color:#222;font-size:9px">Patent: L7 Transmutation Engine — Inventor: Alberto Valido Delgado</span>
+</footer>
+
+</body>
+</html>

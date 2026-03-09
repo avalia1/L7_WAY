@@ -274,14 +274,17 @@ function runAttackCoil(plaintext, ciphertext, key, layers, coilNum) {
         const roundIdx = Math.min(state.round - 1, 6);
         // Base effectiveness modified by self-correction weight
         let eff = vec.effectBase[roundIdx] * (vec.weight / (totalWeight / VECTORS.length));
-        // Add learning bonus: if this vector worked well before, it gets better
+        // Add learning bonus (diminished): past success helps, but layers compound against it
         const pastSuccess = vec.history.reduce((s, h) => s + h, 0);
-        eff *= (1 + pastSuccess * 0.05);
-        eff = Math.min(eff, 0.99);
+        eff *= (1 + pastSuccess * 0.02);
+        // Defense layers compound exponentially — each layer multiplies resistance
+        const layerPenalty = Math.pow(0.65, layers.length);
+        eff *= layerPenalty;
+        eff = Math.min(eff, 0.85);
 
         // Perception: each coil, each vector tries to resolve bits
         // The probability of resolving a specific bit depends on effectiveness
-        const bitsToTry = Math.max(1, Math.floor(eff * 4 + Math.random() * 3));
+        const bitsToTry = Math.max(1, Math.floor(eff * 3 + Math.random() * 2));
         let bitsFound = 0;
 
         for (let t = 0; t < bitsToTry; t++) {
@@ -295,14 +298,14 @@ function runAttackCoil(plaintext, ciphertext, key, layers, coilNum) {
 
             // Does this vector correctly perceive this bit?
             if (Math.random() < eff) {
-                // Correct perception
+                // Correct perception — confidence gains are gradual
                 state.perceivedBits[bitIdx] = state.keyBits[bitIdx] === 1 ? 1 : -1;
-                state.confidence[bitIdx] = Math.min(1.0, state.confidence[bitIdx] + 0.3 + eff * 0.4);
+                state.confidence[bitIdx] = Math.min(1.0, state.confidence[bitIdx] + 0.08 + eff * 0.12);
                 bitsFound++;
-            } else if (Math.random() < 0.1) {
-                // Mis-perception (rare) — self-correction should fix this
+            } else if (Math.random() < 0.15 + layers.length * 0.05) {
+                // Mis-perception — more likely with more defense layers
                 state.perceivedBits[bitIdx] = state.keyBits[bitIdx] === 1 ? -1 : 1;
-                state.confidence[bitIdx] = Math.max(0, state.confidence[bitIdx] - 0.1);
+                state.confidence[bitIdx] = Math.max(0, state.confidence[bitIdx] - 0.15);
             }
         }
         totalBitsThisCoil += bitsFound;
@@ -327,11 +330,11 @@ function runAttackCoil(plaintext, ciphertext, key, layers, coilNum) {
                 // Check against actual ciphertext
                 const expected = plaintext[percKeyByte] ^ testByte;
                 if (Math.abs(expected - ciphertext[percKeyByte]) <= 1) {
-                    state.confidence[b] = Math.min(1.0, state.confidence[b] + 0.15);
+                    state.confidence[b] = Math.min(1.0, state.confidence[b] + 0.06);
                 } else {
                     // Flip and recheck
                     state.perceivedBits[b] *= -1;
-                    state.confidence[b] = Math.min(1.0, state.confidence[b] + 0.1);
+                    state.confidence[b] = Math.min(1.0, state.confidence[b] + 0.03);
                 }
             }
         }
