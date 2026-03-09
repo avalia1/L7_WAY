@@ -4,6 +4,7 @@
 
 VAULT_DIR="/Users/rnir_hrc_avd/Backup/L7_WAY/.vault"
 VAULT_DMG="/Users/rnir_hrc_avd/Backup/L7_WAY/.vault_encrypted.dmg"
+VAULT_SPARSE="/Users/rnir_hrc_avd/Backup/L7_WAY/.vault_encrypted.dmg.sparseimage"
 VAULT_MOUNT="/Volumes/L7_VAULT"
 VAULT_SIZE="100m"
 
@@ -38,7 +39,7 @@ case "${1}" in
 
         if [ $? -eq 0 ]; then
             # Mount and restore contents
-            echo "$PASS" | hdiutil attach "${VAULT_DMG%.dmg}.sparseimage" -stdinpass -mountpoint "$VAULT_MOUNT" 2>/dev/null
+            echo "$PASS" | hdiutil attach "$VAULT_SPARSE" -stdinpass -mountpoint "$VAULT_MOUNT" 2>/dev/null
             if [ "$(ls -A $TEMP 2>/dev/null)" ]; then
                 cp -R "$TEMP"/* "$VAULT_MOUNT/"
             fi
@@ -58,8 +59,7 @@ case "${1}" in
             exit 0
         fi
 
-        SPARSE="${VAULT_DMG%.dmg}.sparseimage"
-        if [ ! -f "$SPARSE" ]; then
+        if [ ! -f "$VAULT_SPARSE" ]; then
             echo "No vault found. Run './vault init' first."
             exit 1
         fi
@@ -68,7 +68,7 @@ case "${1}" in
         PASS=$(get_key)
         [ -z "$PASS" ] && exit 1
 
-        echo "$PASS" | hdiutil attach "$SPARSE" -stdinpass -mountpoint "$VAULT_MOUNT" 2>/dev/null
+        echo "$PASS" | hdiutil attach "$VAULT_SPARSE" -stdinpass -mountpoint "$VAULT_MOUNT" 2>/dev/null
 
         if [ $? -eq 0 ]; then
             echo "Vault open at: $VAULT_MOUNT"

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Satellite Star Field Comparison — IQS-888</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; color: #ccc; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── Top bar ── */
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: #060610; border-bottom: 1px solid #1a1a2e;
+  flex-shrink: 0;
+}
+.top-bar h1 { font-size: 18px; color: #ffd700; font-weight: 300; letter-spacing: 3px; }
+.top-bar .controls { display: flex; gap: 10px; align-items: center; }
+.btn {
+  background: #10102a; border: 1px solid #2a2a44; color: #99a;
+  padding: 8px 16px; cursor: pointer; font-family: inherit;
+  font-size: 13px; border-radius: 6px; transition: all 0.15s;
+}
+.btn:hover { background: #1a1a3a; border-color: #7b8cff; color: #fff; }
+.btn.active { background: #1a2a4a; border-color: #ffd700; color: #ffd700; }
+.btn.danger { border-color: #442222; color: #aa6666; }
+.btn.danger:hover { border-color: #ff4444; color: #ff4444; }
+
+/* ── Time control ── */
+.time-bar {
+  display: flex; align-items: center; gap: 16px; padding: 12px 24px;
+  background: #080812; border-bottom: 1px solid #1a1a2e; flex-shrink: 0;
+}
+.time-bar label { font-size: 13px; color: #667; white-space: nowrap; }
+.time-bar input[type=range] { flex: 1; height: 6px; appearance: none; background: #1a1a2e; border-radius: 3px; }
+.time-bar input[type=range]::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: #ffd700; border-radius: 50%; cursor: pointer; }
+.time-val { font-size: 18px; color: #ffd700; font-family: 'Courier New', monospace; font-weight: 700; min-width: 120px; text-align: center; }
+.time-date { font-size: 12px; color: #556; min-width: 180px; text-align: center; }
+
+/* ── Views ── */
+.views { display: flex; flex: 1; overflow: hidden; }
+.view-panel { flex: 1; position: relative; border-right: 1px solid #1a1a2e; }
+.view-panel:last-child { border-right: none; }
+.view-label {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.7); border: 1px solid #333; border-radius: 6px;
+  padding: 8px 20px; z-index: 10; text-align: center;
+}
+.view-label .title { font-size: 15px; color: #ffd700; font-weight: 600; }
+.view-label .date { font-size: 12px; color: #889; margin-top: 2px; }
+canvas { display: block; width: 100%; height: 100%; }
+
+/* ── Info overlay ── */
+.info-overlay {
+  position: absolute; bottom: 12px; left: 12px; right: 12px;
+  background: rgba(0,0,0,0.75); border: 1px solid #222; border-radius: 8px;
+  padding: 10px 14px; font-size: 12px; color: #778;
+  display: flex; gap: 20px; flex-wrap: wrap;
+}
+.info-item { white-space: nowrap; }
+.info-item .v { color: #ffd700; font-family: 'Courier New', monospace; }
+
+/* ── Diff overlay ── */
+.diff-panel {
+  position: absolute; bottom: 60px; right: 12px;
+  background: rgba(0,0,0,0.85); border: 1px solid #333; border-radius: 8px;
+  padding: 12px 16px; font-size: 13px; z-index: 10; max-width: 300px;
+}
+.diff-panel .title { color: #ff8844; font-weight: 600; margin-bottom: 6px; }
+.diff-row { display: flex; justify-content: space-between; padding: 2px 0; }
+.diff-row .k { color: #778; }
+.diff-row .v { color: #ffd700; font-family: 'Courier New', monospace; }
+
+/* ── Magnitude slider row ── */
+.mag-row { display: flex; align-items: center; gap: 8px; }
+.mag-row label { font-size: 12px; color: #556; }
+.mag-row input[type=range] { width: 100px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<div class="top-bar">
+  <h1>SATELLITE STAR FIELD COMPARISON</h1>
+  <div class="controls">
+    <div class="mag-row">
+      <label>Mag limit</label>
+      <input type="range" min="1" max="8" value="6" step="0.5"
+        oninput="magLimit=+this.value; drawBoth()">
+    </div>
+    <button class="btn" id="btnConst" onclick="showConst=!showConst; this.classList.toggle('active'); drawBoth()">Constellations</button>
+    <button class="btn" id="btnGrid" onclick="showCelestialGrid=!showCelestialGrid; this.classList.toggle('active'); drawBoth()">Grid</button>
+    <button class="btn" id="btnNames" onclick="showNames=!showNames; this.classList.toggle('active'); drawBoth()">Names</button>
+    <button class="btn" id="btnMotion" onclick="showMotionArrows=!showMotionArrows; this.classList.toggle('active'); drawBoth()">Motion</button>
+    <button class="btn" onclick="exaggeration=1; document.getElementById('exagSlider').value=0; drawBoth()">1x</button>
+    <button class="btn danger" onclick="resetView()">Reset</button>
+  </div>
+</div>
+
+<div class="time-bar">
+  <label>TIME OFFSET</label>
+  <input type="range" id="timeSlider" min="-100" max="100" value="-1" step="0.1"
+    oninput="timeOffset=+this.value; updateTimeDisplay(); drawBoth()">
+  <div class="time-val" id="timeVal">-1.0 years</div>
+  <div class="time-date" id="timeDate"></div>
+  <label style="margin-left:16px">EXAGGERATE MOTION</label>
+  <input type="range" id="exagSlider" min="0" max="600" value="0"
+    oninput="exaggeration=Math.pow(10, this.value/100); document.getElementById('exagVal').textContent=exaggeration.toFixed(0)+'x'; drawBoth()">
+  <span class="time-val" id="exagVal" style="min-width:60px; font-size:14px">1x</span>
+</div>
+
+<div class="views">
+  <!-- LEFT: NOW -->
+  <div class="view-panel">
+    <div class="view-label">
+      <div class="title">NOW</div>
+      <div class="date" id="leftDate">2026-03-07</div>
+    </div>
+    <canvas id="cLeft"></canvas>
+    <div class="info-overlay" id="infoLeft"></div>
+  </div>
+
+  <!-- RIGHT: OFFSET -->
+  <div class="view-panel">
+    <div class="view-label">
+      <div class="title" id="rightTitle">1 YEAR AGO</div>
+      <div class="date" id="rightDate">2025-03-07</div>
+    </div>
+    <canvas id="cRight"></canvas>
+    <div class="info-overlay" id="infoRight"></div>
+    <div class="diff-panel" id="diffPanel">
+      <div class="title">DISPLACEMENT</div>
+      <div id="diffContent">Adjust time to compare...</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STAR CATALOG — Real bright stars with proper motions
+// RA in hours, Dec in degrees, magnitude, proper motion in arcsec/yr
+// pm_ra and pm_dec in arcseconds per year (real measured values)
+// ═══════════════════════════════════════════════════════════════
+const STARS = [
+  // name, RA(h), Dec(deg), mag, pm_ra(as/yr), pm_dec(as/yr), parallax(as), color
+  { name:"Sirius",       ra:6.752, dec:-16.72, mag:-1.46, pm_ra:-0.546, pm_dec:-1.223, plx:0.379, color:"#aaccff" },
+  { name:"Canopus",      ra:6.399, dec:-52.70, mag:-0.74, pm_ra:0.020,  pm_dec:0.024,  plx:0.010, color:"#ffffcc" },
+  { name:"Arcturus",     ra:14.261,dec:19.18,  mag:-0.05, pm_ra:-1.094, pm_dec:-1.999, plx:0.089, color:"#ffcc88" },
+  { name:"Vega",         ra:18.616,dec:38.78,  mag:0.03,  pm_ra:0.201,  pm_dec:0.287,  plx:0.130, color:"#aabbff" },
+  { name:"Capella",      ra:5.278, dec:46.00,  mag:0.08,  pm_ra:0.076,  pm_dec:-0.427, plx:0.077, color:"#ffdd88" },
+  { name:"Rigel",        ra:5.242, dec:-8.20,  mag:0.13,  pm_ra:0.001,  pm_dec:0.000,  plx:0.003, color:"#bbccff" },
+  { name:"Procyon",      ra:7.655, dec:5.22,   mag:0.34,  pm_ra:-0.714, pm_dec:-1.036, plx:0.286, color:"#ffeedd" },
+  { name:"Betelgeuse",   ra:5.920, dec:7.41,   mag:0.42,  pm_ra:0.027,  pm_dec:0.011,  plx:0.005, color:"#ff8844" },
+  { name:"Achernar",     ra:1.629, dec:-57.24, mag:0.46,  pm_ra:0.088,  pm_dec:-0.040, plx:0.023, color:"#aabbff" },
+  { name:"Altair",       ra:19.846,dec:8.87,   mag:0.76,  pm_ra:0.536,  pm_dec:0.386,  plx:0.195, color:"#ffffff" },
+  { name:"Aldebaran",    ra:4.599, dec:16.51,  mag:0.85,  pm_ra:0.063,  pm_dec:-0.190, plx:0.050, color:"#ff9944" },
+  { name:"Spica",        ra:13.420,dec:-11.16, mag:0.97,  pm_ra:-0.042, pm_dec:-0.031, plx:0.012, color:"#bbccff" },
+  { name:"Antares",      ra:16.490,dec:-26.43, mag:1.09,  pm_ra:-0.012, pm_dec:-0.023, plx:0.005, color:"#ff5533" },
+  { name:"Pollux",       ra:7.755, dec:28.03,  mag:1.14,  pm_ra:-0.626, pm_dec:-0.046, plx:0.097, color:"#ffcc88" },
+  { name:"Fomalhaut",    ra:22.961,dec:-29.62, mag:1.16,  pm_ra:0.329,  pm_dec:-0.164, plx:0.130, color:"#ffffff" },
+  { name:"Deneb",        ra:20.690,dec:45.28,  mag:1.25,  pm_ra:0.002,  pm_dec:0.002,  plx:0.001, color:"#ddddff" },
+  { name:"Regulus",      ra:10.140,dec:11.97,  mag:1.40,  pm_ra:-0.249, pm_dec:0.006,  plx:0.042, color:"#ccddff" },
+  { name:"Castor",       ra:7.577, dec:31.89,  mag:1.58,  pm_ra:-0.191, pm_dec:-0.145, plx:0.064, color:"#ffffff" },
+  { name:"Bellatrix",    ra:5.419, dec:6.35,   mag:1.64,  pm_ra:-0.008, pm_dec:-0.013, plx:0.013, color:"#bbccff" },
+  { name:"Alnilam",      ra:5.604, dec:-1.20,  mag:1.69,  pm_ra:0.001,  pm_dec:-0.001, plx:0.001, color:"#bbddff" },
+  { name:"Polaris",      ra:2.530, dec:89.26,  mag:1.98,  pm_ra:0.045,  pm_dec:-0.012, plx:0.008, color:"#ffeedd" },
+  { name:"Barnard's",    ra:17.964,dec:4.69,   mag:9.54,  pm_ra:-0.799, pm_dec:10.328, plx:0.547, color:"#ff6633" },
+  // Additional stars for a richer field
+  { name:"Dubhe",        ra:11.062,dec:61.75,  mag:1.79,  pm_ra:-0.136, pm_dec:-0.035, plx:0.026, color:"#ffcc88" },
+  { name:"Merak",        ra:11.031,dec:56.38,  mag:2.37,  pm_ra:0.081,  pm_dec:0.034,  plx:0.041, color:"#ffffff" },
+  { name:"Phecda",       ra:11.897,dec:53.69,  mag:2.44,  pm_ra:-0.012, pm_dec:0.012,  plx:0.039, color:"#ffffff" },
+  { name:"Megrez",       ra:12.257,dec:57.03,  mag:3.31,  pm_ra:0.104,  pm_dec:0.008,  plx:0.040, color:"#ffffff" },
+  { name:"Alioth",       ra:12.900,dec:55.96,  mag:1.77,  pm_ra:0.112,  pm_dec:-0.009, plx:0.040, color:"#ffffff" },
+  { name:"Mizar",        ra:13.399,dec:54.93,  mag:2.27,  pm_ra:0.121,  pm_dec:-0.022, plx:0.039, color:"#ffffff" },
+  { name:"Alkaid",       ra:13.792,dec:49.31,  mag:1.86,  pm_ra:-0.121, pm_dec:-0.015, plx:0.032, color:"#bbccff" },
+  { name:"Albireo",      ra:19.512,dec:27.96,  mag:3.18,  pm_ra:-0.007, pm_dec:-0.006, plx:0.008, color:"#ffaa44" },
+  { name:"Alpheratz",    ra:0.140, dec:29.09,  mag:2.06,  pm_ra:0.136,  pm_dec:-0.163, plx:0.034, color:"#bbccff" },
+  { name:"Mirach",       ra:1.163, dec:35.62,  mag:2.05,  pm_ra:0.176,  pm_dec:-0.112, plx:0.016, color:"#ffaa77" },
+  { name:"Almach",       ra:2.065, dec:42.33,  mag:2.26,  pm_ra:0.043,  pm_dec:-0.051, plx:0.010, color:"#ffcc88" },
+  { name:"Schedar",      ra:0.675, dec:56.54,  mag:2.23,  pm_ra:0.050,  pm_dec:-0.032, plx:0.014, color:"#ffcc88" },
+  { name:"Caph",         ra:0.153, dec:59.15,  mag:2.27,  pm_ra:0.524,  pm_dec:-0.180, plx:0.060, color:"#ffffff" },
+  { name:"Denebola",     ra:11.818,dec:14.57,  mag:2.14,  pm_ra:-0.499, pm_dec:-0.114, plx:0.090, color:"#ffffff" },
+  { name:"Algol",        ra:3.136, dec:40.96,  mag:2.12,  pm_ra:0.003,  pm_dec:-0.002, plx:0.035, color:"#bbccff" },
+  { name:"Rasalhague",   ra:17.582,dec:12.56,  mag:2.07,  pm_ra:0.110,  pm_dec:-0.226, plx:0.069, color:"#ffffff" },
+  { name:"Mintaka",      ra:5.533, dec:-0.30,  mag:2.23,  pm_ra:0.001,  pm_dec:-0.001, plx:0.004, color:"#bbddff" },
+  { name:"Alnitak",      ra:5.679, dec:-1.94,  mag:1.77,  pm_ra:0.004,  pm_dec:-0.002, plx:0.004, color:"#bbddff" },
+  { name:"Saiph",        ra:5.796, dec:-9.67,  mag:2.09,  pm_ra:0.002,  pm_dec:-0.001, plx:0.004, color:"#bbccff" },
+  { name:"Proxima Cen",  ra:14.495,dec:-62.68, mag:11.05, pm_ra:-3.781, pm_dec:0.770,  plx:0.769, color:"#ff4422" },
+  { name:"61 Cygni A",   ra:21.069,dec:38.75,  mag:5.21,  pm_ra:4.156,  pm_dec:3.259,  plx:0.287, color:"#ffaa66" },
+  { name:"Lacaille 9352",ra:23.089,dec:-35.85, mag:7.34,  pm_ra:6.768,  pm_dec:1.328,  plx:0.304, color:"#ff8844" },
+  { name:"Ross 248",     ra:23.703,dec:44.17,  mag:12.29, pm_ra:0.116,  pm_dec:-1.592, plx:0.316, color:"#ff3322" },
+  { name:"Lalande 21185",ra:11.056,dec:35.97,  mag:7.52,  pm_ra:-0.580, pm_dec:-4.769, plx:0.393, color:"#ff6644" },
+];
+
+// Constellation lines (pairs of star names)
+const CONSTELLATIONS = [
+  // Orion
+  ["Betelgeuse","Bellatrix"], ["Betelgeuse","Alnilam"], ["Bellatrix","Mintaka"],
+  ["Alnilam","Mintaka"], ["Alnilam","Alnitak"], ["Alnitak","Saiph"], ["Mintaka","Rigel"],
+  ["Saiph","Rigel"],
+  // Ursa Major (Big Dipper)
+  ["Dubhe","Merak"], ["Dubhe","Phecda"], ["Merak","Phecda"], ["Phecda","Megrez"],
+  ["Megrez","Alioth"], ["Alioth","Mizar"], ["Mizar","Alkaid"],
+  // Summer Triangle
+  ["Vega","Deneb"], ["Vega","Altair"], ["Deneb","Altair"],
+  // Cassiopeia
+  ["Schedar","Caph"], ["Schedar","Almach"],
+  // Andromeda
+  ["Alpheratz","Mirach"], ["Mirach","Almach"],
+  // Gemini
+  ["Castor","Pollux"],
+  // Leo (partial)
+  ["Regulus","Denebola"],
+];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let timeOffset = -1; // years
+let exaggeration = 1;
+let magLimit = 6;
+let showConst = false;
+let showCelestialGrid = false;
+let showNames = false;
+let showMotionArrows = false;
+
+// View state (shared rotation)
+let viewRA = 6;   // hours (center of view)
+let viewDec = 10;  // degrees
+let viewFOV = 120;  // degrees
+let dragging = false;
+let lastMouse = null;
+
+const cLeft = document.getElementById('cLeft');
+const cRight = document.getElementById('cRight');
+const ctxL = cLeft.getContext('2d');
+const ctxR = cRight.getContext('2d');
+
+// ═══════════════════════════════════════════
+// PROJECTION — Stereographic
+// ═══════════════════════════════════════════
+function raDecToXY(ra_h, dec_deg, W, H) {
+  // Convert to radians relative to view center
+  const ra_rad = (ra_h * 15 - viewRA * 15) * Math.PI / 180;
+  const dec_rad = dec_deg * Math.PI / 180;
+  const dec0_rad = viewDec * Math.PI / 180;
+
+  // Gnomonic-ish projection
+  const cosDec = Math.cos(dec_rad);
+  const sinDec = Math.sin(dec_rad);
+  const cosDec0 = Math.cos(dec0_rad);
+  const sinDec0 = Math.sin(dec0_rad);
+  const cosRa = Math.cos(ra_rad);
+  const sinRa = Math.sin(ra_rad);
+
+  const cosC = sinDec0 * sinDec + cosDec0 * cosDec * cosRa;
+  if (cosC < 0.01) return null; // behind view
+
+  const x = (cosDec * sinRa) / cosC;
+  const y = (cosDec0 * sinDec - sinDec0 * cosDec * cosRa) / cosC;
+
+  const scale = W / (2 * Math.tan(viewFOV * Math.PI / 360));
+  const px = W / 2 + x * scale;
+  const py = H / 2 - y * scale;
+
+  if (px < -50 || px > W + 50 || py < -50 || py > H + 50) return null;
+  return { x: px, y: py };
+}
+
+// ═══════════════════════════════════════════
+// STAR POSITION AT TIME OFFSET
+// ═══════════════════════════════════════════
+function starPosAtOffset(star, yearsOffset) {
+  // Apply proper motion (arcsec/yr -> degrees)
+  // Also apply parallax displacement from Earth's orbital position
+  const pm_ra_deg = (star.pm_ra * yearsOffset * exaggeration) / 3600;
+  const pm_dec_deg = (star.pm_dec * yearsOffset * exaggeration) / 3600;
+
+  // Parallax: Earth orbits Sun, so nearby stars shift ~plx arcsec
+  // over 6 months. Over 1 year, the star traces an ellipse.
+  // At the same date 1 year later, parallax returns to same position.
+  // But proper motion accumulates.
+  const fractionalYear = yearsOffset - Math.floor(yearsOffset);
+  const plx_ra = (star.plx * Math.sin(fractionalYear * 2 * Math.PI) * exaggeration) / 3600;
+  const plx_dec = (star.plx * Math.cos(fractionalYear * 2 * Math.PI) * exaggeration * 0.4) / 3600; // ecliptic foreshortening
+
+  return {
+    ra: star.ra + (pm_ra_deg + plx_ra) / 15, // convert degrees back to hours
+    dec: star.dec + pm_dec_deg + plx_dec
+  };
+}
+
+// ═══════════════════════════════════════════
+// RENDER ONE VIEW
+// ═══════════════════════════════════════════
+function drawView(canvas, ctx, yearsOffset, label) {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight - 50; // info bar
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // Background
+  ctx.fillStyle = '#000005';
+  ctx.fillRect(0, 0, W, H);
+
+  // Faint nebula-like glow at center
+  const nebulaGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.6);
+  nebulaGrad.addColorStop(0, 'rgba(15, 10, 30, 0.4)');
+  nebulaGrad.addColorStop(0.5, 'rgba(5, 5, 15, 0.2)');
+  nebulaGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = nebulaGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Celestial grid
+  if (showCelestialGrid) {
+    ctx.strokeStyle = 'rgba(40, 50, 80, 0.3)';
+    ctx.lineWidth = 0.5;
+    // RA lines
+    for (let ra = 0; ra < 24; ra += 2) {
+      ctx.beginPath();
+      let started = false;
+      for (let dec = -80; dec <= 80; dec += 2) {
+        const p = raDecToXY(ra, dec, W, H);
+        if (p) {
+          if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+          else ctx.lineTo(p.x, p.y);
+        }
+      }
+      ctx.stroke();
+    }
+    // Dec lines
+    for (let dec = -60; dec <= 60; dec += 30) {
+      ctx.beginPath();
+      let started = false;
+      for (let ra = 0; ra <= 24; ra += 0.2) {
+        const p = raDecToXY(ra, dec, W, H);
+        if (p) {
+          if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+          else ctx.lineTo(p.x, p.y);
+        }
+      }
+      ctx.stroke();
+    }
+  }
+
+  // Constellation lines
+  if (showConst) {
+    ctx.strokeStyle = 'rgba(60, 70, 120, 0.35)';
+    ctx.lineWidth = 1;
+    for (const [nameA, nameB] of CONSTELLATIONS) {
+      const starA = STARS.find(s => s.name === nameA);
+      const starB = STARS.find(s => s.name === nameB);
+      if (!starA || !starB) continue;
+      const posA = starPosAtOffset(starA, yearsOffset);
+      const posB = starPosAtOffset(starB, yearsOffset);
+      const pA = raDecToXY(posA.ra, posA.dec, W, H);
+      const pB = raDecToXY(posB.ra, posB.dec, W, H);
+      if (pA && pB) {
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Stars
+  const rendered = [];
+  for (const star of STARS) {
+    if (star.mag > magLimit) continue;
+    const pos = starPosAtOffset(star, yearsOffset);
+    const p = raDecToXY(pos.ra, pos.dec, W, H);
+    if (!p) continue;
+
+    // Size from magnitude (brighter = bigger)
+    const size = Math.max(0.8, 4 - star.mag * 0.5);
+
+    // Glow for bright stars
+    if (star.mag < 2) {
+      const glowR = size * 6;
+      const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowR);
+      glow.addColorStop(0, star.color + '22');
+      glow.addColorStop(0.5, star.color + '08');
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, glowR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Star dot
+    ctx.fillStyle = star.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Diffraction spikes for very bright stars
+    if (star.mag < 1) {
+      ctx.strokeStyle = star.color + '44';
+      ctx.lineWidth = 0.5;
+      const spikeLen = size * 4;
+      for (let a = 0; a < 4; a++) {
+        const angle = a * Math.PI / 2 + Math.PI / 4;
+        ctx.beginPath();
+        ctx.moveTo(p.x - Math.cos(angle) * spikeLen, p.y - Math.sin(angle) * spikeLen);
+        ctx.lineTo(p.x + Math.cos(angle) * spikeLen, p.y + Math.sin(angle) * spikeLen);
+        ctx.stroke();
+      }
+    }
+
+    // Name
+    if (showNames && star.mag < 3) {
+      ctx.fillStyle = 'rgba(150, 160, 200, 0.7)';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(star.name, p.x + size + 4, p.y + 3);
+    }
+
+    // Proper motion arrow
+    if (showMotionArrows) {
+      const totalPM = Math.sqrt(star.pm_ra * star.pm_ra + star.pm_dec * star.pm_dec);
+      if (totalPM > 0.1) {
+        const arrowScale = 40 * exaggeration; // arcsec -> pixels
+        const futurePos = starPosAtOffset(star, yearsOffset + 10);
+        const pFuture = raDecToXY(futurePos.ra, futurePos.dec, W, H);
+        if (pFuture) {
+          ctx.strokeStyle = 'rgba(255, 136, 0, 0.5)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(pFuture.x, pFuture.y);
+          ctx.stroke();
+          // Arrowhead
+          const dx = pFuture.x - p.x;
+          const dy = pFuture.y - p.y;
+          const len = Math.sqrt(dx*dx + dy*dy);
+          if (len > 5) {
+            const angle = Math.atan2(dy, dx);
+            ctx.fillStyle = 'rgba(255, 136, 0, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(pFuture.x, pFuture.y);
+            ctx.lineTo(pFuture.x - 6 * Math.cos(angle - 0.4), pFuture.y - 6 * Math.sin(angle - 0.4));
+            ctx.lineTo(pFuture.x - 6 * Math.cos(angle + 0.4), pFuture.y - 6 * Math.sin(angle + 0.4));
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+      }
+    }
+
+    rendered.push({ star, p, pos });
+  }
+
+  // Random background stars
+  const seed = Math.floor(viewRA * 1000 + viewDec * 100);
+  const rng = mulberry32(seed);
+  for (let i = 0; i < 400; i++) {
+    const x = rng() * W;
+    const y = rng() * H;
+    const brightness = rng();
+    const size = 0.3 + brightness * 0.6;
+    const alpha = 0.2 + brightness * 0.4;
+    ctx.fillStyle = `rgba(200, 210, 230, ${alpha})`;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  return rendered;
+}
+
+// Simple seeded RNG
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// ═══════════════════════════════════════════
+// DRAW BOTH VIEWS & COMPUTE DIFF
+// ═══════════════════════════════════════════
+function drawBoth() {
+  const leftStars = drawView(cLeft, ctxL, 0, 'NOW');
+  const rightStars = drawView(cRight, ctxR, timeOffset, 'OFFSET');
+
+  // Compute displacement for each star
+  let diffHTML = '';
+  let maxDisp = 0;
+  let maxStar = '';
+  let count = 0;
+
+  for (const ls of leftStars) {
+    const rs = rightStars.find(r => r.star.name === ls.star.name);
+    if (!rs) continue;
+
+    const dx = rs.p.x - ls.p.x;
+    const dy = rs.p.y - ls.p.y;
+    const dispPx = Math.sqrt(dx * dx + dy * dy);
+
+    // Actual angular displacement in arcsec
+    const totalPM = Math.sqrt(ls.star.pm_ra ** 2 + ls.star.pm_dec ** 2);
+    const angularDisp = totalPM * Math.abs(timeOffset) * exaggeration;
+
+    if (dispPx > 1 && angularDisp > 0.01) {
+      count++;
+      if (angularDisp > maxDisp) {
+        maxDisp = angularDisp;
+        maxStar = ls.star.name;
+      }
+      if (count <= 8) {
+        diffHTML += `<div class="diff-row"><span class="k">${ls.star.name}</span><span class="v">${angularDisp.toFixed(2)}" (${dispPx.toFixed(1)}px)</span></div>`;
+      }
+    }
+  }
+
+  if (count > 8) {
+    diffHTML += `<div class="diff-row"><span class="k">...and ${count - 8} more</span><span class="v"></span></div>`;
+  }
+
+  if (maxDisp > 0) {
+    diffHTML = `<div class="diff-row"><span class="k" style="color:#ff8844">Largest shift</span><span class="v" style="color:#ff8844">${maxStar}: ${maxDisp.toFixed(2)}"</span></div>` + diffHTML;
+  }
+
+  if (!diffHTML) {
+    diffHTML = '<div class="diff-row"><span class="k">No visible shifts at 1x</span><span class="v">Increase exaggeration</span></div>';
+  }
+
+  document.getElementById('diffContent').innerHTML = diffHTML;
+
+  // Info bars
+  const visibleNow = leftStars.length;
+  document.getElementById('infoLeft').innerHTML = `
+    <div class="info-item">Stars: <span class="v">${visibleNow}</span></div>
+    <div class="info-item">RA: <span class="v">${viewRA.toFixed(1)}h</span></div>
+    <div class="info-item">Dec: <span class="v">${viewDec.toFixed(1)}&deg;</span></div>
+    <div class="info-item">FOV: <span class="v">${viewFOV.toFixed(0)}&deg;</span></div>
+    <div class="info-item">Epoch: <span class="v">J2026.18</span></div>
+  `;
+  const epochOffset = 2026.18 + timeOffset;
+  document.getElementById('infoRight').innerHTML = `
+    <div class="info-item">Stars: <span class="v">${rightStars.length}</span></div>
+    <div class="info-item">Exaggeration: <span class="v">${exaggeration.toFixed(0)}x</span></div>
+    <div class="info-item">Epoch: <span class="v">J${epochOffset.toFixed(2)}</span></div>
+    <div class="info-item">Max PM: <span class="v">${maxDisp.toFixed(2)}"</span></div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// TIME DISPLAY
+// ═══════════════════════════════════════════
+function updateTimeDisplay() {
+  const sign = timeOffset >= 0 ? '+' : '';
+  document.getElementById('timeVal').textContent = `${sign}${timeOffset.toFixed(1)} years`;
+
+  const now = new Date(2026, 2, 7);
+  const offset = new Date(now.getTime() + timeOffset * 365.25 * 86400000);
+
+  document.getElementById('leftDate').textContent = now.toISOString().slice(0, 10);
+  document.getElementById('rightDate').textContent = offset.toISOString().slice(0, 10);
+
+  if (timeOffset < 0) {
+    document.getElementById('rightTitle').textContent = `${Math.abs(timeOffset).toFixed(1)} YEARS AGO`;
+  } else if (timeOffset > 0) {
+    document.getElementById('rightTitle').textContent = `${timeOffset.toFixed(1)} YEARS FROM NOW`;
+  } else {
+    document.getElementById('rightTitle').textContent = 'SAME TIME';
+  }
+
+  document.getElementById('timeDate').textContent = offset.toISOString().slice(0, 10);
+}
+
+// ═══════════════════════════════════════════
+// INTERACTION — Pan & Zoom
+// ═══════════════════════════════════════════
+function resetView() {
+  viewRA = 6; viewDec = 10; viewFOV = 120;
+  timeOffset = -1;
+  exaggeration = 1;
+  document.getElementById('timeSlider').value = -1;
+  document.getElementById('exagSlider').value = 0;
+  document.getElementById('exagVal').textContent = '1x';
+  updateTimeDisplay();
+  drawBoth();
+}
+
+// Both canvases share the same view
+[cLeft, cRight].forEach(c => {
+  c.addEventListener('mousedown', e => {
+    dragging = true;
+    lastMouse = { x: e.clientX, y: e.clientY };
+  });
+
+  c.addEventListener('mousemove', e => {
+    if (!dragging || !lastMouse) return;
+    const dx = e.clientX - lastMouse.x;
+    const dy = e.clientY - lastMouse.y;
+
+    viewRA -= dx * 0.02 * (viewFOV / 120);
+    viewDec += dy * 0.15 * (viewFOV / 120);
+    viewDec = Math.max(-85, Math.min(85, viewDec));
+    if (viewRA < 0) viewRA += 24;
+    if (viewRA > 24) viewRA -= 24;
+
+    lastMouse = { x: e.clientX, y: e.clientY };
+    drawBoth();
+  });
+
+  c.addEventListener('mouseup', () => { dragging = false; lastMouse = null; });
+  c.addEventListener('mouseleave', () => { dragging = false; lastMouse = null; });
+
+  c.addEventListener('wheel', e => {
+    e.preventDefault();
+    viewFOV *= e.deltaY > 0 ? 1.08 : 0.93;
+    viewFOV = Math.max(10, Math.min(170, viewFOV));
+    drawBoth();
+  }, { passive: false });
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+updateTimeDisplay();
+drawBoth();
+window.addEventListener('resize', drawBoth);
+</script>
+</body>
+</html>

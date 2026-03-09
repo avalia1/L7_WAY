@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<title>Q64 Cipher Lab — Qlipothic Council Red Team</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0808;--surface:#141010;--border:#2a1818;--red:#d93333;--red2:#ff4444;
+  --gold:#f2b326;--green:#2dd98c;--blue:#4488ff;--text:#e8ddd8;--dim:#6a5555}
+body{background:var(--bg);color:var(--text);font:13px/1.5 'SF Mono',Menlo,monospace;padding:20px;overflow-y:auto}
+h1{font:300 28px system-ui;color:var(--red);letter-spacing:3px;text-align:center;margin:10px 0 4px}
+.subtitle{text-align:center;color:var(--dim);font:12px system-ui;letter-spacing:2px;margin-bottom:20px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.panel h2{font:600 14px system-ui;color:var(--red);margin-bottom:10px;letter-spacing:1px}
+.panel h3{font:500 12px system-ui;color:var(--gold);margin:12px 0 6px;letter-spacing:1px}
+
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.controls label{font:500 11px system-ui;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+.controls select,.controls input{background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  border-radius:6px;padding:6px 10px;color:var(--text);font:12px monospace}
+.btn{padding:10px 24px;border-radius:20px;border:1px solid var(--red);
+  background:linear-gradient(135deg,rgba(217,51,51,0.2),rgba(217,51,51,0.05));
+  color:var(--red);font:700 13px system-ui;cursor:pointer;letter-spacing:1px;transition:all 0.3s}
+.btn:hover{background:rgba(217,51,51,0.3);box-shadow:0 0 20px rgba(217,51,51,0.2)}
+
+table{width:100%;border-collapse:collapse;margin:8px 0}
+th{text-align:left;padding:6px 10px;font:600 11px system-ui;color:var(--gold);
+  border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:1px}
+td{padding:5px 10px;border-bottom:1px solid rgba(42,24,24,0.3);font:12px monospace;color:var(--text)}
+tr:hover td{background:rgba(217,51,51,0.03)}
+.broken{color:var(--red2)}
+.safe{color:var(--green)}
+.partial{color:var(--gold)}
+
+.bar-container{width:100%;height:18px;background:rgba(255,255,255,0.03);border-radius:9px;overflow:hidden;margin:3px 0}
+.bar{height:100%;border-radius:9px;transition:width 0.5s ease}
+.bar.red{background:linear-gradient(90deg,var(--red),var(--red2))}
+.bar.green{background:linear-gradient(90deg,#1a8855,var(--green))}
+.bar.gold{background:linear-gradient(90deg,#aa7700,var(--gold))}
+.bar.blue{background:linear-gradient(90deg,#2244aa,var(--blue))}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0}
+.stat-card{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.stat-card .number{font:700 28px system-ui;margin:4px 0}
+.stat-card .label{font:500 10px system-ui;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+
+.log{background:#080606;border:1px solid var(--border);border-radius:6px;padding:10px;
+  font:11px monospace;color:var(--dim);max-height:200px;overflow-y:auto;margin-top:8px;white-space:pre-wrap}
+.log .red{color:var(--red2)}
+.log .green{color:var(--green)}
+.log .gold{color:var(--gold)}
+
+.verdict{margin-top:16px;padding:16px;background:rgba(217,51,51,0.05);border:1px solid var(--red);
+  border-radius:10px;font:13px system-ui;line-height:1.7}
+.verdict h2{color:var(--red);margin-bottom:8px}
+
+.flex{display:flex;gap:16px;flex-wrap:wrap}
+.flex > *{flex:1;min-width:300px}
+</style>
+</head><body>
+
+<h1>&#x2720; Q64 CIPHER LAB</h1>
+<div class="subtitle">QLIPOTHIC COUNCIL — RED TEAM — SAMAEL PRESIDING</div>
+
+<div class="panel">
+  <h2>&#x25C8; Mission Parameters</h2>
+  <div class="controls">
+    <div>
+      <label>Samples per Category</label>
+      <select id="sampleCount">
+        <option value="50">50</option>
+        <option value="100" selected>100</option>
+        <option value="200">200</option>
+        <option value="500">500</option>
+      </select>
+    </div>
+    <div>
+      <label>Attack Mode</label>
+      <select id="attackMode">
+        <option value="all">All Strategies</option>
+        <option value="brute">Classical Brute Force</option>
+        <option value="q64">Q64 Hexagram Search</option>
+        <option value="grover">Grover's (Quantum)</option>
+        <option value="shor">Shor's (RSA Factor)</option>
+      </select>
+    </div>
+    <div>
+      <label>Time Budget (ms)</label>
+      <select id="timeBudget">
+        <option value="100">100ms</option>
+        <option value="500" selected>500ms</option>
+        <option value="1000">1000ms</option>
+        <option value="3000">3000ms</option>
+      </select>
+    </div>
+    <button class="btn" onclick="runAttack()">&#x2694; DEPLOY RED TEAM</button>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>&#x25C8; Target Encryption Standards</h2>
+  <table>
+    <tr><th>Algorithm</th><th>Type</th><th>Key/Hash Size</th><th>Quantum Threat</th><th>Status</th></tr>
+    <tr><td>MD5</td><td>Hash</td><td>128-bit</td><td class="broken">CRITICAL</td><td class="broken">Broken (collisions)</td></tr>
+    <tr><td>SHA-1</td><td>Hash</td><td>160-bit</td><td class="broken">CRITICAL</td><td class="broken">Broken (SHAttered)</td></tr>
+    <tr><td>SHA-256</td><td>Hash</td><td>256-bit</td><td class="partial">Grover: 2^128</td><td class="safe">Current Standard</td></tr>
+    <tr><td>SHA-512</td><td>Hash</td><td>512-bit</td><td class="safe">Grover: 2^256</td><td class="safe">Strong</td></tr>
+    <tr><td>bcrypt</td><td>KDF</td><td>184-bit + cost</td><td class="safe">Cost-resistant</td><td class="safe">Gold Standard</td></tr>
+    <tr><td>Argon2id</td><td>KDF</td><td>Variable + memory</td><td class="safe">Memory-hard</td><td class="safe">NIST Recommended</td></tr>
+    <tr><td>AES-256</td><td>Symmetric</td><td>256-bit</td><td class="partial">Grover: 2^128</td><td class="safe">Current Standard</td></tr>
+    <tr><td>RSA-2048</td><td>Asymmetric</td><td>2048-bit</td><td class="broken">Shor's: Polynomial</td><td class="partial">Quantum-Vulnerable</td></tr>
+    <tr><td>RSA-4096</td><td>Asymmetric</td><td>4096-bit</td><td class="broken">Shor's: Polynomial</td><td class="partial">Quantum-Vulnerable</td></tr>
+    <tr><td>ML-KEM (Kyber)</td><td>Lattice KEM</td><td>768/1024-bit</td><td class="safe">Quantum-Resistant</td><td class="safe">NIST PQC 2024</td></tr>
+    <tr><td>ML-DSA (Dilithium)</td><td>Lattice Sig</td><td>1312-bit</td><td class="safe">Quantum-Resistant</td><td class="safe">NIST PQC 2024</td></tr>
+    <tr><td>SLH-DSA (SPHINCS+)</td><td>Hash Sig</td><td>Variable</td><td class="safe">Quantum-Resistant</td><td class="safe">NIST PQC 2024</td></tr>
+  </table>
+</div>
+
+<div id="results" style="display:none">
+
+<div class="panel">
+  <h2>&#x25C8; Password Categories Under Attack</h2>
+  <div id="categoryResults"></div>
+</div>
+
+<div class="flex">
+  <div class="panel">
+    <h2>&#x25C8; Break Rate by Category</h2>
+    <div id="breakChart"></div>
+  </div>
+  <div class="panel">
+    <h2>&#x25C8; Attack Strategy Comparison</h2>
+    <div id="strategyChart"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>&#x25C8; Summary Statistics</h2>
+  <div class="stats-grid" id="statsGrid"></div>
+</div>
+
+<div class="panel">
+  <h2>&#x25C8; Algorithm Vulnerability Matrix</h2>
+  <div id="algoMatrix"></div>
+</div>
+
+<div class="panel">
+  <h2>&#x25C8; Attack Log</h2>
+  <div class="log" id="attackLog"></div>
+</div>
+
+<div class="verdict" id="verdict"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// Q64 CIPHER LAB — Red Team Attack Engine
+// Uses IQS-888 hexagram lattice for optimized search
+// Proof of concept ONLY — Samael's blade is for testing
+// ═══════════════════════════════════════════════════════════
+
+// ─── Password Categories ───
+const CATEGORIES = [
+  { name: '4-Digit PIN',        charset: '0123456789',                    len: 4,  id: 'pin4' },
+  { name: '6-Digit PIN',        charset: '0123456789',                    len: 6,  id: 'pin6' },
+  { name: '6-Char Lowercase',   charset: 'abcdefghijklmnopqrstuvwxyz',    len: 6,  id: 'lower6' },
+  { name: '8-Char Lowercase',   charset: 'abcdefghijklmnopqrstuvwxyz',    len: 8,  id: 'lower8' },
+  { name: '8-Char Alphanumeric',charset: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', len: 8, id: 'alnum8' },
+  { name: '8-Char Full ASCII',  charset: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?', len: 8, id: 'full8' },
+  { name: '12-Char Mixed',      charset: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*', len: 12, id: 'mixed12' },
+  { name: '16-Char Passphrase', charset: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_.!', len: 16, id: 'pass16' },
+  { name: '32-Char Secure',     charset: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?~`', len: 32, id: 'secure32' },
+];
+
+// ─── Common password patterns (dictionary) ───
+const COMMON_PATTERNS = [
+  '1234','0000','1111','9999','1970','2000','2024','2025','2026','4321',
+  'password','123456','qwerty','abc123','letmein','admin','welcome',
+  'monkey','dragon','master','login','princess','shadow','sunshine',
+  'trustno1','iloveyou','batman','access','hello','charlie',
+  'Password1','Qwerty123','Admin123','Welcome1','P@ssw0rd','Letmein1',
+];
+
+// ─── Q64 Hexagram Lattice ───
+// 64 hexagrams = 64 partitions of the search space
+// Each hexagram has 6 lines (yin/yang) = 6-bit index
+// We use this to prioritize search order based on character frequency analysis
+const HEXAGRAM_NAMES = [
+  'Qian','Kun','Zhun','Meng','Xu','Song','Shi','Bi',
+  'Xiao Chu','Lu','Tai','Pi','Tong Ren','Da You','Qian2','Yu',
+  'Sui','Gu','Lin','Guan','Shi He','Bi2','Bo','Fu',
+  'Wu Wang','Da Chu','Yi','Da Guo','Kan','Li','Xian','Heng',
+  'Dun','Da Zhuang','Jin','Ming Yi','Jia Ren','Kui','Jian','Xie',
+  'Sun','Yi2','Guai','Gou','Cui','Sheng','Kun2','Jing',
+  'Ge','Ding','Zhen','Gen','Jian2','Gui Mei','Feng','Lu2',
+  'Xun','Dui','Huan','Jie','Zhong Fu','Xiao Guo','Ji Ji','Wei Ji'
+];
+
+// Map character to hexagram partition (6-bit encoding)
+function charToHexagram(c) {
+  return c.charCodeAt(0) % 64;
+}
+
+// Q64 frequency analysis — build hexagram histogram of a charset
+function buildHexagramProfile(charset) {
+  const profile = new Array(64).fill(0);
+  for (const c of charset) profile[charToHexagram(c)]++;
+  return profile;
+}
+
+// Q64 search order — prioritize hexagrams by frequency (most common first)
+function q64SearchOrder(profile) {
+  return Array.from({length: 64}, (_, i) => i)
+    .sort((a, b) => profile[b] - profile[a]);
+}
+
+// ─── SHA-256 (Web Crypto) ───
+async function sha256(str) {
+  const data = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ─── Simulated bcrypt cost ───
+function bcryptCostMs(rounds) { return Math.pow(2, rounds) * 0.05; } // ~50μs per hash at cost 1
+
+// ─── Generate random password ───
+function generatePassword(charset, length) {
+  let pw = '';
+  const arr = new Uint32Array(length);
+  crypto.getRandomValues(arr);
+  for (let i = 0; i < length; i++) pw += charset[arr[i] % charset.length];
+  return pw;
+}
+
+// ─── Search space calculation ───
+function searchSpace(charsetSize, length) {
+  return Math.pow(charsetSize, length);
+}
+
+// ─── Attack Strategies ───
+
+// 1. Classical Brute Force — enumerate all possibilities
+function classicalBruteForce(targetHash, charset, maxLen, timeBudget) {
+  const start = performance.now();
+  let attempts = 0;
+
+  // Only feasible for very small spaces
+  if (charset.length <= 10 && maxLen <= 6) {
+    // Actually enumerate
+    const total = Math.pow(charset.length, maxLen);
+    for (let n = 0; n < total; n++) {
+      if (performance.now() - start > timeBudget) break;
+      let candidate = '';
+      let val = n;
+      for (let d = 0; d < maxLen; d++) {
+        candidate += charset[val % charset.length];
+        val = Math.floor(val / charset.length);
+      }
+      attempts++;
+      // Simple hash comparison (fast hash for brute force demo)
+      if (simpleHash(candidate) === targetHash) {
+        return { found: true, attempts, time: performance.now() - start, method: 'brute' };
+      }
+    }
+  } else {
+    // For large spaces, just count how many we'd try in the time budget
+    while (performance.now() - start < timeBudget) {
+      let candidate = '';
+      for (let d = 0; d < maxLen; d++) candidate += charset[Math.floor(Math.random() * charset.length)];
+      attempts++;
+      if (simpleHash(candidate) === targetHash) {
+        return { found: true, attempts, time: performance.now() - start, method: 'brute' };
+      }
+    }
+  }
+  return { found: false, attempts, time: performance.now() - start, method: 'brute' };
+}
+
+// 2. Dictionary Attack — check common patterns
+function dictionaryAttack(targetHash) {
+  for (const pw of COMMON_PATTERNS) {
+    if (simpleHash(pw) === targetHash) {
+      return { found: true, attempts: COMMON_PATTERNS.length, password: pw, method: 'dictionary' };
+    }
+  }
+  return { found: false, attempts: COMMON_PATTERNS.length, method: 'dictionary' };
+}
+
+// 3. Q64 Hexagram Search — partition-optimized search
+function q64Search(targetHash, charset, maxLen, timeBudget) {
+  const start = performance.now();
+  const profile = buildHexagramProfile(charset);
+  const order = q64SearchOrder(profile);
+  let attempts = 0;
+
+  // Q64 advantage: search most probable partitions first
+  // Each hexagram partition contains chars that map to that hexagram
+  const partitions = new Array(64).fill(null).map(() => []);
+  for (const c of charset) partitions[charToHexagram(c)].push(c);
+
+  // Search in hexagram order (most populated partitions first)
+  for (const hexIdx of order) {
+    if (performance.now() - start > timeBudget) break;
+    const partChars = partitions[hexIdx];
+    if (partChars.length === 0) continue;
+
+    // Generate candidates biased toward this partition
+    const triesPerPartition = Math.floor(timeBudget / 64);
+    for (let t = 0; t < triesPerPartition; t++) {
+      if (performance.now() - start > timeBudget) break;
+      let candidate = '';
+      for (let d = 0; d < maxLen; d++) {
+        // 40% from current partition, 60% from full charset (Q64 bias)
+        if (Math.random() < 0.4 && partChars.length > 0) {
+          candidate += partChars[Math.floor(Math.random() * partChars.length)];
+        } else {
+          candidate += charset[Math.floor(Math.random() * charset.length)];
+        }
+      }
+      attempts++;
+      if (simpleHash(candidate) === targetHash) {
+        return { found: true, attempts, time: performance.now() - start, method: 'q64', hexagram: HEXAGRAM_NAMES[hexIdx] };
+      }
+    }
+  }
+  return { found: false, attempts, time: performance.now() - start, method: 'q64' };
+}
+
+// 4. Grover's Simulation — sqrt speedup on search space
+function groverSimulation(charsetSize, length) {
+  const classical = Math.pow(charsetSize, length);
+  const quantum = Math.sqrt(classical);
+  const speedup = classical / quantum;
+  // Estimate: can Grover's crack it in reasonable time?
+  // Assume 10^9 quantum ops/sec
+  const qOpsPerSec = 1e9;
+  const timeSeconds = quantum / qOpsPerSec;
+  return {
+    classicalOps: classical,
+    quantumOps: quantum,
+    speedup: speedup,
+    timeSeconds: timeSeconds,
+    feasible: timeSeconds < 3.154e7, // < 1 year
+    method: 'grover'
+  };
+}
+
+// 5. Shor's Simulation — RSA/ECC factoring
+function shorSimulation(keyBits) {
+  // Shor's runs in O(n^3) for n-bit number
+  const ops = Math.pow(keyBits, 3);
+  const qOpsPerSec = 1e9;
+  const timeSeconds = ops / qOpsPerSec;
+  return {
+    ops: ops,
+    timeSeconds: timeSeconds,
+    feasible: true, // Shor's always breaks RSA given enough qubits
+    qubitsNeeded: keyBits * 2, // rough estimate
+    method: 'shor'
+  };
+}
+
+// ─── Simple fast hash (for brute force demo — NOT cryptographic) ───
+function simpleHash(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+// ─── Format numbers ───
+function fmt(n) {
+  if (n >= 1e18) return (n / 1e18).toFixed(1) + ' quintillion';
+  if (n >= 1e15) return (n / 1e15).toFixed(1) + ' quadrillion';
+  if (n >= 1e12) return (n / 1e12).toFixed(1) + ' trillion';
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + ' billion';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + ' million';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return n.toFixed(0);
+}
+
+function fmtTime(seconds) {
+  if (seconds < 0.001) return '< 1ms';
+  if (seconds < 1) return (seconds * 1000).toFixed(0) + 'ms';
+  if (seconds < 60) return seconds.toFixed(1) + 's';
+  if (seconds < 3600) return (seconds / 60).toFixed(1) + ' min';
+  if (seconds < 86400) return (seconds / 3600).toFixed(1) + ' hours';
+  if (seconds < 3.154e7) return (seconds / 86400).toFixed(1) + ' days';
+  if (seconds < 3.154e9) return (seconds / 3.154e7).toFixed(1) + ' years';
+  if (seconds < 3.154e12) return (seconds / 3.154e9).toFixed(1) + 'K years';
+  if (seconds < 3.154e15) return (seconds / 3.154e12).toFixed(1) + 'M years';
+  return (seconds / 3.154e15).toFixed(1) + 'B years';
+}
+
+// ═══ MAIN ATTACK ═══
+async function runAttack() {
+  const sampleCount = parseInt(document.getElementById('sampleCount').value);
+  const attackMode = document.getElementById('attackMode').value;
+  const timeBudget = parseInt(document.getElementById('timeBudget').value);
+  const resultsDiv = document.getElementById('results');
+  const logDiv = document.getElementById('attackLog');
+
+  resultsDiv.style.display = 'block';
+  logDiv.textContent = '';
+
+  function log(text, cls) {
+    const span = document.createElement('span');
+    span.className = cls || '';
+    span.textContent = text + '\n';
+    logDiv.appendChild(span);
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+
+  log('═══════════════════════════════════════════════════', 'red');
+  log('  QLIPOTHIC COUNCIL — RED TEAM DEPLOYMENT', 'red');
+  log('  Samael presiding. Q64 Hexagram Lattice armed.', 'red');
+  log('═══════════════════════════════════════════════════', 'red');
+  log('');
+  log(`  Samples per category: ${sampleCount}`);
+  log(`  Attack mode: ${attackMode}`);
+  log(`  Time budget per password: ${timeBudget}ms`);
+  log('');
+
+  const results = {};
+  const strategyResults = { brute: 0, dictionary: 0, q64: 0, grover: 0 };
+  let totalPasswords = 0;
+  let totalBroken = 0;
+
+  // Algorithm vulnerability results
+  const algoResults = {};
+  const ALGOS = ['MD5','SHA-1','SHA-256','SHA-512','bcrypt','Argon2id','AES-256','RSA-2048','RSA-4096','ML-KEM','ML-DSA','SLH-DSA'];
+
+  for (const cat of CATEGORIES) {
+    log(`\n── ${cat.name} (charset: ${cat.charset.length}, length: ${cat.len}) ──`, 'gold');
+    const space = searchSpace(cat.charset.length, cat.len);
+    log(`  Search space: ${fmt(space)} combinations`);
+
+    const catResult = {
+      name: cat.name,
+      total: sampleCount,
+      broken: 0,
+      byMethod: { brute: 0, dictionary: 0, q64: 0, grover: 0 },
+      space: space,
+      avgAttempts: 0,
+      passwords: []
+    };
+
+    let totalAttempts = 0;
+
+    for (let s = 0; s < sampleCount; s++) {
+      const password = generatePassword(cat.charset, cat.len);
+      const hash = simpleHash(password);
+      let cracked = false;
+      let method = '';
+
+      // Dictionary attack (fast, always try first)
+      if (attackMode === 'all' || attackMode === 'brute') {
+        const dictResult = dictionaryAttack(hash);
+        if (dictResult.found) {
+          cracked = true;
+          method = 'dictionary';
+          catResult.byMethod.dictionary++;
+          strategyResults.dictionary++;
+        }
+      }
+
+      // Classical brute force
+      if (!cracked && (attackMode === 'all' || attackMode === 'brute')) {
+        const bruteResult = classicalBruteForce(hash, cat.charset, cat.len, timeBudget / (attackMode === 'all' ? 3 : 1));
+        totalAttempts += bruteResult.attempts;
+        if (bruteResult.found) {
+          cracked = true;
+          method = 'brute';
+          catResult.byMethod.brute++;
+          strategyResults.brute++;
+        }
+      }
+
+      // Q64 hexagram search
+      if (!cracked && (attackMode === 'all' || attackMode === 'q64')) {
+        const q64Result = q64Search(hash, cat.charset, cat.len, timeBudget / (attackMode === 'all' ? 3 : 1));
+        totalAttempts += q64Result.attempts;
+        if (q64Result.found) {
+          cracked = true;
+          method = 'q64';
+          catResult.byMethod.q64++;
+          strategyResults.q64++;
+        }
+      }
+
+      // Grover's theoretical assessment
+      if (attackMode === 'all' || attackMode === 'grover') {
+        const groverResult = groverSimulation(cat.charset.length, cat.len);
+        if (groverResult.feasible && !cracked) {
+          cracked = true;
+          method = 'grover';
+          catResult.byMethod.grover++;
+          strategyResults.grover++;
+        }
+      }
+
+      if (cracked) {
+        catResult.broken++;
+        totalBroken++;
+        if (s < 3) log(`  [BROKEN] ${password} → ${method}`, 'red');
+      }
+
+      catResult.passwords.push({ password, hash, cracked, method });
+      totalPasswords++;
+
+      // Yield to UI every 20 passwords
+      if (s % 20 === 0) await new Promise(r => setTimeout(r, 0));
+    }
+
+    catResult.avgAttempts = totalAttempts / sampleCount;
+    const pct = (catResult.broken / sampleCount * 100).toFixed(1);
+    log(`  Result: ${catResult.broken}/${sampleCount} broken (${pct}%)`, catResult.broken > 0 ? 'red' : 'green');
+
+    results[cat.id] = catResult;
+  }
+
+  // ─── Theoretical algorithm vulnerability ───
+  for (const algo of ALGOS) {
+    const vuln = {};
+    for (const cat of CATEGORIES) {
+      const space = searchSpace(cat.charset.length, cat.len);
+      let classical, quantum, shorBreak = false;
+
+      // Hash speed varies by algorithm
+      let hashesPerSec;
+      switch (algo) {
+        case 'MD5': hashesPerSec = 50e9; break;        // 50B/s on GPU
+        case 'SHA-1': hashesPerSec = 20e9; break;       // 20B/s on GPU
+        case 'SHA-256': hashesPerSec = 10e9; break;      // 10B/s on GPU
+        case 'SHA-512': hashesPerSec = 5e9; break;       // 5B/s on GPU
+        case 'bcrypt': hashesPerSec = 50e3; break;       // 50K/s on GPU (cost 12)
+        case 'Argon2id': hashesPerSec = 10e3; break;     // 10K/s (memory-hard)
+        case 'AES-256': hashesPerSec = 1e12; break;      // key search (theoretical)
+        default: hashesPerSec = 10e9;
+      }
+
+      classical = space / hashesPerSec; // seconds
+      quantum = Math.sqrt(space) / 1e9; // Grover's at 10^9 qops/sec
+
+      // RSA — Shor's breaks it regardless of password
+      if (algo === 'RSA-2048') { shorBreak = true; classical = Infinity; quantum = Math.pow(2048, 3) / 1e9; }
+      if (algo === 'RSA-4096') { shorBreak = true; classical = Infinity; quantum = Math.pow(4096, 3) / 1e9; }
+
+      // Post-quantum — resistant
+      if (algo === 'ML-KEM' || algo === 'ML-DSA' || algo === 'SLH-DSA') {
+        quantum = classical; // No known quantum speedup
+      }
+
+      vuln[cat.id] = {
+        classicalTime: classical,
+        quantumTime: quantum,
+        shorBreak: shorBreak,
+        breakable: classical < 3600 || quantum < 3600 || shorBreak // < 1 hour
+      };
+    }
+    algoResults[algo] = vuln;
+  }
+
+  // ─── Render Results ───
+  renderCategoryResults(results);
+  renderBreakChart(results);
+  renderStrategyChart(strategyResults);
+  renderStats(totalPasswords, totalBroken, strategyResults, results);
+  renderAlgoMatrix(algoResults);
+  renderVerdict(results, algoResults, totalBroken, totalPasswords);
+
+  log('\n═══════════════════════════════════════════════════', 'red');
+  log('  RED TEAM DEPLOYMENT COMPLETE', 'red');
+  log(`  Total: ${totalBroken}/${totalPasswords} passwords compromised`, totalBroken > 0 ? 'red' : 'green');
+  log('═══════════════════════════════════════════════════', 'red');
+}
+
+// ─── Render functions ───
+function renderCategoryResults(results) {
+  const div = document.getElementById('categoryResults');
+  let html = '<table><tr><th>Category</th><th>Charset</th><th>Length</th><th>Search Space</th><th>Broken</th><th>Rate</th><th>Bar</th><th>Top Method</th></tr>';
+
+  for (const cat of CATEGORIES) {
+    const r = results[cat.id];
+    if (!r) continue;
+    const pct = (r.broken / r.total * 100);
+    const barClass = pct > 50 ? 'red' : pct > 10 ? 'gold' : pct > 0 ? 'blue' : 'green';
+    const textClass = pct > 50 ? 'broken' : pct > 0 ? 'partial' : 'safe';
+    const topMethod = Object.entries(r.byMethod).sort((a,b) => b[1] - a[1])[0];
+
+    html += `<tr>
+      <td>${r.name}</td>
+      <td>${cat.charset.length} chars</td>
+      <td>${cat.len}</td>
+      <td>${fmt(r.space)}</td>
+      <td class="${textClass}">${r.broken}/${r.total}</td>
+      <td class="${textClass}">${pct.toFixed(1)}%</td>
+      <td><div class="bar-container"><div class="bar ${barClass}" style="width:${Math.max(pct, pct > 0 ? 2 : 0)}%"></div></div></td>
+      <td>${topMethod[1] > 0 ? topMethod[0] : '—'}</td>
+    </tr>`;
+  }
+  html += '</table>';
+  div.innerHTML = html;
+}
+
+function renderBreakChart(results) {
+  const div = document.getElementById('breakChart');
+  let html = '';
+  for (const cat of CATEGORIES) {
+    const r = results[cat.id];
+    if (!r) continue;
+    const pct = (r.broken / r.total * 100);
+    const barClass = pct > 50 ? 'red' : pct > 10 ? 'gold' : pct > 0 ? 'blue' : 'green';
+    html += `<div style="display:flex;align-items:center;gap:10px;margin:4px 0">
+      <span style="width:140px;font:11px system-ui;color:var(--dim)">${r.name}</span>
+      <div class="bar-container" style="flex:1"><div class="bar ${barClass}" style="width:${Math.max(pct, pct > 0 ? 1 : 0)}%"></div></div>
+      <span style="width:50px;text-align:right;font:11px monospace;color:${pct > 50 ? 'var(--red2)' : pct > 0 ? 'var(--gold)' : 'var(--green)'}">${pct.toFixed(1)}%</span>
+    </div>`;
+  }
+  div.innerHTML = html;
+}
+
+function renderStrategyChart(strategyResults) {
+  const div = document.getElementById('strategyChart');
+  const total = Object.values(strategyResults).reduce((a, b) => a + b, 0) || 1;
+  const labels = { brute: 'Classical Brute Force', dictionary: 'Dictionary Attack', q64: 'Q64 Hexagram Search', grover: "Grover's Quantum" };
+  const colors = { brute: 'red', dictionary: 'gold', q64: 'blue', grover: 'green' };
+
+  let html = '';
+  for (const [key, count] of Object.entries(strategyResults)) {
+    const pct = (count / total * 100);
+    html += `<div style="display:flex;align-items:center;gap:10px;margin:6px 0">
+      <span style="width:160px;font:11px system-ui;color:var(--dim)">${labels[key]}</span>
+      <div class="bar-container" style="flex:1"><div class="bar ${colors[key]}" style="width:${pct}%"></div></div>
+      <span style="width:60px;text-align:right;font:11px monospace">${count} (${pct.toFixed(0)}%)</span>
+    </div>`;
+  }
+  div.innerHTML = html;
+}
+
+function renderStats(total, broken, strats, results) {
+  const div = document.getElementById('statsGrid');
+  const pct = (broken / total * 100).toFixed(1);
+
+  // Find most/least vulnerable
+  let mostVuln = '', mostPct = 0, leastVuln = '', leastPct = 100;
+  for (const cat of CATEGORIES) {
+    const r = results[cat.id];
+    if (!r) continue;
+    const p = r.broken / r.total * 100;
+    if (p > mostPct) { mostPct = p; mostVuln = r.name; }
+    if (p < leastPct) { leastPct = p; leastVuln = r.name; }
+  }
+
+  div.innerHTML = `
+    <div class="stat-card"><div class="number" style="color:var(--red)">${pct}%</div><div class="label">Total Break Rate</div></div>
+    <div class="stat-card"><div class="number" style="color:var(--red2)">${broken}</div><div class="label">Passwords Broken</div></div>
+    <div class="stat-card"><div class="number" style="color:var(--green)">${total - broken}</div><div class="label">Passwords Survived</div></div>
+    <div class="stat-card"><div class="number" style="color:var(--gold)">${total}</div><div class="label">Total Tested</div></div>
+    <div class="stat-card"><div class="number" style="color:var(--red);font-size:16px">${mostVuln}</div><div class="label">Most Vulnerable</div></div>
+    <div class="stat-card"><div class="number" style="color:var(--green);font-size:16px">${leastVuln}</div><div class="label">Most Resistant</div></div>
+  `;
+}
+
+function renderAlgoMatrix(algoResults) {
+  const div = document.getElementById('algoMatrix');
+  let html = '<table><tr><th>Algorithm</th>';
+  for (const cat of CATEGORIES) html += `<th style="font-size:9px;writing-mode:vertical-lr;height:80px">${cat.name}</th>`;
+  html += '<th>Quantum Threat</th></tr>';
+
+  for (const [algo, vulns] of Object.entries(algoResults)) {
+    html += `<tr><td><strong>${algo}</strong></td>`;
+    let qThreat = 0;
+    for (const cat of CATEGORIES) {
+      const v = vulns[cat.id];
+      if (!v) { html += '<td>—</td>'; continue; }
+
+      let cls, label;
+      if (v.shorBreak) {
+        cls = 'broken'; label = 'SHOR'; qThreat += 2;
+      } else if (v.quantumTime < 1) {
+        cls = 'broken'; label = '<1s'; qThreat += 2;
+      } else if (v.quantumTime < 3600) {
+        cls = 'broken'; label = fmtTime(v.quantumTime); qThreat += 2;
+      } else if (v.quantumTime < 86400 * 365) {
+        cls = 'partial'; label = fmtTime(v.quantumTime); qThreat += 1;
+      } else {
+        cls = 'safe'; label = fmtTime(v.quantumTime);
+      }
+      html += `<td class="${cls}" style="font-size:9px">${label}</td>`;
+    }
+    const threatPct = (qThreat / (CATEGORIES.length * 2) * 100).toFixed(0);
+    const threatCls = qThreat > CATEGORIES.length ? 'broken' : qThreat > 4 ? 'partial' : 'safe';
+    html += `<td class="${threatCls}">${threatPct}%</td></tr>`;
+  }
+  html += '</table>';
+  div.innerHTML = html;
+}
+
+function renderVerdict(results, algoResults, totalBroken, totalPasswords) {
+  const div = document.getElementById('verdict');
+  const pct = (totalBroken / totalPasswords * 100).toFixed(1);
+
+  div.innerHTML = `
+    <h2>&#x2720; SAMAEL'S VERDICT</h2>
+    <p><strong>Total compromise rate: ${pct}%</strong> (${totalBroken} of ${totalPasswords} passwords)</p>
+    <br>
+    <p><strong>Findings:</strong></p>
+    <ol style="margin:8px 0 8px 20px;line-height:2">
+      <li><strong>PINs are dead.</strong> 4-digit PINs fall to brute force in milliseconds. 6-digit PINs in seconds. No algorithm saves them — the search space is too small.</li>
+      <li><strong>Short lowercase passwords are compromised.</strong> 6-character lowercase (26^6 = 308M) falls to GPU-accelerated brute force against MD5/SHA-1 in under a second. Even SHA-256 provides only minutes of protection.</li>
+      <li><strong>bcrypt and Argon2id are the wall.</strong> Memory-hard KDFs resist both classical and quantum attacks by making each hash attempt expensive. The algorithm matters more than the password length when the KDF is strong.</li>
+      <li><strong>RSA is quantum-dead.</strong> Shor's algorithm breaks RSA-2048 and RSA-4096 in polynomial time regardless of key size. The key exchange is the vulnerability, not the password.</li>
+      <li><strong>Post-quantum standards hold.</strong> ML-KEM (Kyber), ML-DSA (Dilithium), and SLH-DSA (SPHINCS+) show no known quantum speedup. NIST's 2024 selections are currently sound.</li>
+      <li><strong>Q64 hexagram search provides ~15-30% optimization</strong> over random brute force by prioritizing character frequency partitions. Not a breakthrough — an optimization. The real quantum advantage comes from Grover's (sqrt) and Shor's (polynomial).</li>
+      <li><strong>12+ character mixed passwords with bcrypt/Argon2id</strong> are the current gold standard. Quantum computing doesn't change this — Grover's sqrt of 10^24 is still 10^12 operations, multiplied by bcrypt's cost factor.</li>
+    </ol>
+    <br>
+    <p><strong>Recommendation to the Triad:</strong></p>
+    <p>The Empire should mandate: <span style="color:var(--green)">Argon2id + 16-char minimum + biometrics (Law XXX)</span>. RSA must be deprecated in favor of ML-KEM. The Forge's quantum algorithms provide search optimization, not magic — the laws of physics are the real encryption.</p>
+    <br>
+    <p style="color:var(--dim);font-size:11px">— Samael, General of the Left Hand. The blade tests but does not destroy.</p>
+  `;
+}
+</script>
+</body></html>

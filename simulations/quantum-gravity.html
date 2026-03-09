@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quantum Gravity Simulator — IQS-888</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #050510; color: #d0d0d0; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+#app { display: flex; height: 100vh; }
+#canvas-wrap { flex: 1; position: relative; cursor: crosshair; }
+canvas { display: block; }
+#panel {
+  width: 420px; background: #0a0a14; border-left: 1px solid #1a1a2e;
+  padding: 20px; overflow-y: auto;
+}
+h1 { font-size: 22px; color: #ffd700; letter-spacing: 3px; font-weight: 300; margin-bottom: 4px; }
+.sub { font-size: 13px; color: #556; margin-bottom: 16px; }
+h2 {
+  font-size: 13px; color: #6677aa; margin: 18px 0 10px;
+  border-bottom: 1px solid #151525; padding-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
+}
+.ctrl-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.btn {
+  background: #10102a; border: 1px solid #2a2a44; color: #99a;
+  padding: 10px 16px; cursor: pointer; font-family: inherit;
+  font-size: 14px; border-radius: 6px; transition: all 0.15s;
+}
+.btn:hover { background: #1a1a3a; border-color: #7b8cff; color: #fff; }
+.btn.active { background: #1a2a4a; border-color: #ffd700; color: #ffd700; }
+.btn.danger { border-color: #442222; color: #aa6666; }
+.btn.danger:hover { border-color: #ff4444; color: #ff4444; }
+.slider-group { margin: 10px 0; }
+.slider-group label { font-size: 13px; color: #778; display: flex; justify-content: space-between; margin-bottom: 4px; }
+.slider-group label .v { color: #ffd700; font-family: 'Courier New', monospace; font-weight: 600; }
+.slider-group input[type=range] { width: 100%; height: 4px; appearance: none; background: #1a1a2e; border-radius: 2px; outline: none; }
+.slider-group input[type=range]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; background: #ffd700; border-radius: 50%; cursor: pointer; }
+.info-box {
+  background: #0c0c18; border: 1px solid #1a1a2e; border-radius: 8px;
+  padding: 14px; margin: 10px 0; font-size: 14px; line-height: 1.6;
+}
+.info-box .eq {
+  font-family: 'Times New Roman', serif; font-size: 18px;
+  color: #ffd700; text-align: center; margin: 8px 0;
+}
+.stat-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px solid #0f0f1a; }
+.stat-row .k { color: #556; }
+.stat-row .v { color: #ffd700; font-family: 'Courier New', monospace; }
+.legend { display: flex; gap: 16px; margin: 10px 0; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #778; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+#tooltip {
+  position: absolute; background: rgba(10,10,20,0.95); border: 1px solid #333;
+  padding: 10px 14px; border-radius: 8px; font-size: 13px; pointer-events: none;
+  display: none; z-index: 10; color: #ccc; max-width: 280px;
+  font-family: 'Courier New', monospace;
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+  <div id="tooltip"></div>
+</div>
+<div id="panel">
+  <h1>QUANTUM GRAVITY</h1>
+  <div class="sub">IQS-888 Spacetime Curvature Simulator</div>
+
+  <h2>Controls</h2>
+  <div class="ctrl-row">
+    <button class="btn active" id="btnPlay" onclick="togglePlay()">Playing</button>
+    <button class="btn" onclick="stepSim()">Step</button>
+    <button class="btn danger" onclick="resetSim()">Reset</button>
+  </div>
+  <div class="ctrl-row">
+    <button class="btn" id="btnAddMass" onclick="setTool('mass')">+ Mass</button>
+    <button class="btn" id="btnAddParticle" onclick="setTool('particle')">+ Particle</button>
+    <button class="btn" id="btnAddPhoton" onclick="setTool('photon')">+ Photon</button>
+  </div>
+  <div class="ctrl-row">
+    <button class="btn" onclick="addPreset('binary')">Binary System</button>
+    <button class="btn" onclick="addPreset('blackhole')">Black Hole</button>
+    <button class="btn" onclick="addPreset('lensing')">Gravitational Lens</button>
+  </div>
+
+  <h2>Physics</h2>
+  <div class="slider-group">
+    <label>Mass (new objects) <span class="v" id="vMass">50</span></label>
+    <input type="range" min="1" max="500" value="50" oninput="newMass=+this.value; document.getElementById('vMass').textContent=this.value">
+  </div>
+  <div class="slider-group">
+    <label>G (gravitational constant) <span class="v" id="vG">1.00</span></label>
+    <input type="range" min="0" max="500" value="100" oninput="G=this.value/100; document.getElementById('vG').textContent=G.toFixed(2)">
+  </div>
+  <div class="slider-group">
+    <label>c (speed of light) <span class="v" id="vC">200</span></label>
+    <input type="range" min="50" max="1000" value="200" oninput="C_LIGHT=+this.value; document.getElementById('vC').textContent=this.value">
+  </div>
+  <div class="slider-group">
+    <label>Time Scale <span class="v" id="vTime">1.00</span></label>
+    <input type="range" min="1" max="500" value="100" oninput="timeScale=this.value/100; document.getElementById('vTime').textContent=timeScale.toFixed(2)">
+  </div>
+
+  <h2>IQS-888</h2>
+  <div class="slider-group">
+    <label>Astrocyte (uncertainty) <span class="v" id="vAstro">0.30</span></label>
+    <input type="range" min="0" max="99" value="30" oninput="astrocyte=this.value/100; document.getElementById('vAstro').textContent=astrocyte.toFixed(2)">
+  </div>
+  <div class="slider-group">
+    <label>Berry Phase (deg/cycle) <span class="v" id="vBerry">5</span></label>
+    <input type="range" min="0" max="30" value="5" oninput="berryRate=+this.value; document.getElementById('vBerry').textContent=this.value">
+  </div>
+
+  <h2>Display</h2>
+  <div class="ctrl-row">
+    <button class="btn active" id="btnGrid" onclick="toggleOpt('grid')">Grid</button>
+    <button class="btn active" id="btnDilation" onclick="toggleOpt('dilation')">Dilation</button>
+    <button class="btn active" id="btnGeodesic" onclick="toggleOpt('geodesic')">Trails</button>
+    <button class="btn" id="btnVectors" onclick="toggleOpt('vectors')">Vectors</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#ff4444"></div> Slow time (deep gravity)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4444ff"></div> Fast time (flat space)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffd700"></div> Mass</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#00ff88"></div> Particle</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff88ff"></div> Photon</div>
+  </div>
+
+  <h2>Equations</h2>
+  <div class="info-box">
+    <div class="eq">g<sub>&mu;&nu;</sub> = &eta;<sub>&mu;&nu;</sub> + h<sub>&mu;&nu;</sub></div>
+    <div style="font-size:12px; color:#667; text-align:center">Metric = flat + perturbation</div>
+  </div>
+  <div class="info-box">
+    <div class="eq">d&tau; = dt &radic;(1 &minus; r<sub>s</sub>/r)</div>
+    <div style="font-size:12px; color:#667; text-align:center">r<sub>s</sub> = 2GM/c&sup2; (Schwarzschild radius)</div>
+  </div>
+  <div class="info-box">
+    <div class="eq">&gamma; = 1/&radic;(1 &minus; a&sup2;)</div>
+    <div style="font-size:12px; color:#667; text-align:center">Astrocyte = Lorentz factor</div>
+  </div>
+
+  <h2>Measurements</h2>
+  <div id="stats"></div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// PHYSICS CONSTANTS (adjustable)
+// ═══════════════════════════════════════════
+let G = 1.0;
+let C_LIGHT = 200;
+let timeScale = 1.0;
+let astrocyte = 0.30;
+let berryRate = 5;
+let newMass = 50;
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let masses = [];
+let particles = [];
+let playing = true;
+let tool = 'mass';
+let simTime = 0;
+let cycle = 0;
+
+let showGrid = true;
+let showDilation = true;
+let showGeodesic = true;
+let showVectors = false;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+
+// Grid params
+const GRID_RES = 28;
+let gridPts = [];
+
+// ═══════════════════════════════════════════
+// GRID — represents spacetime fabric
+// ═══════════════════════════════════════════
+function buildGrid(W, H) {
+  gridPts = [];
+  const stepX = W / GRID_RES;
+  const stepY = H / GRID_RES;
+  for (let gy = 0; gy <= GRID_RES; gy++) {
+    const row = [];
+    for (let gx = 0; gx <= GRID_RES; gx++) {
+      row.push({
+        baseX: gx * stepX,
+        baseY: gy * stepY,
+        x: gx * stepX,
+        y: gy * stepY,
+        depth: 0,      // curvature depth (for 3D effect)
+        dilation: 1.0   // time dilation factor
+      });
+    }
+    gridPts.push(row);
+  }
+}
+
+function deformGrid(W, H) {
+  for (let gy = 0; gy <= GRID_RES; gy++) {
+    for (let gx = 0; gx <= GRID_RES; gx++) {
+      const pt = gridPts[gy][gx];
+      let dx = 0, dy = 0, totalDepth = 0, totalPotential = 0;
+
+      for (const m of masses) {
+        const ddx = pt.baseX - m.x;
+        const ddy = pt.baseY - m.y;
+        const r = Math.sqrt(ddx * ddx + ddy * ddy);
+        const rs = 2 * G * m.mass / (C_LIGHT * C_LIGHT); // Schwarzschild radius (scaled)
+        const rMin = Math.max(r, rs * 2, 8);
+
+        // Displacement toward mass (curvature)
+        const strength = G * m.mass / (rMin * rMin) * 40;
+        dx -= (ddx / rMin) * strength;
+        dy -= (ddy / rMin) * strength;
+
+        // Depth (embedding diagram — well depth)
+        totalDepth += G * m.mass / rMin;
+
+        // Gravitational potential for time dilation
+        totalPotential += G * m.mass / (rMin * C_LIGHT * C_LIGHT);
+      }
+
+      // Clamp displacement
+      const maxDisp = 80;
+      const mag = Math.sqrt(dx * dx + dy * dy);
+      if (mag > maxDisp) { dx *= maxDisp / mag; dy *= maxDisp / mag; }
+
+      pt.x = pt.baseX + dx;
+      pt.y = pt.baseY + dy;
+      pt.depth = Math.min(totalDepth, 200);
+
+      // Time dilation: dt_proper / dt_coord = sqrt(1 - 2*phi/c^2)
+      const dilationArg = 1 - 2 * totalPotential;
+      pt.dilation = dilationArg > 0 ? Math.sqrt(dilationArg) : 0.01;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// MASS OBJECTS
+// ═══════════════════════════════════════════
+function addMass(x, y, mass, vx, vy) {
+  const rs = 2 * G * mass / (C_LIGHT * C_LIGHT);
+  masses.push({
+    x, y, vx: vx || 0, vy: vy || 0,
+    mass,
+    rs, // Schwarzschild radius
+    trail: [],
+    color: mass > 200 ? '#ff6600' : '#ffd700'
+  });
+}
+
+// ═══════════════════════════════════════════
+// PARTICLES & PHOTONS
+// ═══════════════════════════════════════════
+function addParticle(x, y, vx, vy, isPhoton) {
+  const speed = Math.sqrt(vx * vx + vy * vy);
+  if (isPhoton && speed > 0) {
+    // Normalize photon to c
+    vx = (vx / speed) * C_LIGHT;
+    vy = (vy / speed) * C_LIGHT;
+  }
+  particles.push({
+    x, y, vx, vy,
+    isPhoton,
+    trail: [],
+    alive: true,
+    properTime: 0,
+    color: isPhoton ? '#ff88ff' : '#00ff88'
+  });
+}
+
+// ═══════════════════════════════════════════
+// PHYSICS STEP
+// ═══════════════════════════════════════════
+function step(dt) {
+  dt *= timeScale;
+  simTime += dt;
+
+  // Berry phase cycle
+  if (simTime > 365) {
+    cycle++;
+    simTime -= 365;
+  }
+
+  const berryPhase = (cycle * berryRate + simTime * berryRate / 365) * Math.PI / 180;
+
+  // Move masses (N-body)
+  for (let i = 0; i < masses.length; i++) {
+    const mi = masses[i];
+    let ax = 0, ay = 0;
+    for (let j = 0; j < masses.length; j++) {
+      if (i === j) continue;
+      const mj = masses[j];
+      const dx = mj.x - mi.x;
+      const dy = mj.y - mi.y;
+      const r = Math.sqrt(dx * dx + dy * dy);
+      const rMin = Math.max(r, 20);
+      const force = G * mj.mass / (rMin * rMin);
+      ax += force * dx / rMin;
+      ay += force * dy / rMin;
+    }
+    mi.vx += ax * dt;
+    mi.vy += ay * dt;
+  }
+
+  for (const m of masses) {
+    m.x += m.vx * dt;
+    m.y += m.vy * dt;
+    m.rs = 2 * G * m.mass / (C_LIGHT * C_LIGHT);
+    m.trail.push({ x: m.x, y: m.y });
+    if (m.trail.length > 200) m.trail.shift();
+  }
+
+  // Move particles along geodesics
+  for (const p of particles) {
+    if (!p.alive) continue;
+
+    let ax = 0, ay = 0;
+    let localDilation = 1.0;
+    let localPotential = 0;
+
+    for (const m of masses) {
+      const dx = m.x - p.x;
+      const dy = m.y - p.y;
+      const r = Math.sqrt(dx * dx + dy * dy);
+
+      // Check event horizon
+      if (r < m.rs * 10) { // scaled for visibility
+        p.alive = false;
+        break;
+      }
+
+      const rMin = Math.max(r, 10);
+
+      // Gravitational acceleration (Newtonian + first post-Newtonian correction)
+      let force = G * m.mass / (rMin * rMin);
+
+      // Post-Newtonian: extra factor (1 + 3v^2/c^2) for GR correction
+      if (!p.isPhoton) {
+        const v2 = p.vx * p.vx + p.vy * p.vy;
+        force *= (1 + 3 * v2 / (C_LIGHT * C_LIGHT));
+      } else {
+        // Photons get twice the Newtonian deflection (GR prediction)
+        force *= 2;
+      }
+
+      ax += force * dx / rMin;
+      ay += force * dy / rMin;
+
+      localPotential += G * m.mass / (rMin * C_LIGHT * C_LIGHT);
+    }
+
+    if (!p.alive) continue;
+
+    // Astrocyte: add quantum uncertainty to trajectory
+    if (astrocyte > 0 && !p.isPhoton) {
+      const noise = astrocyte * 0.5;
+      ax += (Math.random() - 0.5) * noise;
+      ay += (Math.random() - 0.5) * noise;
+    }
+
+    p.vx += ax * dt;
+    p.vy += ay * dt;
+
+    // Enforce speed of light for photons
+    if (p.isPhoton) {
+      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (speed > 0) {
+        p.vx = (p.vx / speed) * C_LIGHT;
+        p.vy = (p.vy / speed) * C_LIGHT;
+      }
+    }
+
+    // Proper time accumulation (slower in gravity wells)
+    const dilArg = 1 - 2 * localPotential;
+    localDilation = dilArg > 0 ? Math.sqrt(dilArg) : 0.01;
+
+    // Also velocity time dilation
+    const v = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+    const lorentz = Math.sqrt(Math.max(0.001, 1 - (v * v) / (C_LIGHT * C_LIGHT)));
+
+    p.properTime += dt * localDilation * lorentz;
+
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+
+    p.trail.push({ x: p.x, y: p.y });
+    if (p.trail.length > 500) p.trail.shift();
+
+    // Remove if off screen
+    const W = canvas.width / (window.devicePixelRatio || 1);
+    const H = canvas.height / (window.devicePixelRatio || 1);
+    if (p.x < -100 || p.x > W + 100 || p.y < -100 || p.y > H + 100) {
+      p.alive = false;
+    }
+  }
+
+  // Clean dead particles
+  // (keep them for trail rendering but mark)
+}
+
+// ═══════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════
+function render() {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  // Rebuild grid if needed
+  if (gridPts.length === 0 || Math.abs(gridPts[0][gridPts[0].length-1].baseX - W) > 50) {
+    buildGrid(W, H);
+  }
+  deformGrid(W, H);
+
+  // ── Time dilation heatmap ──
+  if (showDilation) {
+    for (let gy = 0; gy < GRID_RES; gy++) {
+      for (let gx = 0; gx < GRID_RES; gx++) {
+        const tl = gridPts[gy][gx];
+        const tr = gridPts[gy][gx + 1];
+        const bl = gridPts[gy + 1][gx];
+        const br = gridPts[gy + 1][gx + 1];
+
+        const avgDil = (tl.dilation + tr.dilation + bl.dilation + br.dilation) / 4;
+
+        // Color: blue (fast, dilation~1) -> red (slow, dilation~0)
+        let r, g, b, a;
+        if (avgDil > 0.8) {
+          // Near flat: subtle blue
+          r = 10; g = 10; b = 30 + (1 - avgDil) * 200;
+          a = 0.15;
+        } else if (avgDil > 0.5) {
+          // Medium curvature: purple
+          const t = (avgDil - 0.5) / 0.3;
+          r = Math.floor(100 + (1 - t) * 155);
+          g = 10;
+          b = Math.floor(100 + t * 100);
+          a = 0.2 + (1 - t) * 0.15;
+        } else {
+          // Deep well: red
+          const t = avgDil / 0.5;
+          r = 255;
+          g = Math.floor(t * 50);
+          b = Math.floor(t * 50);
+          a = 0.25 + (1 - t) * 0.3;
+        }
+
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.beginPath();
+        ctx.moveTo(tl.x, tl.y);
+        ctx.lineTo(tr.x, tr.y);
+        ctx.lineTo(br.x, br.y);
+        ctx.lineTo(bl.x, bl.y);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+
+  // ── Spacetime grid ──
+  if (showGrid) {
+    // Horizontal lines
+    for (let gy = 0; gy <= GRID_RES; gy++) {
+      ctx.beginPath();
+      for (let gx = 0; gx <= GRID_RES; gx++) {
+        const pt = gridPts[gy][gx];
+        // Depth shading: deeper = dimmer
+        if (gx === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      const depthAvg = gridPts[gy].reduce((s, p) => s + p.depth, 0) / gridPts[gy].length;
+      const brightness = Math.max(15, 50 - depthAvg * 0.3);
+      ctx.strokeStyle = `rgba(${brightness + 30}, ${brightness + 40}, ${brightness + 80}, 0.6)`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Vertical lines
+    for (let gx = 0; gx <= GRID_RES; gx++) {
+      ctx.beginPath();
+      for (let gy = 0; gy <= GRID_RES; gy++) {
+        const pt = gridPts[gy][gx];
+        if (gy === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      let depthAvg = 0;
+      for (let gy = 0; gy <= GRID_RES; gy++) depthAvg += gridPts[gy][gx].depth;
+      depthAvg /= (GRID_RES + 1);
+      const brightness = Math.max(15, 50 - depthAvg * 0.3);
+      ctx.strokeStyle = `rgba(${brightness + 30}, ${brightness + 40}, ${brightness + 80}, 0.6)`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  // ── Schwarzschild radius rings ──
+  for (const m of masses) {
+    const rs = m.rs * 10; // scaled for visibility
+    if (rs > 2) {
+      // Event horizon
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, rs, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Photon sphere (1.5 rs)
+      ctx.strokeStyle = 'rgba(255, 136, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 6]);
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, rs * 1.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // ISCO (3 rs)
+      ctx.strokeStyle = 'rgba(0, 255, 136, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 6]);
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, rs * 3, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // ── Mass trails ──
+  if (showGeodesic) {
+    for (const m of masses) {
+      if (m.trail.length < 2) continue;
+      ctx.beginPath();
+      for (let i = 0; i < m.trail.length; i++) {
+        const p = m.trail[i];
+        const alpha = i / m.trail.length * 0.4;
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.strokeStyle = m.color + '44';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  // ── Masses ──
+  for (const m of masses) {
+    const r = Math.max(8, Math.sqrt(m.mass) * 1.5);
+
+    // Glow
+    const glow = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, r * 4);
+    glow.addColorStop(0, m.color + '33');
+    glow.addColorStop(0.5, m.color + '11');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, r * 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Core
+    const coreGrad = ctx.createRadialGradient(m.x - r * 0.2, m.y - r * 0.2, 0, m.x, m.y, r);
+    coreGrad.addColorStop(0, '#ffffff');
+    coreGrad.addColorStop(0.3, m.color);
+    coreGrad.addColorStop(1, m.color + '88');
+    ctx.fillStyle = coreGrad;
+    ctx.beginPath();
+    ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`M=${m.mass}`, m.x, m.y - r - 8);
+
+    // Schwarzschild radius label
+    if (m.rs > 0.1) {
+      ctx.fillStyle = '#ff666688';
+      ctx.font = '10px Courier New';
+      ctx.fillText(`r_s=${(m.rs * 10).toFixed(1)}`, m.x, m.y + r + 14);
+    }
+  }
+
+  // ── Particle trails ──
+  if (showGeodesic) {
+    for (const p of particles) {
+      if (p.trail.length < 2) continue;
+      ctx.beginPath();
+      for (let i = 0; i < p.trail.length; i++) {
+        const pt = p.trail[i];
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.strokeStyle = p.color + (p.alive ? '66' : '22');
+      ctx.lineWidth = p.isPhoton ? 1.5 : 2;
+      ctx.stroke();
+    }
+  }
+
+  // ── Particles ──
+  for (const p of particles) {
+    if (!p.alive) continue;
+    const r = p.isPhoton ? 3 : 5;
+
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Velocity vector
+    if (showVectors) {
+      const vScale = 0.1;
+      ctx.strokeStyle = p.color + '88';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + p.vx * vScale, p.y + p.vy * vScale);
+      ctx.stroke();
+    }
+
+    // Proper time label
+    if (!p.isPhoton) {
+      ctx.fillStyle = '#00ff8888';
+      ctx.font = '10px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText(`t=${p.properTime.toFixed(1)}`, p.x, p.y - 10);
+    }
+  }
+
+  // ── HUD ──
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('SPACETIME CURVATURE', 20, 28);
+
+  ctx.fillStyle = '#667';
+  ctx.font = '13px Courier New';
+  ctx.fillText(`t=${simTime.toFixed(1)}  cycle=${cycle}  Berry=${((cycle * berryRate) % 360).toFixed(0)}deg`, 20, 48);
+  ctx.fillText(`G=${G.toFixed(2)}  c=${C_LIGHT}  a=${astrocyte.toFixed(2)}  masses=${masses.length}  particles=${particles.filter(p=>p.alive).length}`, 20, 66);
+
+  // Lorentz factor from astrocyte
+  const gamma = 1 / Math.sqrt(Math.max(0.01, 1 - astrocyte * astrocyte));
+  ctx.fillText(`gamma(a)=${gamma.toFixed(3)}`, 20, 84);
+
+  // Tool indicator
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(`Click: add ${tool}`, W - 20, 28);
+}
+
+// ═══════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════
+function togglePlay() {
+  playing = !playing;
+  document.getElementById('btnPlay').classList.toggle('active', playing);
+  document.getElementById('btnPlay').textContent = playing ? 'Playing' : 'Paused';
+}
+
+function stepSim() { step(1); }
+
+function resetSim() {
+  masses = [];
+  particles = [];
+  simTime = 0;
+  cycle = 0;
+  gridPts = [];
+  updateStats();
+}
+
+function setTool(t) {
+  tool = t;
+  document.getElementById('btnAddMass').classList.toggle('active', t === 'mass');
+  document.getElementById('btnAddParticle').classList.toggle('active', t === 'particle');
+  document.getElementById('btnAddPhoton').classList.toggle('active', t === 'photon');
+}
+
+function toggleOpt(opt) {
+  if (opt === 'grid') { showGrid = !showGrid; document.getElementById('btnGrid').classList.toggle('active', showGrid); }
+  if (opt === 'dilation') { showDilation = !showDilation; document.getElementById('btnDilation').classList.toggle('active', showDilation); }
+  if (opt === 'geodesic') { showGeodesic = !showGeodesic; document.getElementById('btnGeodesic').classList.toggle('active', showGeodesic); }
+  if (opt === 'vectors') { showVectors = !showVectors; document.getElementById('btnVectors').classList.toggle('active', showVectors); }
+}
+
+// ═══════════════════════════════════════════
+// PRESETS
+// ═══════════════════════════════════════════
+function addPreset(name) {
+  resetSim();
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  const cx = W / 2, cy = H / 2;
+
+  if (name === 'binary') {
+    const sep = 120;
+    const v = Math.sqrt(G * 80 / (sep * 2)) * 0.8;
+    addMass(cx - sep, cy, 80, 0, v);
+    addMass(cx + sep, cy, 80, 0, -v);
+    // Test particle far away
+    addParticle(cx, cy - 250, 15, 0, false);
+    addParticle(cx + 300, cy, 0, 8, false);
+  } else if (name === 'blackhole') {
+    addMass(cx, cy, 400, 0, 0);
+    // Orbiting particles at different radii
+    for (let i = 0; i < 6; i++) {
+      const r = 100 + i * 40;
+      const v = Math.sqrt(G * 400 / r);
+      const angle = (i / 6) * Math.PI * 2;
+      addParticle(cx + r * Math.cos(angle), cy + r * Math.sin(angle),
+        -v * Math.sin(angle), v * Math.cos(angle), false);
+    }
+    // Photon grazing
+    addParticle(cx - 350, cy - 30, C_LIGHT * 0.95, C_LIGHT * 0.05, true);
+    addParticle(cx - 350, cy + 30, C_LIGHT * 0.95, -C_LIGHT * 0.05, true);
+  } else if (name === 'lensing') {
+    addMass(cx, cy, 200, 0, 0);
+    // Parallel photon beam
+    for (let i = -4; i <= 4; i++) {
+      addParticle(50, cy + i * 30, C_LIGHT, 0, true);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// INTERACTION
+// ═══════════════════════════════════════════
+let dragStart = null;
+
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  dragStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (!dragStart) return;
+  const rect = canvas.getBoundingClientRect();
+  const endX = e.clientX - rect.left;
+  const endY = e.clientY - rect.top;
+
+  const dx = endX - dragStart.x;
+  const dy = endY - dragStart.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  if (tool === 'mass') {
+    // Drag = initial velocity
+    addMass(dragStart.x, dragStart.y, newMass, dx * 0.1, dy * 0.1);
+  } else if (tool === 'particle') {
+    if (dist > 10) {
+      addParticle(dragStart.x, dragStart.y, dx * 0.5, dy * 0.5, false);
+    } else {
+      addParticle(dragStart.x, dragStart.y, 10, 0, false);
+    }
+  } else if (tool === 'photon') {
+    if (dist > 10) {
+      const speed = Math.sqrt(dx * dx + dy * dy);
+      addParticle(dragStart.x, dragStart.y, (dx / speed) * C_LIGHT, (dy / speed) * C_LIGHT, true);
+    } else {
+      addParticle(dragStart.x, dragStart.y, C_LIGHT, 0, true);
+    }
+  }
+
+  dragStart = null;
+});
+
+// Drag line preview
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  // Show tooltip with local dilation
+  let localDil = 1.0;
+  let localPot = 0;
+  for (const m of masses) {
+    const dx = mx - m.x;
+    const dy = my - m.y;
+    const r = Math.max(Math.sqrt(dx * dx + dy * dy), 10);
+    localPot += G * m.mass / (r * C_LIGHT * C_LIGHT);
+  }
+  const dilArg = 1 - 2 * localPot;
+  localDil = dilArg > 0 ? Math.sqrt(dilArg) : 0.01;
+
+  if (masses.length > 0) {
+    tooltip.style.display = 'block';
+    tooltip.style.left = (mx + 16) + 'px';
+    tooltip.style.top = (my + 16) + 'px';
+    tooltip.innerHTML = `dilation: ${localDil.toFixed(4)}<br>potential: ${localPot.toFixed(6)}<br>1 sec here = ${localDil.toFixed(4)} sec at inf`;
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+
+canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+// ═══════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════
+function updateStats() {
+  let html = '';
+  for (const m of masses) {
+    const rs = (m.rs * 10).toFixed(1);
+    html += `<div class="stat-row"><span class="k">Mass ${m.mass}</span><span class="v">r_s=${rs} v=${Math.sqrt(m.vx*m.vx+m.vy*m.vy).toFixed(1)}</span></div>`;
+  }
+  const alive = particles.filter(p => p.alive);
+  for (const p of alive) {
+    const v = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+    const label = p.isPhoton ? 'Photon' : 'Particle';
+    html += `<div class="stat-row"><span class="k">${label}</span><span class="v">v=${v.toFixed(0)} t=${p.properTime.toFixed(1)}</span></div>`;
+  }
+  if (!html) html = '<div class="stat-row"><span class="k">Click canvas to add objects</span><span class="v"></span></div>';
+  document.getElementById('stats').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// LOOP
+// ═══════════════════════════════════════════
+function loop() {
+  if (playing) step(0.5);
+  render();
+  updateStats();
+  requestAnimationFrame(loop);
+}
+
+buildGrid(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
+loop();
+
+// Start with black hole preset
+setTimeout(() => addPreset('blackhole'), 100);
+</script>
+</body>
+</html>

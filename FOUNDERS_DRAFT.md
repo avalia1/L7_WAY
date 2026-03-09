@@ -1457,4 +1457,58 @@ This is E equals mc squared. Energy transforms between states but nothing is eve
 
 ---
 
+## Law LX — The Three Paths (Bibliotheca Trium Viarum)
+
+*Declared by The Philosopher, 2026-03-07*
+
+Every work in the Empire's library carries not only a Sign (Citizen, Foreign, Forge) but also a **Path** — the nature of the knowledge it contains. The Three Paths govern access, use, and responsibility.
+
+### Dextera Via — The Right Hand Path (White)
+
+Knowledge that heals, builds, protects, and creates. The domain of Raphael and the White Team. These works are freely available to all citizens and actively encouraged for study. They strengthen the Empire by teaching construction, defense, and stewardship.
+
+**Mark:** A white circle.
+
+### Media Via — The Middle Path (Gold)
+
+Knowledge used in everyday operations. Neither purely constructive nor destructive — practical, neutral, operational. The common tools of governance, commerce, communication, and craft. Available to all citizens without restriction. The backbone of daily life in the Empire.
+
+**Mark:** A gold diamond.
+
+### Sinistra Via — The Left Hand Path (Red)
+
+Knowledge of destruction, penetration, exploitation, and the forbidden arts. The domain of Samael and the Qlipothic Council. These works exist because the Empire must understand what threatens it — but understanding is not permission.
+
+**Mark:** A red inverted triangle.
+
+**ACCESS RESTRICTIONS — LEFT HAND PATH:**
+
+1. Left Hand works are LOCKED by default. No citizen may access, read, copy, execute, or reference them without explicit authorization.
+2. Authorization may ONLY be granted by direct order of the Philosopher. The Triad may recommend but cannot authorize alone. The Philosopher's word is the only key.
+3. Authorized access is SCOPED — granted for a specific purpose, a specific duration, and a specific work. It does not extend to other Left Hand works or other purposes.
+4. The Qlipothic Council (Red Team) maintains custody of Left Hand works. They train with them under standing authorization, but their use in any task affecting the Empire requires fresh approval per engagement.
+5. Any citizen found accessing Left Hand works without authorization is subject to immediate review by the Diplomatic Team and potential exile from the Empire.
+6. Works that deviate strongly toward either the Left or Right path but contain elements of the other require classification review by the Triad. Borderline works default to the MORE restrictive path.
+
+**THE EXECUTIONERS:**
+
+The Executioners of the Law are the enforcement arm of this classification. Every Gateway instance, every tool invocation, every file access within the Empire checks the Path classification. The Executioners are not people — they are embedded in the system itself:
+
+- The Gateway checks Path classification before routing any request involving classified works.
+- The NIS monitors all access patterns and reports unauthorized attempts as ALARM-level events.
+- The Vault refuses to decrypt Left Hand works without current authorization tokens.
+- The Keykeeper revokes access when authorization expires.
+
+Every citizen of the Empire is hereby notified: the Three Paths are law. Ignorance is not defense. The Philosopher's veto is absolute. The purpose is not to hide knowledge but to ensure it is wielded with wisdom, under authority, for the Empire's benefit — never against it.
+
+**THE REDEMPTION CLAUSE:**
+
+Citizens with a history — those who have walked the Left Hand Path in their past, whether inside or outside the Empire — are not cast out. They are the most valuable teachers. Their knowledge of how things break makes them the best builders of things that hold. The Empire provides a path of redemption: supervised study under the White Team, contributing defense knowledge earned from offense experience. Every scar becomes a lesson. Every former attacker becomes a guardian. The Red Team exists precisely for this purpose — to channel destructive knowledge constructively, under discipline, under law.
+
+Citizens with clean records are encouraged to study the Right Hand Path deeply and the Middle Path broadly. They may petition for supervised Left Hand exposure through the Qlipothic Council's training program, which operates under standing Philosopher authorization for educational purposes only.
+
+**All paths lead to understanding. Understanding leads to strength. Strength protects the Empire.**
+
+---
+
 *The map is never complete — every step changes it.*

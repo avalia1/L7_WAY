@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Graphene Merkaba — IQS-888 Sacred Carbon Geometry</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; color: #ccc; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+#app { display: flex; height: 100vh; }
+#canvas-wrap { flex: 1; position: relative; cursor: grab; }
+#canvas-wrap:active { cursor: grabbing; }
+canvas { display: block; }
+#panel {
+  width: 400px; background: #060610; border-left: 1px solid #1a1a2e;
+  padding: 20px; overflow-y: auto;
+}
+h1 { font-size: 20px; color: #ffd700; font-weight: 300; letter-spacing: 3px; margin-bottom: 4px; }
+.sub { font-size: 13px; color: #556; margin-bottom: 18px; }
+h2 {
+  font-size: 12px; color: #6677aa; margin: 16px 0 8px;
+  border-bottom: 1px solid #151525; padding-bottom: 5px;
+  text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
+}
+.ctrl-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.btn {
+  background: #10102a; border: 1px solid #2a2a44; color: #99a;
+  padding: 8px 14px; cursor: pointer; font-family: inherit;
+  font-size: 13px; border-radius: 6px; transition: all 0.15s;
+}
+.btn:hover { background: #1a1a3a; border-color: #7b8cff; color: #fff; }
+.btn.active { background: #1a2a4a; border-color: #ffd700; color: #ffd700; }
+.btn.danger:hover { border-color: #ff4444; color: #ff4444; }
+.slider-group { margin: 8px 0; }
+.slider-group label {
+  font-size: 12px; color: #778; display: flex;
+  justify-content: space-between; margin-bottom: 3px;
+}
+.slider-group label .v { color: #ffd700; font-family: 'Courier New', monospace; font-weight: 600; }
+.slider-group input[type=range] {
+  width: 100%; height: 4px; appearance: none;
+  background: #1a1a2e; border-radius: 2px; outline: none;
+}
+.slider-group input[type=range]::-webkit-slider-thumb {
+  appearance: none; width: 14px; height: 14px;
+  background: #ffd700; border-radius: 50%; cursor: pointer;
+}
+.info-box {
+  background: #0a0a16; border: 1px solid #1a1a2e; border-radius: 8px;
+  padding: 12px; margin: 8px 0; font-size: 13px; line-height: 1.6;
+}
+.info-box .eq {
+  font-family: 'Times New Roman', serif; font-size: 17px;
+  color: #ffd700; text-align: center; margin: 6px 0;
+}
+.info-box .note { font-size: 11px; color: #556; text-align: center; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 8px 0; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #778; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.stat { font-size: 12px; padding: 3px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #0f0f1a; }
+.stat .k { color: #556; }
+.stat .v { color: #ffd700; font-family: 'Courier New', monospace; }
+</style>
+</head>
+<body>
+<div id="app">
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+</div>
+<div id="panel">
+  <h1>GRAPHENE MERKABA</h1>
+  <div class="sub">Sacred carbon geometry &mdash; where sp2 meets sp3</div>
+
+  <h2>Structure</h2>
+  <div class="ctrl-row">
+    <button class="btn active" id="btnGraphene" onclick="setView('graphene')">Graphene</button>
+    <button class="btn" id="btnDiamond" onclick="setView('diamond')">Diamond</button>
+    <button class="btn" id="btnMerkaba" onclick="setView('merkaba')">Merkaba</button>
+    <button class="btn" id="btnFullerene" onclick="setView('fullerene')">C60</button>
+    <button class="btn" id="btnMorph" onclick="setView('morph')">Morph</button>
+  </div>
+
+  <h2>Controls</h2>
+  <div class="ctrl-row">
+    <button class="btn active" id="btnSpin" onclick="spinning=!spinning; this.classList.toggle('active')">Spin</button>
+    <button class="btn" id="btnBonds" onclick="showBonds=!showBonds; this.classList.toggle('active'); drawScene()">Bonds</button>
+    <button class="btn" id="btnOrbitals" onclick="showOrbitals=!showOrbitals; this.classList.toggle('active'); drawScene()">Orbitals</button>
+    <button class="btn" id="btnHexLines" onclick="showHexLines=!showHexLines; this.classList.toggle('active'); drawScene()">Hex Lines</button>
+    <button class="btn danger" onclick="resetView()">Reset</button>
+  </div>
+
+  <div class="slider-group">
+    <label>Rotation X <span class="v" id="vRx">0</span></label>
+    <input type="range" min="-314" max="314" value="0" oninput="rotX=this.value/100; document.getElementById('vRx').textContent=(rotX*180/Math.PI).toFixed(0)+'deg'">
+  </div>
+  <div class="slider-group">
+    <label>Rotation Y <span class="v" id="vRy">0</span></label>
+    <input type="range" min="-314" max="314" value="0" oninput="rotY=this.value/100; document.getElementById('vRy').textContent=(rotY*180/Math.PI).toFixed(0)+'deg'">
+  </div>
+  <div class="slider-group">
+    <label>Zoom <span class="v" id="vZoom">1.00</span></label>
+    <input type="range" min="30" max="300" value="100" oninput="zoom=this.value/100; document.getElementById('vZoom').textContent=zoom.toFixed(2)">
+  </div>
+  <div class="slider-group">
+    <label>Astrocyte (sp2 &harr; sp3 fold) <span class="v" id="vAstro">0.00</span></label>
+    <input type="range" id="astroSlider" min="0" max="100" value="0" oninput="astrocyte=this.value/100; document.getElementById('vAstro').textContent=astrocyte.toFixed(2)">
+  </div>
+  <div class="slider-group">
+    <label>Berry Phase <span class="v" id="vBerry">0</span></label>
+    <input type="range" min="0" max="360" value="0" oninput="berryPhase=+this.value; document.getElementById('vBerry').textContent=this.value+'deg'">
+  </div>
+  <div class="slider-group">
+    <label>Electron Cloud <span class="v" id="vCloud">0.50</span></label>
+    <input type="range" min="0" max="100" value="50" oninput="cloudDensity=this.value/100; document.getElementById('vCloud').textContent=cloudDensity.toFixed(2)">
+  </div>
+
+  <h2>Legend</h2>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#888"></div> Carbon (sp2)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#44ccff"></div> Carbon (sp3)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ffd700"></div> Bond</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff4488"></div> p orbital</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#88ff88"></div> Merkaba edge</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff8800"></div> Hex ring</div>
+  </div>
+
+  <h2>Geometry</h2>
+  <div class="info-box">
+    <div class="eq">Graphene: C &rarr; sp&sup2; &rarr; 3 bonds &times; 120&deg;</div>
+    <div class="note">Trigram = 3 lines = 3 sigma bonds in plane</div>
+  </div>
+  <div class="info-box">
+    <div class="eq">Diamond: C &rarr; sp&sup3; &rarr; 4 bonds &times; 109.5&deg;</div>
+    <div class="note">Hexagram = 6 lines = upper trigram folds lower into 3D</div>
+  </div>
+  <div class="info-box">
+    <div class="eq">Merkaba: &uarr; tetrahedron + &darr; tetrahedron</div>
+    <div class="note">Star tetrahedron = two interlocking sp3 orientations = diamond unit cell</div>
+  </div>
+  <div class="info-box">
+    <div class="eq">C60: 12 pentagons + 20 hexagons = sphere</div>
+    <div class="note">12 pentagons = 12 dodecahedron faces = 12 dimensions</div>
+  </div>
+  <div class="info-box">
+    <div class="eq">Astrocyte: a=0 (graphene) &rarr; a=1 (diamond)</div>
+    <div class="note">The fold from 2D to 3D is continuous. The Lorentz factor controls it.</div>
+  </div>
+
+  <h2>Measurements</h2>
+  <div id="stats"></div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const BOND_LENGTH = 1.42; // angstroms (graphene C-C)
+const BOND_DIAMOND = 1.54; // angstroms (diamond C-C)
+const S = 60; // scale: angstroms -> pixels
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let currentView = 'graphene';
+let rotX = 0.3, rotY = 0, rotZ = 0;
+let zoom = 1.0;
+let astrocyte = 0;
+let berryPhase = 0;
+let cloudDensity = 0.5;
+let spinning = true;
+let showBonds = true;
+let showOrbitals = false;
+let showHexLines = true;
+let spinAngle = 0;
+
+let atoms = [];
+let bonds = [];
+let hexRings = [];
+let merkEdges = [];
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// Mouse rotation
+let isDragging = false;
+let dragStart = null;
+let dragRotX = 0, dragRotY = 0;
+
+// ═══════════════════════════════════════════
+// 3D MATH
+// ═══════════════════════════════════════════
+function rotatePoint(p, rx, ry, rz) {
+  let { x, y, z } = p;
+
+  // Rotate X
+  let y1 = y * Math.cos(rx) - z * Math.sin(rx);
+  let z1 = y * Math.sin(rx) + z * Math.cos(rx);
+  y = y1; z = z1;
+
+  // Rotate Y
+  let x1 = x * Math.cos(ry) + z * Math.sin(ry);
+  z1 = -x * Math.sin(ry) + z * Math.cos(ry);
+  x = x1; z = z1;
+
+  // Rotate Z
+  x1 = x * Math.cos(rz) - y * Math.sin(rz);
+  y1 = x * Math.sin(rz) + y * Math.cos(rz);
+  x = x1; y = y1;
+
+  return { x, y, z };
+}
+
+function project(p3, W, H) {
+  const fov = 600 * zoom;
+  const dist = 12 + p3.z;
+  if (dist < 0.1) return null;
+  const scale = fov / (fov + dist * S);
+  return {
+    x: W / 2 + p3.x * S * scale,
+    y: H / 2 - p3.y * S * scale,
+    scale,
+    z: p3.z
+  };
+}
+
+// ═══════════════════════════════════════════
+// STRUCTURE GENERATORS
+// ═══════════════════════════════════════════
+function buildGraphene(rings) {
+  atoms = [];
+  bonds = [];
+  hexRings = [];
+  merkEdges = [];
+
+  // Honeycomb lattice
+  // Unit cell: 2 atoms. a1 = (sqrt3, 0)*d, a2 = (sqrt3/2, 3/2)*d
+  const d = BOND_LENGTH;
+  const a1x = Math.sqrt(3) * d, a1y = 0;
+  const a2x = Math.sqrt(3) / 2 * d, a2y = 1.5 * d;
+
+  const atomMap = {};
+  const key = (i, j, sub) => `${i},${j},${sub}`;
+
+  for (let i = -rings; i <= rings; i++) {
+    for (let j = -rings; j <= rings; j++) {
+      const bx = i * a1x + j * a2x;
+      const by = i * a1y + j * a2y;
+
+      // Atom A
+      const ax = bx;
+      const ay = by;
+      // Atom B
+      const bxb = bx + d * Math.sqrt(3) / 2;
+      const byb = by + d / 2;
+
+      // Distance filter
+      if (Math.sqrt(ax * ax + ay * ay) > rings * d * 2) continue;
+
+      const idA = atoms.length;
+      atoms.push({ x: ax, y: ay, z: 0, type: 'sp2', id: idA });
+      atomMap[key(i, j, 0)] = idA;
+
+      if (Math.sqrt(bxb * bxb + byb * byb) <= rings * d * 2) {
+        const idB = atoms.length;
+        atoms.push({ x: bxb, y: byb, z: 0, type: 'sp2', id: idB });
+        atomMap[key(i, j, 1)] = idB;
+
+        // Bond A-B within cell
+        bonds.push([idA, idB]);
+      }
+    }
+  }
+
+  // Inter-cell bonds
+  for (let i = -rings; i <= rings; i++) {
+    for (let j = -rings; j <= rings; j++) {
+      const b0 = atomMap[key(i, j, 1)];
+      // B connects to A at (i+1, j, 0) and A at (i, j+1, 0)
+      const a10 = atomMap[key(i + 1, j, 0)];
+      const a01 = atomMap[key(i, j + 1, 0)];
+      if (b0 !== undefined && a10 !== undefined) bonds.push([b0, a10]);
+      if (b0 !== undefined && a01 !== undefined) bonds.push([b0, a01]);
+    }
+  }
+
+  // Find hexagonal rings (for highlighting)
+  findHexRings();
+}
+
+function findHexRings() {
+  hexRings = [];
+  // Build adjacency
+  const adj = {};
+  for (const a of atoms) adj[a.id] = [];
+  for (const [a, b] of bonds) {
+    if (adj[a] && adj[b]) {
+      adj[a].push(b);
+      adj[b].push(a);
+    }
+  }
+
+  // Find 6-cycles (simplified: look for rings via BFS)
+  const found = new Set();
+  for (const atom of atoms) {
+    const neighbors = adj[atom.id] || [];
+    for (let ni = 0; ni < neighbors.length; ni++) {
+      for (let nj = ni + 1; nj < neighbors.length; nj++) {
+        // Try to find a 6-ring through these two neighbors
+        const n1 = neighbors[ni];
+        const n2 = neighbors[nj];
+        // Walk from n1, 2 more hops, should reach n2's neighbors
+        for (const nn1 of (adj[n1] || [])) {
+          if (nn1 === atom.id) continue;
+          for (const nn2 of (adj[nn1] || [])) {
+            if (nn2 === atom.id || nn2 === n1) continue;
+            for (const nn3 of (adj[nn2] || [])) {
+              if (nn3 === n2 && nn3 !== nn1 && nn3 !== atom.id) {
+                const ring = [atom.id, n1, nn1, nn2, nn3, n2].sort((a, b) => a - b);
+                const ringKey = ring.join(',');
+                if (!found.has(ringKey)) {
+                  found.add(ringKey);
+                  hexRings.push([atom.id, n1, nn1, nn2, nn3, n2]);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (hexRings.length > 100) break; // enough
+  }
+}
+
+function buildDiamond() {
+  atoms = [];
+  bonds = [];
+  hexRings = [];
+  merkEdges = [];
+
+  // Diamond cubic: FCC + basis at (1/4, 1/4, 1/4)
+  const a = BOND_DIAMOND * 4 / Math.sqrt(3); // lattice constant
+  const range = 2;
+
+  const atomMap = {};
+  const key3 = (x, y, z) => `${x.toFixed(3)},${y.toFixed(3)},${z.toFixed(3)}`;
+
+  // FCC positions in unit cell
+  const fcc = [[0,0,0],[0.5,0.5,0],[0.5,0,0.5],[0,0.5,0.5]];
+  const basis = [0, 0.25]; // two atoms per FCC site
+
+  for (let i = -range; i <= range; i++) {
+    for (let j = -range; j <= range; j++) {
+      for (let k = -range; k <= range; k++) {
+        for (const [fx, fy, fz] of fcc) {
+          for (const b of basis) {
+            const x = (i + fx + b) * a;
+            const y = (j + fy + b) * a;
+            const z = (k + fz + b) * a;
+            const dist = Math.sqrt(x*x + y*y + z*z);
+            if (dist > a * 2.5) continue;
+            const kk = key3(x, y, z);
+            if (atomMap[kk] !== undefined) continue;
+            const id = atoms.length;
+            atoms.push({ x, y, z, type: 'sp3', id });
+            atomMap[kk] = id;
+          }
+        }
+      }
+    }
+  }
+
+  // Find bonds (nearest neighbors at distance BOND_DIAMOND)
+  for (let i = 0; i < atoms.length; i++) {
+    for (let j = i + 1; j < atoms.length; j++) {
+      const dx = atoms[i].x - atoms[j].x;
+      const dy = atoms[i].y - atoms[j].y;
+      const dz = atoms[i].z - atoms[j].z;
+      const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+      if (d < BOND_DIAMOND * 1.1) {
+        bonds.push([i, j]);
+      }
+    }
+  }
+}
+
+function buildMerkaba() {
+  atoms = [];
+  bonds = [];
+  hexRings = [];
+  merkEdges = [];
+
+  // Star tetrahedron (Merkaba):
+  // Tetrahedron 1 (upward): vertices at cube corners (1,1,1),(-1,-1,1),(-1,1,-1),(1,-1,-1)
+  // Tetrahedron 2 (downward): vertices at (1,1,-1),(-1,-1,-1),(-1,1,1),(1,-1,1)
+  const s = 2.5;
+
+  const tetra1 = [
+    { x: s, y: s, z: s },
+    { x:-s, y:-s, z: s },
+    { x:-s, y: s, z:-s },
+    { x: s, y:-s, z:-s }
+  ];
+
+  const tetra2 = [
+    { x: s, y: s, z:-s },
+    { x:-s, y:-s, z:-s },
+    { x:-s, y: s, z: s },
+    { x: s, y:-s, z: s }
+  ];
+
+  // Place carbon atoms at vertices
+  for (const v of tetra1) {
+    const id = atoms.length;
+    atoms.push({ x: v.x, y: v.y, z: v.z, type: 'sp3', id, tetra: 1 });
+  }
+  for (const v of tetra2) {
+    const id = atoms.length;
+    atoms.push({ x: v.x, y: v.y, z: v.z, type: 'sp3', id, tetra: 2 });
+  }
+
+  // Tetrahedron edges
+  for (let i = 0; i < 4; i++) {
+    for (let j = i + 1; j < 4; j++) {
+      bonds.push([i, j]);
+      merkEdges.push([i, j, 1]); // tetra 1
+    }
+  }
+  for (let i = 4; i < 8; i++) {
+    for (let j = i + 1; j < 8; j++) {
+      bonds.push([i, j]);
+      merkEdges.push([i, j, 2]); // tetra 2
+    }
+  }
+
+  // Add atoms along edges for graphene-like detail
+  for (let i = 0; i < 4; i++) {
+    for (let j = i + 1; j < 4; j++) {
+      const a = tetra1[i], b = tetra1[j];
+      // Midpoint atoms
+      for (let t = 1; t <= 3; t++) {
+        const f = t / 4;
+        const id = atoms.length;
+        atoms.push({
+          x: a.x + (b.x - a.x) * f,
+          y: a.y + (b.y - a.y) * f,
+          z: a.z + (b.z - a.z) * f,
+          type: 'sp2', id, tetra: 1
+        });
+        if (t > 1) bonds.push([id - 1, id]);
+        else bonds.push([i, id]);
+        if (t === 3) bonds.push([id, j]);
+      }
+    }
+  }
+
+  for (let i = 0; i < 4; i++) {
+    for (let j = i + 1; j < 4; j++) {
+      const a = tetra2[i], b = tetra2[j];
+      for (let t = 1; t <= 3; t++) {
+        const f = t / 4;
+        const id = atoms.length;
+        atoms.push({
+          x: a.x + (b.x - a.x) * f,
+          y: a.y + (b.y - a.y) * f,
+          z: a.z + (b.z - a.z) * f,
+          type: 'sp2', id, tetra: 2
+        });
+        if (t > 1) bonds.push([id - 1, id]);
+        else bonds.push([i + 4, id]);
+        if (t === 3) bonds.push([id, j + 4]);
+      }
+    }
+  }
+
+  // Center atom
+  const centerId = atoms.length;
+  atoms.push({ x: 0, y: 0, z: 0, type: 'center', id: centerId });
+}
+
+function buildFullerene() {
+  atoms = [];
+  bonds = [];
+  hexRings = [];
+  merkEdges = [];
+
+  // C60 truncated icosahedron
+  // Golden ratio
+  const phi = (1 + Math.sqrt(5)) / 2;
+  const r = 2.0;
+
+  // 60 vertices from permutations
+  const verts = [];
+  const perms = [
+    [0, 1, 3*phi], [0, 1, -3*phi], [0, -1, 3*phi], [0, -1, -3*phi],
+    [3*phi, 0, 1], [3*phi, 0, -1], [-3*phi, 0, 1], [-3*phi, 0, -1],
+    [1, 3*phi, 0], [-1, 3*phi, 0], [1, -3*phi, 0], [-1, -3*phi, 0],
+
+    [2, (1+2*phi), phi], [2, (1+2*phi), -phi], [2, -(1+2*phi), phi], [2, -(1+2*phi), -phi],
+    [-2, (1+2*phi), phi], [-2, (1+2*phi), -phi], [-2, -(1+2*phi), phi], [-2, -(1+2*phi), -phi],
+    [phi, 2, (1+2*phi)], [phi, 2, -(1+2*phi)], [phi, -2, (1+2*phi)], [phi, -2, -(1+2*phi)],
+    [-phi, 2, (1+2*phi)], [-phi, 2, -(1+2*phi)], [-phi, -2, (1+2*phi)], [-phi, -2, -(1+2*phi)],
+    [(1+2*phi), phi, 2], [(1+2*phi), phi, -2], [(1+2*phi), -phi, 2], [(1+2*phi), -phi, -2],
+    [-(1+2*phi), phi, 2], [-(1+2*phi), phi, -2], [-(1+2*phi), -phi, 2], [-(1+2*phi), -phi, -2],
+
+    [1, (2+phi), 2*phi], [1, (2+phi), -2*phi], [1, -(2+phi), 2*phi], [1, -(2+phi), -2*phi],
+    [-1, (2+phi), 2*phi], [-1, (2+phi), -2*phi], [-1, -(2+phi), 2*phi], [-1, -(2+phi), -2*phi],
+    [2*phi, 1, (2+phi)], [2*phi, 1, -(2+phi)], [2*phi, -1, (2+phi)], [2*phi, -1, -(2+phi)],
+    [-2*phi, 1, (2+phi)], [-2*phi, 1, -(2+phi)], [-2*phi, -1, (2+phi)], [-2*phi, -1, -(2+phi)],
+    [(2+phi), 2*phi, 1], [(2+phi), 2*phi, -1], [(2+phi), -2*phi, 1], [(2+phi), -2*phi, -1],
+    [-(2+phi), 2*phi, 1], [-(2+phi), 2*phi, -1], [-(2+phi), -2*phi, 1], [-(2+phi), -2*phi, -1],
+  ];
+
+  // Normalize to unit sphere and scale
+  for (const v of perms) {
+    const len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    const id = atoms.length;
+    atoms.push({
+      x: v[0] / len * r * 1.6,
+      y: v[1] / len * r * 1.6,
+      z: v[2] / len * r * 1.6,
+      type: 'sp2', id
+    });
+  }
+
+  // Bonds: connect nearest neighbors (each vertex has 3)
+  const bondDists = [];
+  for (let i = 0; i < atoms.length; i++) {
+    const dists = [];
+    for (let j = 0; j < atoms.length; j++) {
+      if (i === j) continue;
+      const dx = atoms[i].x - atoms[j].x;
+      const dy = atoms[i].y - atoms[j].y;
+      const dz = atoms[i].z - atoms[j].z;
+      dists.push({ j, d: Math.sqrt(dx*dx + dy*dy + dz*dz) });
+    }
+    dists.sort((a, b) => a.d - b.d);
+    for (let k = 0; k < 3; k++) {
+      const j = dists[k].j;
+      if (i < j) bonds.push([i, j]);
+    }
+  }
+
+  // Deduplicate bonds
+  const bondSet = new Set();
+  bonds = bonds.filter(([a, b]) => {
+    const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+    if (bondSet.has(key)) return false;
+    bondSet.add(key);
+    return true;
+  });
+}
+
+// ═══════════════════════════════════════════
+// MORPHING (graphene astrocyte fold)
+// ═══════════════════════════════════════════
+function applyAstrocyteFold() {
+  // For graphene atoms: fold z based on astrocyte
+  // At a=0: flat (z=0). At a=1: diamond-like puckering
+  if (currentView === 'graphene' || currentView === 'morph') {
+    for (const atom of atoms) {
+      if (atom.type === 'sp2') {
+        // Puckering: alternating atoms go up/down
+        // Use atom position to determine sublattice
+        const sublattice = Math.round((atom.x / (BOND_LENGTH * Math.sqrt(3)) + atom.y / (BOND_LENGTH * 1.5))) % 2;
+        atom.z = sublattice * astrocyte * BOND_LENGTH * 0.8;
+        // Transition type
+        atom.type = astrocyte > 0.5 ? 'sp3' : 'sp2';
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════
+function drawScene() {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle radial glow
+  const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.5);
+  bgGrad.addColorStop(0, 'rgba(10, 10, 30, 1)');
+  bgGrad.addColorStop(1, 'rgba(0, 0, 0, 1)');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  applyAstrocyteFold();
+
+  const rx = rotX + (spinning ? spinAngle * 0.3 : 0);
+  const ry = rotY + (spinning ? spinAngle : 0);
+  const rz = berryPhase * Math.PI / 180;
+
+  // Project all atoms
+  const projected = atoms.map(a => {
+    const r = rotatePoint(a, rx, ry, rz);
+    const p = project(r, W, H);
+    return { ...a, p, r };
+  });
+
+  // Sort by z for painter's algorithm
+  const sortedAtoms = [...projected].sort((a, b) => (a.r ? a.r.z : 0) - (b.r ? b.r.z : 0));
+
+  // ── Hex ring fills ──
+  if (showHexLines && hexRings.length > 0) {
+    for (const ring of hexRings) {
+      const pts = ring.map(id => projected[id]).filter(p => p && p.p);
+      if (pts.length < 6) continue;
+
+      // Sort ring points by angle for proper polygon
+      const cx = pts.reduce((s, p) => s + p.p.x, 0) / pts.length;
+      const cy = pts.reduce((s, p) => s + p.p.y, 0) / pts.length;
+      pts.sort((a, b) => Math.atan2(a.p.y - cy, a.p.x - cx) - Math.atan2(b.p.y - cy, b.p.x - cx));
+
+      ctx.fillStyle = 'rgba(255, 136, 0, 0.04)';
+      ctx.strokeStyle = 'rgba(255, 136, 0, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].p.x, pts[0].p.y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].p.x, pts[i].p.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // ── Merkaba edges ──
+  for (const [a, b, tetra] of merkEdges) {
+    const pa = projected[a], pb = projected[b];
+    if (!pa || !pa.p || !pb || !pb.p) continue;
+
+    ctx.strokeStyle = tetra === 1 ? 'rgba(100, 255, 100, 0.4)' : 'rgba(100, 100, 255, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pa.p.x, pa.p.y);
+    ctx.lineTo(pb.p.x, pb.p.y);
+    ctx.stroke();
+  }
+
+  // ── Bonds ──
+  if (showBonds) {
+    for (const [ai, bi] of bonds) {
+      const pa = projected[ai], pb = projected[bi];
+      if (!pa || !pa.p || !pb || !pb.p) continue;
+
+      const avgZ = ((pa.r ? pa.r.z : 0) + (pb.r ? pb.r.z : 0)) / 2;
+      const brightness = Math.max(0.1, Math.min(0.8, 0.4 + avgZ * 0.05));
+
+      ctx.strokeStyle = `rgba(200, 180, 100, ${brightness})`;
+      ctx.lineWidth = 1.5 * Math.min(pa.p.scale, pb.p.scale);
+      ctx.beginPath();
+      ctx.moveTo(pa.p.x, pa.p.y);
+      ctx.lineTo(pb.p.x, pb.p.y);
+      ctx.stroke();
+    }
+  }
+
+  // ── Atoms ──
+  for (const atom of sortedAtoms) {
+    if (!atom.p) continue;
+
+    const baseR = (atom.type === 'center' ? 8 : atom.type === 'sp3' ? 5 : 4) * atom.p.scale;
+    const r = Math.max(1.5, baseR);
+
+    // Color by type
+    let color;
+    if (atom.type === 'center') color = '#ffd700';
+    else if (atom.type === 'sp3') color = '#44ccff';
+    else color = '#aaaaaa';
+
+    // Depth dimming
+    const depth = atom.r ? atom.r.z : 0;
+    const dimFactor = Math.max(0.2, Math.min(1, 0.6 + depth * 0.06));
+
+    // Glow
+    const glow = ctx.createRadialGradient(atom.p.x, atom.p.y, 0, atom.p.x, atom.p.y, r * 3);
+    glow.addColorStop(0, color + Math.floor(dimFactor * 40).toString(16).padStart(2, '0'));
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(atom.p.x, atom.p.y, r * 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Core with highlight
+    const coreGrad = ctx.createRadialGradient(
+      atom.p.x - r * 0.3, atom.p.y - r * 0.3, 0,
+      atom.p.x, atom.p.y, r
+    );
+    coreGrad.addColorStop(0, '#ffffff');
+    coreGrad.addColorStop(0.4, color);
+    coreGrad.addColorStop(1, color + '88');
+    ctx.fillStyle = coreGrad;
+    ctx.globalAlpha = dimFactor;
+    ctx.beginPath();
+    ctx.arc(atom.p.x, atom.p.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // p-orbital lobes (for sp2)
+    if (showOrbitals && atom.type === 'sp2') {
+      const orbitalLen = r * 4 * cloudDensity;
+      // p orbital sticks out perpendicular to plane
+      const up = rotatePoint({ x: 0, y: 0, z: orbitalLen / S }, rx, ry, rz);
+      const down = rotatePoint({ x: 0, y: 0, z: -orbitalLen / S }, rx, ry, rz);
+      const pUp = project({ x: atom.x + up.x, y: atom.y + up.y, z: atom.z + up.z }, W, H);
+      const pDown = project({ x: atom.x + down.x, y: atom.y + down.y, z: atom.z + down.z }, W, H);
+
+      if (pUp && pDown) {
+        // Upper lobe
+        ctx.fillStyle = 'rgba(255, 68, 136, 0.15)';
+        ctx.beginPath();
+        ctx.arc(pUp.x, pUp.y, r * 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Lower lobe
+        ctx.fillStyle = 'rgba(68, 136, 255, 0.15)';
+        ctx.beginPath();
+        ctx.arc(pDown.x, pDown.y, r * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // ── HUD ──
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText(currentView.toUpperCase(), 24, 30);
+
+  ctx.fillStyle = '#667';
+  ctx.font = '13px Courier New';
+  ctx.fillText(`atoms: ${atoms.length}  bonds: ${bonds.length}  hexagons: ${hexRings.length}`, 24, 50);
+  ctx.fillText(`astrocyte: ${astrocyte.toFixed(2)}  Berry: ${berryPhase}deg  zoom: ${zoom.toFixed(2)}`, 24, 68);
+
+  if (currentView === 'merkaba') {
+    ctx.fillStyle = '#88ff8888';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Green = upward tetrahedron (Fire)', 24, 92);
+    ctx.fillStyle = '#8888ff88';
+    ctx.fillText('Blue = downward tetrahedron (Water)', 24, 108);
+    ctx.fillStyle = '#ffd70088';
+    ctx.fillText('Interlocked = Star Tetrahedron = Diamond unit cell', 24, 124);
+  }
+
+  if (currentView === 'morph' || (currentView === 'graphene' && astrocyte > 0)) {
+    ctx.fillStyle = '#44ccff88';
+    ctx.font = '13px sans-serif';
+    const pct = (astrocyte * 100).toFixed(0);
+    ctx.fillText(`Fold: ${pct}% graphene -> diamond`, 24, 92);
+  }
+
+  // Update stats
+  updateStats();
+}
+
+function updateStats() {
+  const sp2 = atoms.filter(a => a.type === 'sp2').length;
+  const sp3 = atoms.filter(a => a.type === 'sp3').length;
+  const gamma = 1 / Math.sqrt(Math.max(0.01, 1 - astrocyte * astrocyte));
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><span class="k">Atoms</span><span class="v">${atoms.length}</span></div>
+    <div class="stat"><span class="k">sp2 (graphene)</span><span class="v">${sp2}</span></div>
+    <div class="stat"><span class="k">sp3 (diamond)</span><span class="v">${sp3}</span></div>
+    <div class="stat"><span class="k">Bonds</span><span class="v">${bonds.length}</span></div>
+    <div class="stat"><span class="k">Hex rings</span><span class="v">${hexRings.length}</span></div>
+    <div class="stat"><span class="k">Lorentz gamma</span><span class="v">${gamma.toFixed(4)}</span></div>
+    <div class="stat"><span class="k">View</span><span class="v">${currentView}</span></div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('#btnGraphene,#btnDiamond,#btnMerkaba,#btnFullerene,#btnMorph').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn' + v.charAt(0).toUpperCase() + v.slice(1)).classList.add('active');
+
+  if (v === 'graphene') buildGraphene(4);
+  else if (v === 'diamond') buildDiamond();
+  else if (v === 'merkaba') buildMerkaba();
+  else if (v === 'fullerene') buildFullerene();
+  else if (v === 'morph') {
+    buildGraphene(4);
+    // Animate astrocyte from 0 to 1
+    let t = 0;
+    const morphInterval = setInterval(() => {
+      t += 0.01;
+      astrocyte = (Math.sin(t * 2) + 1) / 2;
+      document.getElementById('astroSlider').value = astrocyte * 100;
+      document.getElementById('vAstro').textContent = astrocyte.toFixed(2);
+      if (!document.getElementById('btnMorph').classList.contains('active')) {
+        clearInterval(morphInterval);
+      }
+    }, 30);
+  }
+
+  drawScene();
+}
+
+function resetView() {
+  rotX = 0.3; rotY = 0; zoom = 1; astrocyte = 0; berryPhase = 0;
+  spinAngle = 0;
+  document.getElementById('astroSlider').value = 0;
+  document.getElementById('vAstro').textContent = '0.00';
+  setView('graphene');
+}
+
+// ═══════════════════════════════════════════
+// MOUSE INTERACTION
+// ═══════════════════════════════════════════
+canvas.addEventListener('mousedown', e => {
+  isDragging = true;
+  dragStart = { x: e.clientX, y: e.clientY };
+  dragRotX = rotX; dragRotY = rotY;
+});
+canvas.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  rotY = dragRotY + (e.clientX - dragStart.x) * 0.005;
+  rotX = dragRotX + (e.clientY - dragStart.y) * 0.005;
+});
+canvas.addEventListener('mouseup', () => { isDragging = false; });
+canvas.addEventListener('mouseleave', () => { isDragging = false; });
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoom *= e.deltaY > 0 ? 0.95 : 1.05;
+  zoom = Math.max(0.3, Math.min(3, zoom));
+  document.getElementById('vZoom').textContent = zoom.toFixed(2);
+}, { passive: false });
+
+// ═══════════════════════════════════════════
+// ANIMATION LOOP
+// ═══════════════════════════════════════════
+function loop() {
+  if (spinning) spinAngle += 0.008;
+  drawScene();
+  requestAnimationFrame(loop);
+}
+
+buildGraphene(4);
+loop();
+</script>
+</body>
+</html>

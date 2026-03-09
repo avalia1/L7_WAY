@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IQS-888 Particle Lab — Trigram Molecule Simulator</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a12; color: #e0e0e0; font-family: 'Courier New', monospace; overflow-x: hidden; }
+#app { display: flex; height: 100vh; }
+#canvas-container { flex: 1; position: relative; }
+canvas { width: 100%; height: 100%; }
+#panel { width: 440px; background: #12121e; border-left: 1px solid #333; padding: 20px; overflow-y: auto; }
+h1 { font-size: 22px; color: #7b8cff; margin-bottom: 12px; letter-spacing: 2px; }
+h2 { font-size: 16px; color: #5a6abf; margin: 16px 0 8px; border-bottom: 1px solid #222; padding-bottom: 6px; }
+.btn { background: #1a1a2e; border: 1px solid #444; color: #aaa; padding: 10px 16px; cursor: pointer; font-family: inherit; font-size: 15px; margin: 3px; border-radius: 4px; }
+.btn:hover { background: #2a2a4e; color: #fff; }
+.btn.active { border-color: #7b8cff; color: #7b8cff; background: #1a1a3e; }
+.btn.freeze { border-color: #00ffff; color: #00ffff; }
+.btn.freeze.active { background: #003333; }
+#log { font-size: 14px; color: #888; max-height: 300px; overflow-y: auto; white-space: pre-wrap; margin-top: 10px; background: #0a0a12; padding: 10px; border: 1px solid #222; line-height: 1.4; }
+.stat { display: flex; justify-content: space-between; font-size: 15px; padding: 3px 0; }
+.stat-label { color: #666; }
+.stat-value { color: #7b8cff; font-size: 14px; }
+#time-display { font-size: 24px; color: #ffd700; text-align: center; margin: 12px 0; letter-spacing: 1px; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.slider-row label { font-size: 14px; color: #999; width: 100px; }
+.slider-row input[type=range] { flex: 1; height: 6px; }
+.slider-row .val { font-size: 14px; color: #7b8cff; width: 60px; text-align: right; font-weight: bold; }
+#missing { background: #1a0a0a; border: 1px solid #a33; padding: 10px; margin-top: 10px; font-size: 14px; color: #f88; line-height: 1.5; }
+.time-slider-container { margin: 12px 0; padding: 12px; background: #0d0d1a; border: 1px solid #333; border-radius: 6px; }
+.time-slider-container label { font-size: 14px; color: #ffd700; display: block; margin-bottom: 6px; }
+.time-slider-container input[type=range] { width: 100%; height: 8px; }
+.time-slider-container .time-val { font-size: 16px; color: #ffd700; text-align: center; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div id="app">
+<div id="canvas-container">
+<canvas id="c"></canvas>
+</div>
+<div id="panel">
+<h1>IQS-888 PARTICLE LAB</h1>
+<div id="time-display">t = 0°</div>
+
+<h2>BUILD MOLECULE</h2>
+<div>
+<button class="btn" onclick="addAtom('H')">H (Hydrogen)</button>
+<button class="btn" onclick="addAtom('He')">He (Helium)</button>
+<button class="btn" onclick="addAtom('C')">C (Carbon)</button>
+<button class="btn" onclick="addAtom('N')">N (Nitrogen)</button>
+<button class="btn" onclick="addAtom('O')">O (Oxygen)</button>
+</div>
+<div style="margin-top:6px">
+<button class="btn" onclick="loadMolecule('H2')">H&#8322;</button>
+<button class="btn" onclick="loadMolecule('H2O')">H&#8322;O</button>
+<button class="btn" onclick="loadMolecule('CH4')">CH&#8324;</button>
+<button class="btn" onclick="loadMolecule('NH3')">NH&#8323;</button>
+<button class="btn" onclick="loadMolecule('CO2')">CO&#8322;</button>
+<button class="btn" onclick="clearAll()">Clear</button>
+</div>
+
+<h2>TIME EVOLUTION</h2>
+<div>
+<button class="btn" id="btnPlay" onclick="togglePlay()">&#9654; Play</button>
+<button class="btn" onclick="stepForward()">Step +5°</button>
+<button class="btn" onclick="stepBack()">Step -5°</button>
+<button class="btn" onclick="resetTime()">Reset</button>
+<button class="btn freeze" id="btnFreeze" onclick="toggleFreeze()">&#10052; Freeze</button>
+</div>
+
+<div class="time-slider-container">
+<label>TIME POSITION (drag to scrub backwards/forwards)</label>
+<input type="range" id="timeSlider" min="-3650" max="3650" value="0" step="1"
+  oninput="scrubTime(+this.value)">
+<div class="time-val" id="timeSliderVal">0° (cycle 0)</div>
+</div>
+
+<div class="slider-row">
+<label>Speed</label>
+<input type="range" id="speedSlider" min="0" max="200" value="20" step="1"
+  oninput="simSpeed=+this.value; this.nextElementSibling.textContent=this.value">
+<span class="val">20</span>
+</div>
+<div class="slider-row">
+<label>Astrocyte</label>
+<input type="range" min="0" max="100" value="30"
+  oninput="astrocyte=this.value/100; this.nextElementSibling.textContent=(this.value/100).toFixed(2)">
+<span class="val">0.30</span>
+</div>
+<div class="slider-row">
+<label>Direction</label>
+<input type="range" id="dirSlider" min="-100" max="100" value="100" step="1"
+  oninput="timeDirection=this.value/100; this.nextElementSibling.textContent=(this.value>0?'+':'')+this.value+'%'">
+<span class="val">+100%</span>
+</div>
+
+<h2>MEASUREMENT</h2>
+<div id="stats"></div>
+
+<h2>COMPATIBILITY LOG</h2>
+<div id="log"></div>
+
+<h2 style="color:#f88">MISSING PIECES</h2>
+<div id="missing">Run a simulation to identify gaps...</div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// THE 8 TRIGRAMS — Fundamental particles
+// ═══════════════════════════════════════════
+const TRIGRAMS = [
+  { i:0, name:'Kun',  sym:'☷', lines:[0,0,0], quarks:'ddd', charge:-1, particle:'Δ⁻',     color:'#4444aa' },
+  { i:1, name:'Zhen', sym:'☳', lines:[1,0,0], quarks:'udd', charge: 0, particle:'Neutron', color:'#888888' },
+  { i:2, name:'Kan',  sym:'☵', lines:[0,1,0], quarks:'dud', charge: 0, particle:'n (color)', color:'#6688aa' },
+  { i:3, name:'Dui',  sym:'☱', lines:[1,1,0], quarks:'uud', charge:+1, particle:'Proton',  color:'#ff4444' },
+  { i:4, name:'Gen',  sym:'☶', lines:[0,0,1], quarks:'ddu', charge: 0, particle:'n (color)', color:'#66aa88' },
+  { i:5, name:'Li',   sym:'☲', lines:[1,0,1], quarks:'udu', charge:+1, particle:'p (color)', color:'#ff6644' },
+  { i:6, name:'Xun',  sym:'☴', lines:[0,1,1], quarks:'duu', charge:+1, particle:'p (color)', color:'#ff8844' },
+  { i:7, name:'Qian', sym:'☰', lines:[1,1,1], quarks:'uuu', charge:+2, particle:'Δ⁺⁺',    color:'#ffcc00' }
+];
+
+// ═══════════════════════════════════════════
+// ELEMENTS — Atomic structure as hexagrams
+// ═══════════════════════════════════════════
+const ELEMENTS = {
+  H:  { Z:1,  name:'Hydrogen', protons:1, neutrons:0, electrons:1,
+        nucleus: [3],
+        shell: [1],
+        astrocyte: 0.72,
+        bonds: 1, color:'#ffffff' },
+  He: { Z:2,  name:'Helium', protons:2, neutrons:2, electrons:2,
+        nucleus: [3,3,1,1],
+        shell: [2],
+        astrocyte: 0.05,
+        bonds: 0, color:'#ffff44' },
+  C:  { Z:6,  name:'Carbon', protons:6, neutrons:6, electrons:6,
+        nucleus: [3,3,3,3,3,3, 1,1,1,1,1,1],
+        shell: [2,4],
+        astrocyte: 0.45,
+        bonds: 4, color:'#444444' },
+  N:  { Z:7,  name:'Nitrogen', protons:7, neutrons:7, electrons:7,
+        nucleus: [3,3,3,3,3,3,3, 1,1,1,1,1,1,1],
+        shell: [2,5],
+        astrocyte: 0.40,
+        bonds: 3, color:'#3333ff' },
+  O:  { Z:8,  name:'Oxygen', protons:8, neutrons:8, electrons:8,
+        nucleus: [3,3,3,3,3,3,3,3, 1,1,1,1,1,1,1,1],
+        shell: [2,6],
+        astrocyte: 0.50,
+        bonds: 2, color:'#ff3333' }
+};
+
+// ═══════════════════════════════════════════
+// FORCES — As lattice operations
+// ═══════════════════════════════════════════
+const FORCES = {
+  strong:  { name:'Strong (gluon)',  range: 0.8, strength: 137,  mechanism:'intra-trigram binding' },
+  em:      { name:'Electromagnetic', range: Infinity, strength: 1, mechanism:'inter-trigram coupling' },
+  weak:    { name:'Weak',            range: 0.1, strength: 1e-6, mechanism:'changing line (flavor change)' },
+  gravity: { name:'Gravity (Berry)', range: Infinity, strength: 6e-39, mechanism:'5° phase curvature' }
+};
+
+// ═══════════════════════════════════════════
+// SIMULATION STATE
+// ═══════════════════════════════════════════
+let atoms = [];
+let bonds = [];
+let time = 0;
+let cycle = 0;
+let playing = false;
+let frozen = false;
+let simSpeed = 20;
+let astrocyte = 0.30;
+let timeDirection = 1.0;   // -1 to +1, negative = backwards
+let missing = new Set();
+let logLines = [];
+
+// State history for backwards scrubbing
+let stateHistory = [];
+const MAX_HISTORY = 5000;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+function log(msg) {
+  logLines.push(`[${time.toFixed(0)}° c${cycle}] ${msg}`);
+  if (logLines.length > 200) logLines.shift();
+  document.getElementById('log').textContent = logLines.join('\n');
+  document.getElementById('log').scrollTop = 9999;
+}
+
+function addMissing(issue) {
+  missing.add(issue);
+  const el = document.getElementById('missing');
+  el.innerHTML = [...missing].map(m => `• ${m}`).join('<br>');
+}
+
+// ═══════════════════════════════════════════
+// ATOM REPRESENTATION
+// ═══════════════════════════════════════════
+function createAtom(symbol, x, y) {
+  const elem = ELEMENTS[symbol];
+  if (!elem) return null;
+
+  const nuclearTrigram = elem.nucleus[0];
+  const shellBits = elem.shell.reduce((a, n) => a + n, 0);
+  const shellTrigram = Math.min(7, shellBits);
+  const hexagram = nuclearTrigram + shellTrigram * 8;
+  const complement = 63 - hexagram;
+  const nuclearCharge = TRIGRAMS[nuclearTrigram].charge * elem.protons;
+  const shellCharge = -elem.electrons;
+  const netCharge = nuclearCharge / elem.protons + shellCharge;
+  const colorStates = [3, 5, 6];
+  const amplitude = 1 / Math.sqrt(colorStates.length);
+
+  const atom = {
+    id: atoms.length,
+    symbol, elem,
+    x, y,
+    vx: 0, vy: 0,
+    hexagram, complement,
+    nuclearTrigram, shellTrigram,
+    colorStates, amplitude,
+    phase: 0,
+    energy: 0,
+    availableBonds: elem.bonds,
+    bonded: [],
+    changingLines: [],
+    astrocyte: elem.astrocyte
+  };
+
+  if (elem.bonds > 0) {
+    for (let i = 0; i < elem.bonds; i++) {
+      atom.changingLines.push({
+        position: (i % 6),
+        type: Math.random() > 0.5 ? 'old_yang' : 'old_yin',
+        partner: null
+      });
+    }
+  }
+
+  atoms.push(atom);
+  log(`Created ${elem.name} (Z=${elem.Z}): hex=${hexagram}, nuclear=${TRIGRAMS[nuclearTrigram].sym}, shell=${TRIGRAMS[shellTrigram].sym}, a=${elem.astrocyte}`);
+
+  if (elem.Z > 2) {
+    addMissing(`Multi-nucleon binding: ${elem.name} has ${elem.protons}p+${elem.neutrons}n but we model only the dominant trigram state`);
+  }
+
+  return atom;
+}
+
+// ═══════════════════════════════════════════
+// BONDING — Shared changing lines
+// ═══════════════════════════════════════════
+function tryBond(a, b) {
+  if (a.availableBonds <= 0 || b.availableBonds <= 0) return false;
+  if (a.bonded.includes(b.id) || b.bonded.includes(a.id)) return false;
+
+  const dist = Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+  if (dist > 150) return false;
+
+  const lineA = a.changingLines.find(l => !l.partner);
+  const lineB = b.changingLines.find(l => !l.partner);
+  if (!lineA || !lineB) return false;
+
+  lineA.partner = b.id;
+  lineB.partner = a.id;
+  a.availableBonds--;
+  b.availableBonds--;
+  a.bonded.push(b.id);
+  b.bonded.push(a.id);
+
+  const bondEnergy = -FORCES.em.strength * (a.elem.Z * b.elem.Z) / Math.max(dist, 1);
+
+  bonds.push({
+    a: a.id, b: b.id,
+    energy: bondEnergy,
+    sharedLine: { posA: lineA.position, posB: lineB.position },
+    phase: 0,
+    type: 'covalent'
+  });
+
+  log(`BOND: ${a.symbol}(${a.id})—${b.symbol}(${b.id}), E=${bondEnergy.toFixed(4)}, lines [${lineA.position},${lineB.position}]`);
+
+  if (lineA.position === lineB.position) {
+    log(`  -> sigma bond`);
+  } else {
+    log(`  -> pi bond`);
+    addMissing('Pi bond geometry: need angular momentum for p-orbital overlap');
+  }
+
+  return true;
+}
+
+// ═══════════════════════════════════════════
+// STATE SNAPSHOT (for time scrubbing)
+// ═══════════════════════════════════════════
+function saveState() {
+  const snap = {
+    time, cycle,
+    atoms: atoms.map(a => ({
+      x: a.x, y: a.y, vx: a.vx, vy: a.vy,
+      phase: a.phase, energy: a.energy, astrocyte: a.astrocyte
+    })),
+    bonds: bonds.map(b => ({ phase: b.phase }))
+  };
+  stateHistory.push(snap);
+  if (stateHistory.length > MAX_HISTORY) stateHistory.shift();
+}
+
+function restoreState(snap) {
+  time = snap.time;
+  cycle = snap.cycle;
+  for (let i = 0; i < atoms.length && i < snap.atoms.length; i++) {
+    const s = snap.atoms[i];
+    atoms[i].x = s.x; atoms[i].y = s.y;
+    atoms[i].vx = s.vx; atoms[i].vy = s.vy;
+    atoms[i].phase = s.phase; atoms[i].energy = s.energy;
+    atoms[i].astrocyte = s.astrocyte;
+  }
+  for (let i = 0; i < bonds.length && i < snap.bonds.length; i++) {
+    bonds[i].phase = snap.bonds[i].phase;
+  }
+}
+
+// ═══════════════════════════════════════════
+// TIME EVOLUTION — The 365° Cycle
+// ═══════════════════════════════════════════
+function evolve(dt) {
+  if (frozen) return;
+
+  // Apply time direction (negative = backwards)
+  dt *= timeDirection;
+
+  // Save state before evolution for backwards scrubbing
+  saveState();
+
+  time += dt;
+
+  // Handle cycle boundaries
+  while (time >= 365) {
+    cycle++;
+    time -= 365;
+    log(`=== CYCLE ${cycle} === Berry: ${(cycle * 5) % 360}°`);
+    if (cycle % 72 === 0) {
+      log(`*** OCTAVE SHIFT at cycle ${cycle} ***`);
+    }
+  }
+  while (time < 0) {
+    if (cycle > 0) {
+      cycle--;
+      time += 365;
+      log(`=== REVERSE to cycle ${cycle} === Berry: ${(cycle * 5) % 360}°`);
+    } else {
+      time = 0;
+    }
+  }
+
+  const berryPhase = (cycle * 5 + time * 5 / 365) * Math.PI / 180;
+
+  // 4-phase quantum circuit
+  const phaseInCycle = (time / 365) * 4;
+  const currentGate = Math.floor(phaseInCycle) % 4;
+
+  const absDt = Math.abs(dt);
+
+  for (const atom of atoms) {
+    if (currentGate === 0) {
+      atom.phase += absDt * 0.01 * Math.sign(dt);
+    } else if (currentGate === 1) {
+      atom.phase += absDt * 0.01 * Math.cos(berryPhase) * Math.sign(dt);
+    } else if (currentGate === 2) {
+      atom.astrocyte = Math.max(0, Math.min(1, atom.astrocyte + dt * 0.0001));
+      atom.phase += absDt * 0.01 * Math.sin(berryPhase) * Math.sign(dt);
+    } else if (currentGate === 3) {
+      for (const bondedId of atom.bonded) {
+        const partner = atoms[bondedId];
+        if (partner) {
+          const phaseDiff = atom.phase - partner.phase;
+          atom.phase -= phaseDiff * 0.01 * absDt;
+          partner.phase += phaseDiff * 0.01 * absDt;
+        }
+      }
+    }
+
+    atom.x += atom.vx * dt * 0.01;
+    atom.y += atom.vy * dt * 0.01;
+
+    const KE = 0.5 * atom.elem.Z * (atom.vx ** 2 + atom.vy ** 2);
+    let PE = 0;
+    for (const other of atoms) {
+      if (other.id === atom.id) continue;
+      const dx = atom.x - other.x;
+      const dy = atom.y - other.y;
+      const r = Math.sqrt(dx * dx + dy * dy) || 1;
+
+      PE += atom.elem.Z * other.elem.Z / r;
+
+      if (atom.bonded.includes(other.id)) {
+        const r0 = 100;
+        const spring = -0.5 * ((r - r0) / r0);
+        atom.vx += spring * dx / r * absDt * 0.1 * Math.sign(dt);
+        atom.vy += spring * dy / r * absDt * 0.1 * Math.sign(dt);
+      } else {
+        if (r < 80) {
+          atom.vx += dx / r * absDt * 0.5 * Math.sign(dt);
+          atom.vy += dy / r * absDt * 0.5 * Math.sign(dt);
+        }
+      }
+    }
+
+    atom.energy = KE + PE;
+    atom.vx *= 0.99;
+    atom.vy *= 0.99;
+
+    if (atom.x < 60) atom.vx += 0.5;
+    if (atom.x > canvas.width - 60) atom.vx -= 0.5;
+    if (atom.y < 60) atom.vy += 0.5;
+    if (atom.y > canvas.height - 60) atom.vy -= 0.5;
+  }
+
+  for (const bond of bonds) {
+    bond.phase += dt * 0.02;
+  }
+
+  // Update time display
+  const totalDegrees = cycle * 365 + time;
+  const gateNames = ['X(fire)','Z(water)','H(air)','CNOT(earth)'];
+  document.getElementById('time-display').textContent =
+    `t = ${time.toFixed(1)}° | cycle ${cycle} | Berry ${((cycle * 5) % 360)}° | ${gateNames[currentGate]}`;
+
+  // Update time slider position
+  document.getElementById('timeSlider').value = totalDegrees;
+  document.getElementById('timeSliderVal').textContent =
+    `${totalDegrees.toFixed(0)}° total (cycle ${cycle}, ${time.toFixed(0)}° in cycle)`;
+
+  updateStats();
+}
+
+// ═══════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════
+function render() {
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = '#111';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+  // Frozen overlay
+  if (frozen) {
+    ctx.fillStyle = 'rgba(0, 255, 255, 0.03)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#00ffff33';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, W - 4, H - 4);
+  }
+
+  // Bonds
+  for (const bond of bonds) {
+    const a = atoms[bond.a];
+    const b = atoms[bond.b];
+    if (!a || !b) continue;
+
+    const pulse = Math.sin(bond.phase) * 0.5 + 0.5;
+    ctx.strokeStyle = `rgba(120, 140, 255, ${0.3 + pulse * 0.4})`;
+    ctx.lineWidth = 3 + pulse * 3;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+
+    // Shared electron
+    const t = (Math.sin(bond.phase * 2) + 1) / 2;
+    const ex = a.x + (b.x - a.x) * t;
+    const ey = a.y + (b.y - a.y) * t;
+    ctx.fillStyle = `rgba(255, 255, 100, ${0.5 + pulse * 0.5})`;
+    ctx.beginPath();
+    ctx.arc(ex, ey, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Atoms
+  for (const atom of atoms) {
+    const r = 30 + atom.elem.Z * 5;
+
+    // Wavefunction cloud
+    const spread = r * (1 + atom.astrocyte * 2);
+    const gradient = ctx.createRadialGradient(atom.x, atom.y, 0, atom.x, atom.y, spread);
+    gradient.addColorStop(0, atom.elem.color + '44');
+    gradient.addColorStop(0.5, atom.elem.color + '11');
+    gradient.addColorStop(1, 'transparent');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(atom.x, atom.y, spread, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Nucleus
+    ctx.fillStyle = atom.elem.color;
+    ctx.beginPath();
+    ctx.arc(atom.x, atom.y, r * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Trigram symbol
+    ctx.fillStyle = '#fff';
+    ctx.font = `${r}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(TRIGRAMS[atom.nuclearTrigram].sym, atom.x, atom.y);
+
+    // Element label
+    ctx.font = 'bold 18px Courier New';
+    ctx.fillStyle = '#ccc';
+    ctx.fillText(atom.symbol, atom.x, atom.y - r - 12);
+
+    // Hexagram number
+    ctx.font = '14px Courier New';
+    ctx.fillStyle = '#666';
+    ctx.fillText(`hex ${atom.hexagram}`, atom.x, atom.y + r + 16);
+
+    // Electron orbits
+    for (let i = 0; i < atom.changingLines.length; i++) {
+      const cl = atom.changingLines[i];
+      const orbitR = r + 14 + i * 12;
+      const angle = atom.phase * 3 + i * (Math.PI * 2 / atom.changingLines.length) + time * 0.01;
+
+      ctx.strokeStyle = cl.partner !== null ? '#7b8cff44' : '#ffffff22';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(atom.x, atom.y, orbitR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      if (cl.partner === null) {
+        const ex = atom.x + Math.cos(angle) * orbitR;
+        const ey = atom.y + Math.sin(angle) * orbitR;
+        ctx.fillStyle = '#ffff88';
+        ctx.beginPath();
+        ctx.arc(ex, ey, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Phase indicator
+    ctx.strokeStyle = '#ffd70066';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(atom.x, atom.y);
+    ctx.lineTo(atom.x + Math.cos(atom.phase) * r, atom.y + Math.sin(atom.phase) * r);
+    ctx.stroke();
+  }
+
+  // Gate indicator (top left)
+  const phaseInCycle = (time / 365) * 4;
+  const gateNames = ['X (Fire)', 'Z (Water)', 'H (Air)', 'CNOT (Earth)'];
+  const gateColors = ['#ff4444', '#4444ff', '#44ff44', '#ffaa44'];
+  const currentGate = Math.floor(phaseInCycle) % 4;
+  ctx.fillStyle = gateColors[currentGate];
+  ctx.font = 'bold 20px Courier New';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Gate: ${gateNames[currentGate]}`, 24, 36);
+  ctx.fillStyle = '#888';
+  ctx.font = '16px Courier New';
+  ctx.fillText(`Cycle: ${cycle} | Berry: ${((cycle * 5) % 360)}° | Atoms: ${atoms.length} | Bonds: ${bonds.length}`, 24, 60);
+
+  if (frozen) {
+    ctx.fillStyle = '#00ffff';
+    ctx.font = 'bold 24px Courier New';
+    ctx.fillText('FROZEN', 24, 90);
+  }
+
+  if (timeDirection < 0) {
+    ctx.fillStyle = '#ff4444';
+    ctx.font = 'bold 20px Courier New';
+    ctx.textAlign = 'right';
+    ctx.fillText(`REVERSE ${(timeDirection * 100).toFixed(0)}%`, W - 24, 36);
+  } else if (timeDirection < 1) {
+    ctx.fillStyle = '#ffaa44';
+    ctx.font = '16px Courier New';
+    ctx.textAlign = 'right';
+    ctx.fillText(`SLOW ${(timeDirection * 100).toFixed(0)}%`, W - 24, 36);
+  }
+}
+
+// ═══════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════
+function updateStats() {
+  let totalE = 0;
+  let html = '';
+  for (const atom of atoms) {
+    totalE += atom.energy;
+    html += `<div class="stat"><span class="stat-label">${atom.symbol}(${atom.id})</span>` +
+            `<span class="stat-value">E=${atom.energy.toFixed(2)} a=${atom.astrocyte.toFixed(2)} ` +
+            `hex=${atom.hexagram} ${TRIGRAMS[atom.nuclearTrigram].sym}${TRIGRAMS[atom.shellTrigram].sym}</span></div>`;
+  }
+  html += `<div class="stat"><span class="stat-label">TOTAL</span><span class="stat-value">E=${totalE.toFixed(2)}</span></div>`;
+  html += `<div class="stat"><span class="stat-label">Bonds</span><span class="stat-value">${bonds.length}</span></div>`;
+  html += `<div class="stat"><span class="stat-label">Direction</span><span class="stat-value">${(timeDirection * 100).toFixed(0)}%</span></div>`;
+  html += `<div class="stat"><span class="stat-label">Frozen</span><span class="stat-value">${frozen ? 'YES' : 'no'}</span></div>`;
+  document.getElementById('stats').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// MOLECULE PRESETS
+// ═══════════════════════════════════════════
+function loadMolecule(name) {
+  clearAll();
+  const cx = canvas.parentElement.clientWidth / 2 || 400;
+  const cy = canvas.parentElement.clientHeight / 2 || 300;
+
+  switch (name) {
+    case 'H2':
+      addAtom('H', cx - 50, cy);
+      addAtom('H', cx + 50, cy);
+      log('Attempting H2 bond...');
+      setTimeout(() => { tryBond(atoms[0], atoms[1]); }, 100);
+      addMissing('Spin pairing: H2 requires opposite electron spins (Pauli exclusion)');
+      break;
+
+    case 'H2O':
+      addAtom('O', cx, cy);
+      addAtom('H', cx - 80, cy + 60);
+      addAtom('H', cx + 80, cy + 60);
+      setTimeout(() => {
+        tryBond(atoms[0], atoms[1]);
+        tryBond(atoms[0], atoms[2]);
+        log('H2O: bond angle should be 104.5 degrees');
+        addMissing('Bond angle: 104.5 degrees from sp3 hybridization. Need orbital angular momentum.');
+      }, 100);
+      break;
+
+    case 'CH4':
+      addAtom('C', cx, cy);
+      addAtom('H', cx - 80, cy - 80);
+      addAtom('H', cx + 80, cy - 80);
+      addAtom('H', cx - 80, cy + 80);
+      addAtom('H', cx + 80, cy + 80);
+      setTimeout(() => {
+        tryBond(atoms[0], atoms[1]);
+        tryBond(atoms[0], atoms[2]);
+        tryBond(atoms[0], atoms[3]);
+        tryBond(atoms[0], atoms[4]);
+        log('CH4: tetrahedral geometry (109.5 degrees)');
+        addMissing('Tetrahedral geometry: sp3 hybridization 109.5 degree angles. Need 3D.');
+      }, 100);
+      break;
+
+    case 'NH3':
+      addAtom('N', cx, cy);
+      addAtom('H', cx - 80, cy + 50);
+      addAtom('H', cx + 80, cy + 50);
+      addAtom('H', cx, cy - 80);
+      setTimeout(() => {
+        tryBond(atoms[0], atoms[1]);
+        tryBond(atoms[0], atoms[2]);
+        tryBond(atoms[0], atoms[3]);
+        log('NH3: pyramidal geometry (107 degrees), lone pair on N');
+        addMissing('Lone pairs: nitrogen has 1 lone pair affecting geometry.');
+      }, 100);
+      break;
+
+    case 'CO2':
+      addAtom('C', cx, cy);
+      addAtom('O', cx - 100, cy);
+      addAtom('O', cx + 100, cy);
+      setTimeout(() => {
+        tryBond(atoms[0], atoms[1]);
+        tryBond(atoms[0], atoms[2]);
+        tryBond(atoms[0], atoms[1]);
+        tryBond(atoms[0], atoms[2]);
+        log('CO2: linear, double bonds');
+        addMissing('Double bonds: C=O needs bond order > 1 (multiple shared changing lines).');
+      }, 100);
+      break;
+  }
+}
+
+function addAtom(symbol, x, y) {
+  if (!x) x = 200 + Math.random() * 400;
+  if (!y) y = 150 + Math.random() * 300;
+  createAtom(symbol, x, y);
+
+  const newAtom = atoms[atoms.length - 1];
+  for (let i = 0; i < atoms.length - 1; i++) {
+    tryBond(newAtom, atoms[i]);
+  }
+}
+
+function clearAll() {
+  atoms = [];
+  bonds = [];
+  stateHistory = [];
+  missing.clear();
+  logLines = [];
+  time = 0;
+  cycle = 0;
+  document.getElementById('log').textContent = '';
+  document.getElementById('missing').innerHTML = 'Run a simulation to identify gaps...';
+  document.getElementById('stats').innerHTML = '';
+  document.getElementById('timeSlider').value = 0;
+  document.getElementById('timeSliderVal').textContent = '0° (cycle 0)';
+  log('Cleared.');
+}
+
+// ═══════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════
+function togglePlay() {
+  playing = !playing;
+  document.getElementById('btnPlay').textContent = playing ? '⏸ Pause' : '▶ Play';
+  document.getElementById('btnPlay').classList.toggle('active', playing);
+}
+
+function toggleFreeze() {
+  frozen = !frozen;
+  document.getElementById('btnFreeze').classList.toggle('active', frozen);
+  if (frozen) {
+    log('TIME FROZEN — astrocyte forced to 0, all evolution halted');
+  } else {
+    log('Time unfrozen — evolution resumes');
+  }
+}
+
+function stepForward() { evolve(5); }
+
+function stepBack() {
+  // Try to restore from history
+  if (stateHistory.length > 0) {
+    const snap = stateHistory.pop();
+    restoreState(snap);
+    log(`Stepped back to t=${time.toFixed(0)}° cycle ${cycle}`);
+  } else {
+    time = Math.max(0, time - 5);
+    if (time === 0 && cycle > 0) { cycle--; time = 360; }
+  }
+}
+
+function resetTime() {
+  time = 0;
+  cycle = 0;
+  stateHistory = [];
+  document.getElementById('timeSlider').value = 0;
+  log('Time reset to 0');
+}
+
+function scrubTime(totalDegrees) {
+  const targetCycle = Math.floor(totalDegrees / 365);
+  const targetTime = totalDegrees - targetCycle * 365;
+
+  if (totalDegrees < 0) {
+    // Negative time: reverse cycles
+    cycle = 0;
+    time = 0;
+    log(`Cannot go before t=0`);
+    document.getElementById('timeSlider').value = 0;
+    document.getElementById('timeSliderVal').textContent = '0° (cycle 0)';
+    return;
+  }
+
+  cycle = targetCycle;
+  time = targetTime;
+  document.getElementById('timeSliderVal').textContent =
+    `${totalDegrees.toFixed(0)}° total (cycle ${cycle}, ${time.toFixed(0)}° in cycle)`;
+}
+
+// Drag atoms
+let dragging = null;
+canvas.addEventListener('mousedown', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  for (const atom of atoms) {
+    const dx = mx - atom.x;
+    const dy = my - atom.y;
+    if (dx * dx + dy * dy < 1600) { dragging = atom; break; }
+  }
+});
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const rect = canvas.getBoundingClientRect();
+  dragging.x = e.clientX - rect.left;
+  dragging.y = e.clientY - rect.top;
+  dragging.vx = 0;
+  dragging.vy = 0;
+});
+canvas.addEventListener('mouseup', () => { dragging = null; });
+
+// ═══════════════════════════════════════════
+// MAIN LOOP
+// ═══════════════════════════════════════════
+function loop() {
+  if (playing && !frozen) evolve(simSpeed * 0.1);
+  render();
+  requestAnimationFrame(loop);
+}
+
+window.addEventListener('load', () => {
+  addMissing('Spin: lines are 0/1 but electrons have spin +/-1/2. Need half-integer extension.');
+  addMissing('Pauli exclusion: no two electrons in same state. Need fermion statistics.');
+  addMissing('Angular momentum: orbital shapes (s,p,d,f) not mapped to hexagram geometry.');
+  addMissing('Nuclear binding: strong force between nucleons not modeled.');
+  addMissing('Relativistic: Dirac equation needed for heavy atoms.');
+  loop();
+  log('Particle Lab ready. Size: ' + canvas.parentElement.clientWidth + 'x' + canvas.parentElement.clientHeight);
+  loadMolecule('H2');
+  togglePlay();
+});
+</script>
+</body>
+</html>

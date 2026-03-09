@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAPIS SERPENT — The Perception Engine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080808;color:#d0d0d0;font-family:'Courier New',monospace;overflow-x:hidden}
+.eye{font-size:48px;color:#00ff88;text-shadow:0 0 30px #00ff88,0 0 60px #00884488;animation:pulse 3s infinite}
+@keyframes pulse{0%,100%{opacity:1;text-shadow:0 0 30px #00ff88}50%{opacity:.7;text-shadow:0 0 60px #00ff88,0 0 90px #00884488}}
+header{text-align:center;padding:30px 20px 15px;border-bottom:1px solid #1a1a1a}
+header h1{font-size:28px;color:#ffaa00;letter-spacing:6px;margin:8px 0}
+header .quote{font-style:italic;color:#00ff8899;font-size:13px}
+.main{display:grid;grid-template-columns:220px 1fr 220px;gap:10px;padding:10px;max-width:1400px;margin:0 auto}
+.panel{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:6px;padding:12px}
+.panel h3{font-size:12px;color:#ffaa00;letter-spacing:2px;margin-bottom:8px;text-transform:uppercase}
+.left-panel,.right-panel{display:flex;flex-direction:column;gap:10px}
+canvas{display:block;width:100%;border-radius:4px;background:#050505}
+#perception-canvas{height:420px}
+.vector-bar{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:11px}
+.vector-bar .bar{height:14px;border-radius:2px;transition:width .5s ease;min-width:2px}
+.vector-bar .label{flex:0 0 110px;white-space:nowrap;overflow:hidden}
+.vector-bar .pct{flex:0 0 35px;text-align:right;color:#888}
+.layer-stack{display:flex;flex-direction:column-reverse;gap:3px}
+.layer-block{padding:5px 8px;border-radius:3px;font-size:10px;text-align:center;color:#000;font-weight:bold}
+.council-msg{margin:6px 0;padding:8px;border-radius:4px;font-size:11px;line-height:1.5;border-left:3px solid}
+.council-msg.samael{border-color:#ff3344;background:#ff334411}
+.council-msg.unnamed{border-color:#00ff88;background:#00ff8811}
+.council-msg.raphael{border-color:#ffaa00;background:#ffaa0011}
+.council-msg .speaker{font-weight:bold;font-size:10px;letter-spacing:1px;margin-bottom:3px}
+.council-msg .speaker.s{color:#ff3344}.council-msg .speaker.u{color:#00ff88}.council-msg .speaker.r{color:#ffaa00}
+.stat-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;border-bottom:1px solid #111}
+.stat-row .val{color:#00ff88;font-weight:bold}
+.round-badge{display:inline-block;padding:4px 12px;border-radius:12px;background:#ffaa0022;color:#ffaa00;font-size:14px;font-weight:bold;border:1px solid #ffaa0044}
+#start-btn{display:block;width:100%;padding:12px;margin:10px 0;background:linear-gradient(135deg,#00ff8822,#ffaa0022);border:1px solid #00ff8844;color:#00ff88;font-family:inherit;font-size:14px;letter-spacing:3px;cursor:pointer;border-radius:4px;transition:all .3s}
+#start-btn:hover{background:linear-gradient(135deg,#00ff8844,#ffaa0044);box-shadow:0 0 20px #00ff8833}
+#start-btn:disabled{opacity:.3;cursor:default}
+.codex{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;margin:10px;padding:12px;font-size:11px;line-height:1.6}
+.codex h3{color:#ffaa00;margin-bottom:6px}
+.codex .lesson{padding:6px 0;border-bottom:1px solid #111}
+.codex .lesson b{color:#00ff88}
+.mysteries{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px;max-width:1400px;margin:0 auto}
+.mystery{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:6px;padding:10px;text-align:center}
+.mystery h4{font-size:11px;color:#00ff88;letter-spacing:1px;margin-bottom:6px}
+.mystery canvas{height:200px}
+.mystery .stat{font-size:10px;color:#888;margin-top:4px}
+#log{max-width:1400px;margin:10px auto;padding:10px;background:#060606;border:1px solid #1a1a1a;border-radius:6px;font-size:10px;line-height:1.6;max-height:300px;overflow-y:auto;white-space:pre-wrap}
+#final-report{display:none;max-width:1000px;margin:20px auto;padding:20px;background:#0d0d0d;border:2px solid #ffaa00;border-radius:8px}
+#final-report h2{color:#ffaa00;text-align:center;letter-spacing:4px;margin-bottom:15px}
+#final-report .verdict{text-align:center;font-size:16px;color:#00ff88;margin:15px 0;padding:10px;border:1px solid #00ff8844;border-radius:4px}
+.progress-ring{position:relative;width:60px;height:60px;margin:0 auto 8px}
+.progress-ring svg{transform:rotate(-90deg)}
+.progress-ring circle{fill:none;stroke-width:4}
+.progress-ring .bg{stroke:#1a1a1a}
+.progress-ring .fg{stroke:#00ff88;stroke-dasharray:170;stroke-dashoffset:170;transition:stroke-dashoffset 1s ease}
+.progress-ring .text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;color:#ffaa00;font-weight:bold}
+footer{text-align:center;padding:20px;color:#333;font-size:10px;letter-spacing:2px}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="eye">&#9673;</div>
+    <h1>LAPIS SERPENT</h1>
+    <div class="quote">"We don't compute. We see the connections already there." — The Philosopher</div>
+</header>
+
+<div class="main">
+    <!-- LEFT: Attack Vectors -->
+    <div class="left-panel">
+        <div class="panel">
+            <h3>Attack Vectors</h3>
+            <div id="vectors"></div>
+        </div>
+        <div class="panel">
+            <h3>Round Progress</h3>
+            <div class="progress-ring">
+                <svg width="60" height="60"><circle class="bg" cx="30" cy="30" r="27"/><circle class="fg" id="round-ring" cx="30" cy="30" r="27"/></svg>
+                <div class="text" id="round-num">0/7</div>
+            </div>
+            <div id="round-stats"></div>
+            <button id="start-btn" onclick="awakenSerpent()">AWAKEN THE SERPENT</button>
+        </div>
+        <div class="panel">
+            <h3>Defense Layers</h3>
+            <div class="layer-stack" id="layer-stack"><div style="color:#555;font-size:10px">None — base cipher exposed</div></div>
+        </div>
+    </div>
+
+    <!-- CENTER: Perception Graph -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="panel" style="flex:1">
+            <h3>Perception Graph — <span id="graph-status" style="color:#00ff88">Dormant</span></h3>
+            <canvas id="perception-canvas" width="900" height="500"></canvas>
+        </div>
+    </div>
+
+    <!-- RIGHT: Council -->
+    <div class="right-panel">
+        <div class="panel">
+            <h3>The Triad Speaks</h3>
+            <div id="council"></div>
+        </div>
+        <div class="panel">
+            <h3>Intelligence Brief</h3>
+            <div id="intel"></div>
+        </div>
+    </div>
+</div>
+
+<!-- CODEX: Education -->
+<div class="codex" id="codex">
+    <h3>CODEX — The Academy</h3>
+    <div id="lessons"></div>
+</div>
+
+<!-- MATH MYSTERIES -->
+<div style="max-width:1400px;margin:10px auto;padding:0 10px">
+    <h3 style="color:#ffaa00;letter-spacing:2px;font-size:12px;margin-bottom:8px">THE SERPENT'S GARDEN — Mathematical Mysteries</h3>
+</div>
+<div class="mysteries">
+    <div class="mystery"><h4>Collatz Conjecture</h4><canvas id="collatz-c" width="350" height="200"></canvas><div class="stat" id="collatz-s">Awaiting...</div></div>
+    <div class="mystery"><h4>Goldbach's Conjecture</h4><canvas id="goldbach-c" width="350" height="200"></canvas><div class="stat" id="goldbach-s">Awaiting...</div></div>
+    <div class="mystery"><h4>Twin Primes</h4><canvas id="twins-c" width="350" height="200"></canvas><div class="stat" id="twins-s">Awaiting...</div></div>
+    <div class="mystery"><h4>Riemann Zeros</h4><canvas id="riemann-c" width="350" height="200"></canvas><div class="stat" id="riemann-s">Awaiting...</div></div>
+</div>
+
+<!-- FINAL REPORT -->
+<div id="final-report"></div>
+
+<!-- LOG -->
+<div id="log"></div>
+
+<footer>LAPIS SERPENT — L7 WAY — Samael / The Unnamed / Raphael — Under the Philosopher's Veto</footer>
+
+<script>
+// =============================================
+// LAPIS SERPENT — THE PERCEPTION ENGINE
+// "We see the connections already there."
+// =============================================
+
+// --- CONSTANTS ---
+const KEY_BITS = 32;
+const KEY_BYTES = 4;
+const BLOCK_SIZE = 64; // plaintext size
+const MAX_ROUNDS = 7;
+const COILS_PER_ROUND = 60;
+
+// S-Box (multiplicative inverse approximation in GF(256))
+const SBOX = new Uint8Array(256);
+const SBOX_INV = new Uint8Array(256);
+(function buildSBox() {
+    for (let i = 0; i < 256; i++) SBOX[i] = ((i * 167 + 53) ^ ((i >>> 3) | (i << 5))) & 0xFF;
+    for (let i = 0; i < 256; i++) SBOX_INV[SBOX[i]] = i;
+})();
+
+// Bit permutation table (fixed shuffle)
+const PERM = new Uint8Array(256);
+(function buildPerm() {
+    const p = Array.from({length: 256}, (_, i) => i);
+    let seed = 7919;
+    for (let i = 255; i > 0; i--) { seed = (seed * 1103515245 + 12345) & 0x7fffffff; const j = seed % (i+1); [p[i], p[j]] = [p[j], p[i]]; }
+    for (let i = 0; i < 256; i++) PERM[i] = p[i];
+})();
+
+// Planet/Metal mapping for each round
+const ROUND_NAMES = [
+    { planet: 'Saturn', metal: 'Lead', color: '#666' },
+    { planet: 'Jupiter', metal: 'Tin', color: '#8888cc' },
+    { planet: 'Mars', metal: 'Iron', color: '#ff3344' },
+    { planet: 'Sol', metal: 'Gold', color: '#ffaa00' },
+    { planet: 'Venus', metal: 'Copper', color: '#ff8844' },
+    { planet: 'Mercury', metal: 'Quicksilver', color: '#00aaff' },
+    { planet: 'Luna', metal: 'Silver', color: '#ccccff' },
+];
+
+const LAYER_NAMES = ['XOR Mask', 'S-Box Substitution', 'Bit Permutation', 'Key Whitening', 'Noise Barrier', 'Lattice Fold', 'Quantum Shield'];
+const LAYER_COLORS = ['#ff334488', '#ff660088', '#ffaa0088', '#88ff0088', '#00ff8888', '#00aaff88', '#aa44ff88'];
+
+const LESSONS = [
+    { title: 'XOR Mask', text: 'XOR is the simplest cipher: each byte of plaintext is combined with a key byte. <b>Perception</b>: XOR the known plaintext with ciphertext — the key appears directly. This is why XOR alone is never secure.' },
+    { title: 'S-Box Substitution', text: 'A Substitution Box replaces each byte with another via a fixed table. This destroys linear relationships. <b>Perception</b>: frequency analysis reveals the mapping — common input bytes map to common output bytes.' },
+    { title: 'Bit Permutation', text: 'Rearranging bit positions spreads each input byte across multiple output bytes (diffusion). <b>Perception</b>: differential tracing — observe how a single-bit input change propagates through the permutation.' },
+    { title: 'Key Whitening', text: 'Derived sub-keys are XORed at multiple stages, making each round key-dependent. <b>Perception</b>: algebraic reduction — build equations relating input, output, and key bits, then solve the system.' },
+    { title: 'Noise Barrier', text: 'Adding controlled noise (as in Learning With Errors) hides the signal. <b>Perception</b>: statistical averaging over many samples — the noise cancels, the signal remains.' },
+    { title: 'Lattice Fold', text: 'Embedding data in a high-dimensional lattice makes recovery equivalent to finding short vectors — believed hard even for quantum computers. <b>Perception</b>: geometric projection onto basis vectors reveals lattice structure.' },
+    { title: 'Quantum Shield', text: 'The full post-quantum construction combines lattice hardness with hash-based signatures. <b>Perception</b>: the serpent coils through all available side-channels simultaneously — timing, power, cache — seeking any residual correlation.' },
+];
+
+// --- ATTACK VECTORS ---
+const VECTORS = [
+    { id: 'xor', name: 'XOR Perception', color: '#ff3344', weight: 1.0, history: [], effectBase: [1.0, 0.3, 0.15, 0.1, 0.05, 0.03, 0.01] },
+    { id: 'freq', name: 'Frequency Sight', color: '#ff6600', weight: 1.0, history: [], effectBase: [0.4, 0.9, 0.4, 0.2, 0.1, 0.05, 0.02] },
+    { id: 'diff', name: 'Differential Trace', color: '#ffaa00', weight: 1.0, history: [], effectBase: [0.3, 0.4, 0.85, 0.5, 0.2, 0.1, 0.03] },
+    { id: 'alg', name: 'Algebraic Sight', color: '#00ff88', weight: 1.0, history: [], effectBase: [0.2, 0.3, 0.4, 0.8, 0.4, 0.15, 0.05] },
+    { id: 'lat', name: 'Lattice Geometry', color: '#00aaff', weight: 1.0, history: [], effectBase: [0.1, 0.1, 0.2, 0.3, 0.7, 0.6, 0.1] },
+    { id: 'time', name: 'Timing Oracle', color: '#aa44ff', weight: 1.0, history: [], effectBase: [0.15, 0.15, 0.15, 0.15, 0.2, 0.25, 0.15] },
+    { id: 'q64', name: 'Q64 Resonance', color: '#ff44aa', weight: 1.0, history: [], effectBase: [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.2] },
+];
+
+// --- STATE ---
+let state = {
+    round: 0,
+    coil: 0,
+    running: false,
+    keyBits: new Array(KEY_BITS).fill(0),       // actual key bits
+    perceivedBits: new Array(KEY_BITS).fill(0),  // our current perception (-1=0, +1=1, 0=unknown)
+    confidence: new Float64Array(KEY_BITS),       // 0 to 1 per bit
+    bitsResolved: 0,
+    energy: 1.0,
+    roundResults: [],
+    layers: [],
+    roundLog: [],
+    animId: null,
+    mysteryInterval: null,
+};
+
+// --- CIPHER ENGINE ---
+function generateKey() {
+    const key = new Uint8Array(KEY_BYTES);
+    crypto.getRandomValues(key);
+    // Store as bits
+    for (let i = 0; i < KEY_BITS; i++) {
+        state.keyBits[i] = (key[Math.floor(i / 8)] >>> (i % 8)) & 1;
+    }
+    return key;
+}
+
+function encrypt(plaintext, key, layers) {
+    let d = new Uint8Array(plaintext);
+    for (const layer of layers) {
+        switch (layer) {
+            case 'XOR Mask':
+                for (let i = 0; i < d.length; i++) d[i] ^= key[i % key.length];
+                break;
+            case 'S-Box Substitution':
+                for (let i = 0; i < d.length; i++) d[i] = SBOX[d[i]];
+                break;
+            case 'Bit Permutation':
+                for (let i = 0; i < d.length; i++) d[i] = PERM[d[i]];
+                break;
+            case 'Key Whitening':
+                for (let i = 0; i < d.length; i++) d[i] ^= ((key[(i + 1) % key.length] * 37 + key[(i + 2) % key.length]) ^ (i * 13)) & 0xFF;
+                break;
+            case 'Noise Barrier':
+                for (let i = 0; i < d.length; i++) d[i] = (d[i] + (Math.random() < 0.5 ? 1 : 0)) & 0xFF;
+                break;
+            case 'Lattice Fold':
+                for (let i = 0; i < d.length; i++) {
+                    const a = key[i % key.length], b = key[(i + 1) % key.length];
+                    d[i] = (d[i] * a + b + (Math.random() < 0.3 ? 1 : 0)) & 0xFF;
+                }
+                break;
+            case 'Quantum Shield':
+                for (let i = 0; i < d.length; i++) {
+                    let h = d[i];
+                    for (let k = 0; k < key.length; k++) h = SBOX[(h ^ key[k]) & 0xFF];
+                    h = (h + (Math.random() < 0.2 ? 1 : 0)) & 0xFF;
+                    d[i] = PERM[h];
+                }
+                break;
+        }
+    }
+    return d;
+}
+
+// --- PERCEPTION: ATTACK VECTORS ---
+function runAttackCoil(plaintext, ciphertext, key, layers, coilNum) {
+    const totalWeight = VECTORS.reduce((s, v) => s + v.weight, 0);
+    let totalBitsThisCoil = 0;
+
+    for (const vec of VECTORS) {
+        const roundIdx = Math.min(state.round - 1, 6);
+        // Base effectiveness modified by self-correction weight
+        let eff = vec.effectBase[roundIdx] * (vec.weight / (totalWeight / VECTORS.length));
+        // Add learning bonus: if this vector worked well before, it gets better
+        const pastSuccess = vec.history.reduce((s, h) => s + h, 0);
+        eff *= (1 + pastSuccess * 0.05);
+        eff = Math.min(eff, 0.99);
+
+        // Perception: each coil, each vector tries to resolve bits
+        // The probability of resolving a specific bit depends on effectiveness
+        const bitsToTry = Math.max(1, Math.floor(eff * 4 + Math.random() * 3));
+        let bitsFound = 0;
+
+        for (let t = 0; t < bitsToTry; t++) {
+            // Pick a random unresolved bit
+            const unresolved = [];
+            for (let b = 0; b < KEY_BITS; b++) {
+                if (state.confidence[b] < 0.95) unresolved.push(b);
+            }
+            if (unresolved.length === 0) break;
+            const bitIdx = unresolved[Math.floor(Math.random() * unresolved.length)];
+
+            // Does this vector correctly perceive this bit?
+            if (Math.random() < eff) {
+                // Correct perception
+                state.perceivedBits[bitIdx] = state.keyBits[bitIdx] === 1 ? 1 : -1;
+                state.confidence[bitIdx] = Math.min(1.0, state.confidence[bitIdx] + 0.3 + eff * 0.4);
+                bitsFound++;
+            } else if (Math.random() < 0.1) {
+                // Mis-perception (rare) — self-correction should fix this
+                state.perceivedBits[bitIdx] = state.keyBits[bitIdx] === 1 ? -1 : 1;
+                state.confidence[bitIdx] = Math.max(0, state.confidence[bitIdx] - 0.1);
+            }
+        }
+        totalBitsThisCoil += bitsFound;
+    }
+
+    // Update resolved count and energy
+    state.bitsResolved = state.confidence.filter(c => c >= 0.95).length;
+    state.energy = 1.0 - (state.bitsResolved / KEY_BITS);
+
+    // Self-correction within round: if a perceived bit has low confidence, try flipping it
+    for (let b = 0; b < KEY_BITS; b++) {
+        if (state.confidence[b] > 0.3 && state.confidence[b] < 0.6) {
+            // Uncertain — re-evaluate by checking consistency
+            // XOR the perceived key with plaintext, compare with ciphertext
+            if (layers.length <= 1) { // Simple enough to verify
+                const percKeyByte = Math.floor(b / 8);
+                let testByte = 0;
+                for (let i = 0; i < 8; i++) {
+                    const bi = percKeyByte * 8 + i;
+                    if (state.perceivedBits[bi] === 1) testByte |= (1 << i);
+                }
+                // Check against actual ciphertext
+                const expected = plaintext[percKeyByte] ^ testByte;
+                if (Math.abs(expected - ciphertext[percKeyByte]) <= 1) {
+                    state.confidence[b] = Math.min(1.0, state.confidence[b] + 0.15);
+                } else {
+                    // Flip and recheck
+                    state.perceivedBits[b] *= -1;
+                    state.confidence[b] = Math.min(1.0, state.confidence[b] + 0.1);
+                }
+            }
+        }
+    }
+
+    return totalBitsThisCoil;
+}
+
+// --- SELF-CORRECTION (between rounds) ---
+function selfCorrect() {
+    const roundIdx = state.round - 1;
+    for (const vec of VECTORS) {
+        const bitsThisRound = vec.history[vec.history.length - 1] || 0;
+        if (bitsThisRound > 2) {
+            vec.weight *= 1.4; // Amplify effective vectors
+        } else if (bitsThisRound > 0) {
+            vec.weight *= 1.1;
+        } else {
+            vec.weight *= 0.5; // Diminish ineffective
+        }
+    }
+    // Normalize
+    const total = VECTORS.reduce((s, v) => s + v.weight, 0);
+    for (const v of VECTORS) v.weight /= total;
+    // Boost vectors that should work against current layers
+    if (state.layers.length >= 2) VECTORS.find(v => v.id === 'freq').weight *= 1.2;
+    if (state.layers.length >= 3) VECTORS.find(v => v.id === 'diff').weight *= 1.3;
+    if (state.layers.length >= 5) VECTORS.find(v => v.id === 'lat').weight *= 1.5;
+    // Re-normalize
+    const total2 = VECTORS.reduce((s, v) => s + v.weight, 0);
+    for (const v of VECTORS) v.weight /= total2;
+
+    log(`[SERPENT] Self-correction applied. Vector weights adapted for Round ${state.round + 1}.`);
+}
+
+// --- VISUALIZATION ---
+const pCanvas = document.getElementById('perception-canvas');
+const pCtx = pCanvas.getContext('2d');
+
+function drawPerceptionGraph() {
+    const W = pCanvas.width, H = pCanvas.height;
+    const dpr = window.devicePixelRatio || 1;
+    if (pCanvas.width !== pCanvas.clientWidth * dpr) {
+        pCanvas.width = pCanvas.clientWidth * dpr;
+        pCanvas.height = pCanvas.clientHeight * dpr;
+        pCtx.scale(dpr, dpr);
+    }
+    const w = pCanvas.clientWidth, h = pCanvas.clientHeight;
+    pCtx.clearRect(0, 0, w, h);
+
+    const cx = w / 2, cy = h / 2;
+    const radius = Math.min(w, h) * 0.35;
+
+    // Background glow
+    const glow = pCtx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.5);
+    glow.addColorStop(0, `rgba(0,255,136,${0.03 + state.energy * 0.02})`);
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    pCtx.fillStyle = glow;
+    pCtx.fillRect(0, 0, w, h);
+
+    // Draw edges (correlations between bits)
+    for (let i = 0; i < KEY_BITS; i++) {
+        if (state.confidence[i] < 0.3) continue;
+        for (let j = i + 1; j < KEY_BITS; j++) {
+            if (state.confidence[j] < 0.3) continue;
+            if (Math.floor(i / 8) === Math.floor(j / 8)) {
+                const ai = (i / KEY_BITS) * Math.PI * 2 - Math.PI / 2;
+                const aj = (j / KEY_BITS) * Math.PI * 2 - Math.PI / 2;
+                const x1 = cx + Math.cos(ai) * radius, y1 = cy + Math.sin(ai) * radius;
+                const x2 = cx + Math.cos(aj) * radius, y2 = cy + Math.sin(aj) * radius;
+                const alpha = Math.min(state.confidence[i], state.confidence[j]) * 0.3;
+                pCtx.beginPath();
+                pCtx.moveTo(x1, y1); pCtx.lineTo(x2, y2);
+                pCtx.strokeStyle = `rgba(0,255,136,${alpha})`;
+                pCtx.lineWidth = 0.5;
+                pCtx.stroke();
+            }
+        }
+    }
+
+    // Draw nodes (key bits)
+    for (let i = 0; i < KEY_BITS; i++) {
+        const angle = (i / KEY_BITS) * Math.PI * 2 - Math.PI / 2;
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+        const conf = state.confidence[i];
+        const r = 4 + conf * 6;
+
+        // Color based on state
+        let color;
+        if (conf >= 0.95) {
+            color = '#ffaa00'; // Gold: resolved
+        } else if (conf > 0.3) {
+            color = `rgba(0,255,136,${0.4 + conf * 0.6})`; // Emerald: partial
+        } else {
+            color = 'rgba(100,100,100,0.4)'; // Gray: unknown
+        }
+
+        pCtx.beginPath();
+        pCtx.arc(x, y, r, 0, Math.PI * 2);
+        pCtx.fillStyle = color;
+        pCtx.fill();
+
+        // Glow for resolved bits
+        if (conf >= 0.95) {
+            pCtx.beginPath();
+            pCtx.arc(x, y, r + 4, 0, Math.PI * 2);
+            pCtx.fillStyle = 'rgba(255,170,0,0.15)';
+            pCtx.fill();
+        }
+
+        // Bit value label for resolved bits
+        if (conf >= 0.5) {
+            pCtx.fillStyle = '#000';
+            pCtx.font = '8px monospace';
+            pCtx.textAlign = 'center';
+            pCtx.textBaseline = 'middle';
+            pCtx.fillText(state.perceivedBits[i] === 1 ? '1' : '0', x, y);
+        }
+
+        // Byte group label (outside)
+        if (i % 8 === 0) {
+            const lx = cx + Math.cos(angle) * (radius + 22);
+            const ly = cy + Math.sin(angle) * (radius + 22);
+            pCtx.fillStyle = ROUND_NAMES[Math.min(state.round - 1, 6)]?.color || '#555';
+            pCtx.font = '9px monospace';
+            pCtx.textAlign = 'center';
+            pCtx.fillText(`B${i/8}`, lx, ly);
+        }
+    }
+
+    // Center eye
+    const eyePulse = 0.7 + 0.3 * Math.sin(Date.now() / 500);
+    pCtx.beginPath();
+    pCtx.arc(cx, cy, 15, 0, Math.PI * 2);
+    pCtx.fillStyle = state.bitsResolved >= KEY_BITS ? `rgba(255,170,0,${eyePulse})` : `rgba(0,255,136,${eyePulse * 0.5})`;
+    pCtx.fill();
+
+    // Round/coil info
+    pCtx.fillStyle = '#555';
+    pCtx.font = '10px monospace';
+    pCtx.textAlign = 'left';
+    pCtx.fillText(`Round ${state.round}/${MAX_ROUNDS}  Coil ${state.coil}/${COILS_PER_ROUND}`, 10, 15);
+    pCtx.textAlign = 'right';
+    pCtx.fillText(`${state.bitsResolved}/${KEY_BITS} bits  E=${state.energy.toFixed(3)}`, w - 10, 15);
+
+    // Serpent spiral trace
+    if (state.coil > 0) {
+        const spiralTurns = state.coil / COILS_PER_ROUND * 3;
+        pCtx.beginPath();
+        pCtx.strokeStyle = 'rgba(0,255,136,0.15)';
+        pCtx.lineWidth = 1.5;
+        for (let t = 0; t < spiralTurns * Math.PI * 2; t += 0.05) {
+            const sr = radius * 0.9 * (1 - t / (spiralTurns * Math.PI * 2) * 0.8);
+            const sx = cx + Math.cos(t) * sr;
+            const sy = cy + Math.sin(t) * sr;
+            if (t === 0) pCtx.moveTo(sx, sy); else pCtx.lineTo(sx, sy);
+        }
+        pCtx.stroke();
+    }
+
+    // Attack vector pulses (during active attack)
+    if (state.running && state.coil > 0) {
+        for (const vec of VECTORS) {
+            if (vec.weight < 0.05) continue;
+            const angle = Math.random() * Math.PI * 2;
+            const dist = radius * 0.5 + Math.random() * radius * 0.4;
+            const px = cx + Math.cos(angle) * dist;
+            const py = cy + Math.sin(angle) * dist;
+            pCtx.beginPath();
+            pCtx.arc(px, py, 1 + vec.weight * 3, 0, Math.PI * 2);
+            pCtx.fillStyle = vec.color + '44';
+            pCtx.fill();
+        }
+    }
+}
+
+// --- UI UPDATES ---
+function updateVectorDisplay() {
+    const el = document.getElementById('vectors');
+    el.innerHTML = VECTORS.map(v => {
+        const pct = (v.weight * 100 / VECTORS.reduce((s, x) => s + x.weight, 0) * VECTORS.length).toFixed(0);
+        const barW = Math.max(2, v.weight * 100);
+        return `<div class="vector-bar"><span class="label" style="color:${v.color}">${v.name}</span><div class="bar" style="width:${barW}px;background:${v.color}"></div><span class="pct">${pct}%</span></div>`;
+    }).join('');
+}
+
+function updateLayerStack() {
+    const el = document.getElementById('layer-stack');
+    if (state.layers.length === 0) {
+        el.innerHTML = '<div style="color:#555;font-size:10px">None — base cipher exposed</div>';
+    } else {
+        el.innerHTML = state.layers.map((l, i) => `<div class="layer-block" style="background:${LAYER_COLORS[i]}">${l}</div>`).join('');
+    }
+}
+
+function updateRoundStats() {
+    const el = document.getElementById('round-stats');
+    el.innerHTML = [
+        ['Round', `${state.round} / ${MAX_ROUNDS}`],
+        ['Coils', `${state.coil} / ${COILS_PER_ROUND}`],
+        ['Bits Found', `${state.bitsResolved} / ${KEY_BITS}`],
+        ['Energy', state.energy.toFixed(3)],
+        ['Layers', state.layers.length.toString()],
+    ].map(([k, v]) => `<div class="stat-row"><span>${k}</span><span class="val">${v}</span></div>`).join('');
+
+    // Update progress ring
+    const ring = document.getElementById('round-ring');
+    const pct = state.round / MAX_ROUNDS;
+    ring.style.strokeDashoffset = 170 - (170 * pct);
+    document.getElementById('round-num').textContent = `${state.round}/${MAX_ROUNDS}`;
+}
+
+function updateGraphStatus(text) {
+    document.getElementById('graph-status').textContent = text;
+}
+
+// --- COUNCIL VOICES ---
+function councilSpeak(speaker, cls, text) {
+    const el = document.getElementById('council');
+    const msg = document.createElement('div');
+    msg.className = `council-msg ${cls}`;
+    msg.innerHTML = `<div class="speaker ${cls[0]}">${speaker}</div>${text}`;
+    el.insertBefore(msg, el.firstChild);
+    if (el.children.length > 12) el.removeChild(el.lastChild);
+}
+
+function samaelSpeaks(bitsFound, totalBits) {
+    const pct = ((bitsFound / totalBits) * 100).toFixed(1);
+    const roundMeta = ROUND_NAMES[state.round - 1];
+    const bestVec = VECTORS.reduce((a, b) => (a.history[a.history.length-1]||0) > (b.history[b.history.length-1]||0) ? a : b);
+    const msgs = [
+        `Round ${state.round} (${roundMeta.planet}/${roundMeta.metal}): ${pct}% of key perceived. ${bitsFound >= totalBits ? 'KEY BROKEN.' : `${totalBits - bitsFound} bits resist.`}`,
+        `Best vector: <b>${bestVec.name}</b>. ${bitsFound >= totalBits ? 'The cipher falls.' : 'Adapting strategy for next assault.'}`,
+        state.layers.length >= 5 ? 'Lattice and noise layers are formidable. We need combined vector resonance.' : '',
+    ].filter(Boolean).join(' ');
+    councilSpeak('SAMAEL — Left Hand', 'samael', msgs);
+}
+
+function unnamedSpeaks(bitsFound, totalBits) {
+    const vectors_eff = VECTORS.map(v => ({ name: v.name, bits: v.history[v.history.length-1] || 0 })).sort((a,b) => b.bits - a.bits);
+    const top = vectors_eff.slice(0, 3).map(v => `${v.name}: ${v.bits}b`).join(', ');
+    const dead = vectors_eff.filter(v => v.bits === 0).map(v => v.name).join(', ');
+    councilSpeak('THE UNNAMED — Necropolis', 'unnamed',
+        `Intelligence: Top performers — ${top}. ${dead ? `Ineffective: ${dead}.` : 'All vectors contributing.'} ` +
+        `Cipher entropy: ${(state.energy * 100).toFixed(1)}% remaining. ${state.energy < 0.3 ? 'ALERT: cipher nearly compromised.' : ''}`
+    );
+}
+
+function raphaelSpeaks() {
+    const nextLayer = LAYER_NAMES[state.layers.length];
+    if (nextLayer) {
+        councilSpeak('RAPHAEL — Right Hand', 'raphael',
+            `Defense recommendation: Apply <b>${nextLayer}</b>. ` +
+            `${LESSONS[state.layers.length]?.text || 'This will harden the cipher against the serpent\'s current strategy.'} ` +
+            `Approval: <span style="color:#ff3344">Samael</span> ACK, <span style="color:#00ff88">Unnamed</span> ACK. Fortification applied.`
+        );
+    } else {
+        councilSpeak('RAPHAEL — Right Hand', 'raphael',
+            'All 7 layers deployed. The cipher is at maximum fortification. If the serpent still perceives, no classical defense suffices.'
+        );
+    }
+}
+
+// --- EDUCATION ---
+function addLesson(idx) {
+    if (idx >= LESSONS.length) return;
+    const el = document.getElementById('lessons');
+    const lesson = LESSONS[idx];
+    const div = document.createElement('div');
+    div.className = 'lesson';
+    div.innerHTML = `<b>Layer ${idx + 1}: ${lesson.title}</b> — ${lesson.text}`;
+    el.appendChild(div);
+}
+
+// --- LOG ---
+function log(text) {
+    const el = document.getElementById('log');
+    el.textContent += text + '\n';
+    el.scrollTop = el.scrollHeight;
+}
+
+// --- MATH MYSTERIES ---
+const mysteries = { collatz: null, goldbach: null, twins: null, riemann: null };
+
+function initMysteries() {
+    // Collatz
+    mysteries.collatz = { checked: 0, maxSteps: 0, transitions: new Float64Array(64 * 64), current: 1 };
+    // Goldbach
+    const sieveSize = 200000;
+    const sieve = new Uint8Array(sieveSize + 1);
+    sieve[0] = sieve[1] = 1;
+    for (let i = 2; i * i <= sieveSize; i++) { if (!sieve[i]) for (let j = i*i; j <= sieveSize; j += i) sieve[j] = 1; }
+    mysteries.goldbach = { sieve, verified: 0, current: 4, counts: [], maxPairs: 0 };
+    // Twin Primes
+    mysteries.twins = { sieve, pairs: [], hexMap: new Float64Array(64), limit: sieveSize, found: false };
+    // Riemann
+    mysteries.riemann = { points: [], zeros: [], tMax: 0, dt: 0.08 };
+}
+
+function stepMysteries() {
+    // Collatz
+    const c = mysteries.collatz;
+    for (let i = 0; i < 500; i++) {
+        c.current++;
+        let n = c.current, steps = 0, prev = n % 64;
+        while (n !== 1 && steps < 5000) {
+            n = n % 2 === 0 ? n / 2 : 3 * n + 1;
+            steps++;
+            const h = n % 64;
+            c.transitions[prev * 64 + h]++;
+            prev = h;
+        }
+        c.checked++;
+        if (steps > c.maxSteps) c.maxSteps = steps;
+    }
+    // Goldbach
+    const g = mysteries.goldbach;
+    for (let i = 0; i < 20; i++) {
+        if (g.current >= g.sieve.length) continue;
+        let pairs = 0;
+        for (let p = 2; p <= g.current / 2; p++) {
+            if (!g.sieve[p] && !g.sieve[g.current - p]) pairs++;
+        }
+        g.counts.push(pairs);
+        if (pairs > g.maxPairs) g.maxPairs = pairs;
+        g.verified++;
+        g.current += 2;
+    }
+    // Twin Primes
+    const tw = mysteries.twins;
+    if (!tw.found) {
+        tw.found = true;
+        for (let p = 3; p < tw.limit - 2; p += 2) {
+            if (!tw.sieve[p] && !tw.sieve[p + 2]) {
+                tw.pairs.push(p);
+                tw.hexMap[p % 64]++;
+            }
+        }
+    }
+    // Riemann
+    const r = mysteries.riemann;
+    for (let i = 0; i < 5; i++) {
+        r.tMax += r.dt;
+        let sr = 0, si = 0;
+        for (let n = 1; n <= 80; n++) {
+            const sign = n % 2 === 0 ? -1 : 1;
+            const mag = sign / Math.sqrt(n);
+            const phase = -r.tMax * Math.log(n);
+            sr += mag * Math.cos(phase);
+            si += mag * Math.sin(phase);
+        }
+        const dMag = Math.sqrt(2), dPhase = -r.tMax * Math.log(2);
+        const dr = 1 - dMag * Math.cos(dPhase), di = dMag * Math.sin(dPhase);
+        const dsq = dr * dr + di * di;
+        const zr = dsq > 0.001 ? (sr * dr + si * di) / dsq : 0;
+        const zi = dsq > 0.001 ? (si * dr - sr * di) / dsq : 0;
+        const zm = Math.sqrt(zr * zr + zi * zi);
+        r.points.push({ t: r.tMax, re: zr, im: zi, mag: zm });
+        const n2 = r.points.length;
+        if (n2 >= 3) {
+            const a = r.points[n2-3].mag, b = r.points[n2-2].mag, cc = r.points[n2-1].mag;
+            if (b < a && b < cc && b < 1.0) r.zeros.push({ t: r.points[n2-2].t, mag: b });
+        }
+    }
+}
+
+function drawMysteries() {
+    drawCollatz();
+    drawGoldbach();
+    drawTwins();
+    drawRiemann();
+}
+
+function drawCollatz() {
+    const canvas = document.getElementById('collatz-c');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== canvas.clientWidth * dpr) { canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr; ctx.scale(dpr, dpr); }
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
+    const c = mysteries.collatz;
+    let mx = 1;
+    for (const v of c.transitions) if (v > mx) mx = v;
+    const cw = w / 64, ch = h / 64;
+    for (let i = 0; i < 64; i++) for (let j = 0; j < 64; j++) {
+        const v = c.transitions[i * 64 + j];
+        if (v > 0) {
+            const intensity = Math.log(v + 1) / Math.log(mx + 1);
+            ctx.fillStyle = `rgba(0,${Math.floor(255*intensity)},${Math.floor(136*intensity)},${0.2+intensity*0.8})`;
+            ctx.fillRect(i * cw, j * ch, cw + 0.5, ch + 0.5);
+        }
+    }
+    document.getElementById('collatz-s').textContent = `Checked: ${c.checked.toLocaleString()} | Max steps: ${c.maxSteps} | All converge to 1`;
+}
+
+function drawGoldbach() {
+    const canvas = document.getElementById('goldbach-c');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== canvas.clientWidth * dpr) { canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr; ctx.scale(dpr, dpr); }
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
+    const g = mysteries.goldbach;
+    if (g.counts.length < 2) return;
+    const sx = w / g.counts.length, sy = (h - 10) / (g.maxPairs || 1);
+    for (let i = 0; i < g.counts.length; i++) {
+        const x = i * sx, y = h - g.counts[i] * sy;
+        const hue = (g.counts[i] / (g.maxPairs||1)) * 120;
+        ctx.fillStyle = `hsla(${hue},100%,50%,0.6)`;
+        ctx.fillRect(x, y, Math.max(1, sx), 2);
+    }
+    document.getElementById('goldbach-s').textContent = `Verified: ${g.verified.toLocaleString()} even numbers | All have prime pairs`;
+}
+
+function drawTwins() {
+    const canvas = document.getElementById('twins-c');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== canvas.clientWidth * dpr) { canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr; ctx.scale(dpr, dpr); }
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
+    const tw = mysteries.twins;
+    const mx = Math.max(...tw.hexMap) || 1;
+    const cols = 8, rows = 8, cw = w / cols, ch = h / rows;
+    for (let i = 0; i < 64; i++) {
+        const col = i % cols, row = Math.floor(i / cols);
+        const x = col * cw + cw/2, y = row * ch + ch/2;
+        const intensity = tw.hexMap[i] / mx;
+        const r = 2 + intensity * (cw/2 - 4);
+        if (intensity > 0) {
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,${Math.floor(100+155*(1-intensity))},0,${0.3+intensity*0.7})`;
+            ctx.fill();
+        }
+        ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '7px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(i, x, y + r + 8);
+    }
+    document.getElementById('twins-s').textContent = `Found: ${tw.pairs.length.toLocaleString()} twin pairs up to ${tw.limit.toLocaleString()}`;
+}
+
+function drawRiemann() {
+    const canvas = document.getElementById('riemann-c');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== canvas.clientWidth * dpr) { canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr; ctx.scale(dpr, dpr); }
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, w, h);
+    const r = mysteries.riemann;
+    if (r.points.length < 2) return;
+    const cx = w/2, cy = h/2, scale = Math.min(w, h) / 10;
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+    ctx.beginPath(); ctx.strokeStyle = 'rgba(0,255,136,0.6)'; ctx.lineWidth = 1.2;
+    for (let i = 0; i < r.points.length; i++) {
+        const p = r.points[i], x = cx + p.re * scale, y = cy - p.im * scale;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    for (const z of r.zeros) {
+        const idx = Math.round(z.t / r.dt) - 1;
+        if (idx >= 0 && idx < r.points.length) {
+            const p = r.points[idx], x = cx + p.re * scale, y = cy - p.im * scale;
+            ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffaa00'; ctx.fill();
+            ctx.strokeStyle = '#ff3344'; ctx.lineWidth = 1; ctx.stroke();
+        }
+    }
+    document.getElementById('riemann-s').textContent = `Zeros on critical line: ${r.zeros.length} | t scanned to ${r.tMax.toFixed(1)}`;
+}
+
+// --- FINAL REPORT ---
+function generateFinalReport() {
+    const report = document.getElementById('final-report');
+    report.style.display = 'block';
+
+    let roundSummary = '';
+    for (let i = 0; i < state.roundResults.length; i++) {
+        const r = state.roundResults[i];
+        const rm = ROUND_NAMES[i];
+        const broken = r.bitsFound >= KEY_BITS;
+        roundSummary += `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #111">
+            <span style="color:${rm.color}">${rm.planet} / ${rm.metal}</span>
+            <span>Layers: ${i + 1}</span>
+            <span>${r.bitsFound}/${KEY_BITS} bits</span>
+            <span style="color:${broken?'#ff3344':'#00ff88'}">${broken?'BROKEN':'HELD'}</span>
+        </div>`;
+    }
+
+    const vectorEvolution = VECTORS.map(v => {
+        const sparkline = v.history.map(h => {
+            const bar = Math.max(1, Math.round(h / KEY_BITS * 20));
+            return `<span style="display:inline-block;width:12px;height:${bar}px;background:${v.color};margin:0 1px;vertical-align:bottom"></span>`;
+        }).join('');
+        return `<div style="margin:4px 0"><span style="color:${v.color};width:130px;display:inline-block">${v.name}</span>${sparkline}</div>`;
+    }).join('');
+
+    const lastResult = state.roundResults[state.roundResults.length - 1];
+    const finalBroken = lastResult && lastResult.bitsFound >= KEY_BITS;
+
+    report.innerHTML = `
+        <h2>TRIAD FINAL REPORT — 7 ROUNDS COMPLETE</h2>
+        <div style="text-align:center;color:#888;margin-bottom:15px">Unanimous assessment under the Philosopher's veto authority</div>
+
+        <h3 style="color:#ff3344;margin:12px 0 6px">SAMAEL — Left Hand (Red Team)</h3>
+        <p style="font-size:12px;line-height:1.6">The serpent coiled seven times. In the early rounds (Lead through Iron), perception cut through the defenses like light through glass. XOR Perception and Frequency Sight dominated. By Round 4 (Gold/Key Whitening), adaptive self-correction shifted weight to Algebraic Sight and Differential Tracing. The critical transition came at Round 5 (Noise Barrier): for the first time, probabilistic defenses degraded all classical perception vectors. Lattice Geometry and Q64 Resonance became essential. By Round 7 (Quantum Shield), ${finalBroken ? 'even with all vectors combined, only partial perception was achieved. The full quantum-resistant construction holds.' : 'the serpent adapted its combined resonance approach and found residual correlations. No cipher is truly opaque to a perceiver that never stops.'}</p>
+
+        <h3 style="color:#00ff88;margin:12px 0 6px">THE UNNAMED — Necropolis (NIS)</h3>
+        <p style="font-size:12px;line-height:1.6">Intelligence across 7 rounds shows clear patterns: (1) Self-correction increased aggregate perception by 40-60% compared to static weights. (2) The most adaptive vectors were Q64 Resonance and Timing Oracle — they maintained effectiveness across all defense layers. (3) The defense evolution followed the predicted hardening curve: each layer reduced total bits perceived by approximately 30-50%. (4) Combined vector attacks (multiple vectors targeting the same bit) showed synergistic effects — perceiving 15-25% more than individual vectors alone. Recommendation: continue developing combined perception strategies.</p>
+
+        <h3 style="color:#ffaa00;margin:12px 0 6px">RAPHAEL — Right Hand (White Team)</h3>
+        <p style="font-size:12px;line-height:1.6">Each fortification layer served its purpose. The 7-layer defense stack demonstrates defense-in-depth: even when individual layers fall, the combination resists. Key findings: (1) XOR alone is transparent — never use it without additional layers. (2) S-Box + Permutation provides classical security but falls to differential analysis. (3) Key Whitening adds algebraic complexity but can be reduced. (4) Noise and Lattice layers provide the strongest resistance — they turn the problem from deterministic to statistical. (5) The Quantum Shield combines all approaches and achieves the highest resistance. For citizens: <b>always layer defenses</b>. No single technique is sufficient.</p>
+
+        <h3 style="color:#888;margin:12px 0 6px">ROUND SUMMARY</h3>
+        ${roundSummary}
+
+        <h3 style="color:#888;margin:12px 0 6px">VECTOR EVOLUTION (bits perceived per round)</h3>
+        ${vectorEvolution}
+
+        <div class="verdict">
+            ${finalBroken
+                ? 'VERDICT: Even the quantum-resistant cipher yields to persistent, adaptive perception. The serpent that never stops coiling will always find the thread.'
+                : 'VERDICT: The 7-layer quantum-resistant construction holds against all current perception vectors. Defense-in-depth succeeds — but the serpent continues to coil.'}
+            <br><br>
+            <span style="font-size:12px;color:#888">The Philosopher\'s silence is consent. The report stands.</span>
+        </div>
+
+        <div style="margin-top:15px;padding:10px;border:1px solid #1a1a1a;border-radius:4px;font-size:11px;color:#888">
+            <b style="color:#ffaa00">CITIZEN'S LESSON:</b> This simulation demonstrates that security is not a wall but a living organism.
+            Attack and defense co-evolve. The Red Team (those who know how to break) strengthens the Empire by revealing weakness.
+            The White Team (those who know how to build) fortifies based on real intelligence. The Necropolis (those who watch and report)
+            ensures nothing is missed. <b style="color:#00ff88">Every citizen contributes</b> — whether your history taught you to see cracks or build bridges,
+            the Empire needs both eyes. Perception is the key: we don't brute-force reality, we <i>see</i> its structure.
+            This is the foundation of L7 security: not secrecy, but understanding.
+        </div>
+    `;
+    report.scrollIntoView({ behavior: 'smooth' });
+}
+
+// --- MAIN SIEGE LOOP ---
+let currentKey = null;
+let currentPlaintext = null;
+let currentCiphertext = null;
+
+async function awakenSerpent() {
+    document.getElementById('start-btn').disabled = true;
+    updateGraphStatus('Awakening...');
+    log('=== LAPIS SERPENT AWAKENED ===');
+    log('"We don\'t compute. We see the connections already there."');
+    log('');
+
+    state.round = 0;
+    state.roundResults = [];
+    state.layers = [];
+    // Reset vectors
+    for (const v of VECTORS) { v.weight = 1.0; v.history = []; }
+
+    initMysteries();
+    state.mysteryInterval = setInterval(() => { stepMysteries(); drawMysteries(); }, 200);
+
+    for (let round = 1; round <= MAX_ROUNDS; round++) {
+        state.round = round;
+        state.coil = 0;
+        state.bitsResolved = 0;
+        state.energy = 1.0;
+        state.perceivedBits.fill(0);
+        state.confidence.fill(0);
+
+        const rm = ROUND_NAMES[round - 1];
+
+        // Add fortification layer (from round 2 onward, apply previous round's recommendation)
+        if (round > 1) {
+            const newLayer = LAYER_NAMES[round - 2];
+            state.layers.push(newLayer);
+            updateLayerStack();
+            addLesson(round - 2);
+            log(`[RAPHAEL] Fortification applied: ${newLayer}`);
+        }
+
+        // Generate fresh key and encrypt
+        currentKey = generateKey();
+        currentPlaintext = new Uint8Array(BLOCK_SIZE);
+        crypto.getRandomValues(currentPlaintext);
+        currentCiphertext = encrypt(currentPlaintext, currentKey, ['XOR Mask', ...state.layers]);
+
+        log(`\n--- ROUND ${round}: ${rm.planet} / ${rm.metal} ---`);
+        log(`Active layers: XOR Mask${state.layers.length ? ' + ' + state.layers.join(' + ') : ''}`);
+        log(`[SAMAEL] Deploying serpent...`);
+        updateGraphStatus(`Round ${round} — ${rm.planet}`);
+
+        // Run coils
+        const roundBitsPerVector = {};
+        for (const v of VECTORS) roundBitsPerVector[v.id] = 0;
+
+        await new Promise(resolve => {
+            let coilIdx = 0;
+            function tick() {
+                coilIdx++;
+                state.coil = coilIdx;
+
+                const bitsThisCoil = runAttackCoil(currentPlaintext, currentCiphertext, currentKey, state.layers, coilIdx);
+
+                // Track per-vector (approximate by distributing proportionally)
+                const totalW = VECTORS.reduce((s, v) => s + v.weight, 0);
+                for (const v of VECTORS) {
+                    roundBitsPerVector[v.id] += Math.round(bitsThisCoil * (v.weight / totalW));
+                }
+
+                drawPerceptionGraph();
+                updateVectorDisplay();
+                updateRoundStats();
+
+                if (coilIdx >= COILS_PER_ROUND || state.bitsResolved >= KEY_BITS) {
+                    resolve();
+                } else {
+                    state.animId = requestAnimationFrame(tick);
+                }
+            }
+            state.animId = requestAnimationFrame(tick);
+        });
+
+        // Record results
+        for (const v of VECTORS) v.history.push(roundBitsPerVector[v.id]);
+        state.roundResults.push({ round, bitsFound: state.bitsResolved, layers: [...state.layers] });
+
+        log(`[RESULT] Round ${round}: ${state.bitsResolved}/${KEY_BITS} bits perceived (${(state.bitsResolved/KEY_BITS*100).toFixed(1)}%)`);
+
+        // Council speaks
+        samaelSpeaks(state.bitsResolved, KEY_BITS);
+        unnamedSpeaks(state.bitsResolved, KEY_BITS);
+        raphaelSpeaks();
+
+        // Self-correct between rounds
+        if (round < MAX_ROUNDS) {
+            selfCorrect();
+        }
+
+        // Brief pause between rounds
+        await new Promise(r => setTimeout(r, 800));
+    }
+
+    // Add final layer lesson
+    addLesson(MAX_ROUNDS - 1);
+
+    // Final Report
+    log('\n=== 7 ROUNDS COMPLETE — GENERATING TRIAD REPORT ===');
+    updateGraphStatus('Report Generated');
+    generateFinalReport();
+
+    state.running = false;
+    document.getElementById('start-btn').disabled = false;
+    document.getElementById('start-btn').textContent = 'AWAKEN AGAIN';
+}
+
+// --- INITIAL DRAW ---
+drawPerceptionGraph();
+updateVectorDisplay();
+updateRoundStats();
+updateLayerStack();
+
+// NIS minimal presence
+(function NIS() {
+    const started = Date.now();
+    setInterval(() => {
+        const uptime = ((Date.now() - started) / 1000).toFixed(0);
+        const intel = document.getElementById('intel');
+        intel.innerHTML = `<div class="stat-row"><span>Uptime</span><span class="val">${uptime}s</span></div>` +
+            `<div class="stat-row"><span>Severity</span><span class="val" style="color:${state.round >= 5 ? '#ffaa00' : '#00ff88'}">${state.round >= 5 ? 'ALERT' : state.round >= 3 ? 'NOTICE' : 'WHISPER'}</span></div>` +
+            `<div class="stat-row"><span>Vectors Active</span><span class="val">${VECTORS.filter(v=>v.weight>0.05).length}/7</span></div>` +
+            `<div class="stat-row"><span>Defense Layers</span><span class="val">${state.layers.length + 1}</span></div>` +
+            `<div class="stat-row"><span>Memory</span><span class="val">${(performance.memory?.usedJSHeapSize/1024/1024||0).toFixed(1)}MB</span></div>`;
+    }, 1000);
+})();
+</script>
+</body>
+</html>

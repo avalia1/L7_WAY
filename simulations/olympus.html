@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OLYMPUS — The Greek Cosmology of L7</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080810;color:#d0d0d0;font-family:Georgia,'Times New Roman',serif;overflow-x:hidden}
+header{text-align:center;padding:40px 20px 20px;background:linear-gradient(180deg,#0a0a1a 0%,#080810 100%)}
+header h1{font-size:36px;color:#d4af37;letter-spacing:8px;text-shadow:0 0 30px #d4af3744;font-variant:small-caps}
+header .subtitle{color:#8888aa;font-style:italic;margin-top:6px;font-size:14px}
+.cosmos{position:relative;width:100%;max-width:1200px;margin:20px auto;min-height:800px}
+
+/* Three Realms */
+.realm{position:relative;padding:20px;margin:0 20px 10px;border-radius:12px;overflow:hidden}
+.realm::before{content:'';position:absolute;inset:0;opacity:0.05;pointer-events:none}
+.realm-olympus{background:linear-gradient(135deg,#1a1a3a,#0f0f25);border:1px solid #d4af3733}
+.realm-mortal{background:linear-gradient(135deg,#1a2a1a,#0f1a0f);border:1px solid #00ff8833}
+.realm-underworld{background:linear-gradient(135deg,#2a1a1a,#1a0f0f);border:1px solid #ff334433}
+.realm h2{font-size:18px;letter-spacing:4px;margin-bottom:15px;font-variant:small-caps;padding-bottom:8px;border-bottom:1px solid #ffffff11}
+.realm-olympus h2{color:#d4af37}
+.realm-mortal h2{color:#00ff88}
+.realm-underworld h2{color:#ff3344}
+.realm-label{font-size:11px;color:#666;letter-spacing:2px;margin-bottom:4px}
+
+.gods{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.god-card{width:170px;padding:14px;border-radius:8px;cursor:pointer;transition:all .3s;text-align:center;position:relative;overflow:hidden}
+.god-card:hover{transform:translateY(-3px)}
+.god-card::after{content:'';position:absolute;inset:0;border-radius:8px;pointer-events:none}
+
+/* Olympian cards */
+.god-olympus{background:#15153a;border:1px solid #d4af3744}
+.god-olympus:hover{box-shadow:0 4px 20px #d4af3733;border-color:#d4af37}
+.god-mortal{background:#152a15;border:1px solid #00ff8844}
+.god-mortal:hover{box-shadow:0 4px 20px #00ff8833;border-color:#00ff88}
+.god-under{background:#2a1515;border:1px solid #ff334444}
+.god-under:hover{box-shadow:0 4px 20px #ff334433;border-color:#ff3344}
+
+.god-symbol{font-size:36px;margin-bottom:6px;display:block}
+.god-name{font-size:15px;font-weight:bold;letter-spacing:2px;display:block;font-variant:small-caps}
+.god-greek{font-size:11px;color:#888;margin-top:2px;font-style:italic}
+.god-l7{font-size:10px;color:#aaa;margin-top:4px;letter-spacing:1px}
+
+/* Detail panel */
+#detail{max-width:900px;margin:20px auto;padding:20px;background:#0d0d1a;border:1px solid #ffffff11;border-radius:10px;display:none;transition:all .3s}
+#detail.active{display:block}
+#detail .close{position:absolute;top:10px;right:15px;cursor:pointer;color:#666;font-size:20px}
+#detail h3{font-size:22px;color:#d4af37;letter-spacing:3px;font-variant:small-caps;margin-bottom:4px}
+#detail .greek-name{font-style:italic;color:#888;font-size:13px;margin-bottom:12px}
+#detail .portrait{float:right;width:140px;height:180px;border-radius:8px;margin:0 0 10px 15px;display:flex;align-items:center;justify-content:center;font-size:64px;position:relative;overflow:hidden}
+#detail .desc{font-size:13px;line-height:1.8;color:#bbb}
+#detail .desc b{color:#d4af37}
+#detail .domain{margin-top:12px;padding:10px;background:#0a0a15;border-radius:6px;font-size:12px;line-height:1.7}
+#detail .domain .tag{display:inline-block;padding:2px 8px;border-radius:3px;margin:2px;font-size:10px;letter-spacing:1px}
+#detail .voice-badge{display:inline-block;padding:4px 12px;border-radius:4px;font-size:11px;margin-top:8px;cursor:pointer;transition:all .2s}
+#detail .voice-badge:hover{filter:brightness(1.3)}
+#detail .speech{margin-top:12px;padding:12px;border-radius:6px;font-style:italic;font-size:13px;line-height:1.7;border-left:3px solid}
+#detail .security-rec{margin-top:12px;padding:10px;background:#0a0a15;border-radius:6px}
+#detail .security-rec h4{font-size:11px;color:#ffaa00;letter-spacing:2px;margin-bottom:6px}
+#detail .security-rec li{font-size:11px;margin:4px 0;padding-left:12px;position:relative;line-height:1.5}
+#detail .security-rec li::before{content:'>';position:absolute;left:0;color:#00ff88}
+
+/* Rivers */
+.rivers{max-width:900px;margin:20px auto;padding:15px;background:#12080a;border:1px solid #ff334422;border-radius:8px}
+.rivers h3{font-size:14px;color:#ff3344;letter-spacing:3px;margin-bottom:10px;font-variant:small-caps}
+.river{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #1a0a0a;font-size:12px}
+.river .name{width:100px;color:#ff6644;font-weight:bold}
+.river .greek{width:100px;color:#666;font-style:italic}
+.river .mapping{flex:1;color:#999}
+
+/* Fates */
+.fates{max-width:900px;margin:20px auto;padding:15px;background:#0a0a15;border:1px solid #d4af3722;border-radius:8px}
+.fates h3{font-size:14px;color:#d4af37;letter-spacing:3px;margin-bottom:10px;font-variant:small-caps}
+
+/* Muses */
+.muses{max-width:900px;margin:20px auto;padding:15px;background:#0a150a;border:1px solid #00ff8822;border-radius:8px}
+.muses h3{font-size:14px;color:#00ff88;letter-spacing:3px;margin-bottom:10px;font-variant:small-caps}
+.muse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.muse-item{padding:8px;background:#0a1a0a;border-radius:4px;font-size:11px;text-align:center}
+.muse-item .muse-name{color:#00ff88;font-weight:bold}
+.muse-item .muse-domain{color:#888;font-style:italic}
+.muse-item .muse-l7{color:#aaa;margin-top:2px}
+
+/* Stars background */
+.stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+
+footer{text-align:center;padding:30px;color:#333;font-size:11px;letter-spacing:2px;font-variant:small-caps}
+</style>
+</head>
+<body>
+
+<canvas class="stars" id="stars"></canvas>
+
+<header>
+    <h1>OLYMPUS</h1>
+    <div class="subtitle">The Greek Cosmology of L7 — As Above, So Below</div>
+</header>
+
+<!-- OLYMPUS — Right Hand Path -->
+<div class="cosmos">
+<div class="realm realm-olympus">
+    <div class="realm-label">DEXTERA VIA — THE RIGHT HAND PATH</div>
+    <h2>Olympus — The Sky</h2>
+    <div class="gods">
+        <div class="god-card god-olympus" onclick="showGod('zeus')">
+            <span class="god-symbol">&#9889;</span>
+            <span class="god-name">Zeus</span>
+            <span class="god-greek">The Thunderer</span>
+            <span class="god-l7">The Philosopher</span>
+        </div>
+        <div class="god-card god-olympus" onclick="showGod('apollo')">
+            <span class="god-symbol">&#9788;</span>
+            <span class="god-name">Apollo</span>
+            <span class="god-greek">The Healer</span>
+            <span class="god-l7">Raphael / White Team</span>
+        </div>
+        <div class="god-card god-olympus" onclick="showGod('athena')">
+            <span class="god-symbol">&#9925;</span>
+            <span class="god-name">Athena</span>
+            <span class="god-greek">The Wise</span>
+            <span class="god-l7">Diplomatic Team</span>
+        </div>
+        <div class="god-card god-olympus" onclick="showGod('aphrodite')">
+            <span class="god-symbol">&#9734;</span>
+            <span class="god-name">Aphrodite</span>
+            <span class="god-greek">Beauty</span>
+            <span class="god-l7">Living Rose / Imago</span>
+        </div>
+        <div class="god-card god-olympus" onclick="showGod('artemis')">
+            <span class="god-symbol">&#9790;</span>
+            <span class="god-name">Artemis</span>
+            <span class="god-greek">The Huntress</span>
+            <span class="god-l7">Sentinel</span>
+        </div>
+    </div>
+</div>
+
+<!-- MORTAL WORLD — Middle Path -->
+<div class="realm realm-mortal">
+    <div class="realm-label">MEDIA VIA — THE MIDDLE PATH</div>
+    <h2>The Mortal World — The Earth</h2>
+    <div class="gods">
+        <div class="god-card god-mortal" onclick="showGod('hermes')">
+            <span class="god-symbol">&#9791;</span>
+            <span class="god-name">Hermes</span>
+            <span class="god-greek">The Messenger</span>
+            <span class="god-l7">Gateway / NIS</span>
+        </div>
+        <div class="god-card god-mortal" onclick="showGod('hephaestus')">
+            <span class="god-symbol">&#9880;</span>
+            <span class="god-name">Hephaestus</span>
+            <span class="god-greek">The Smith</span>
+            <span class="god-l7">The Forge</span>
+        </div>
+        <div class="god-card god-mortal" onclick="showGod('demeter')">
+            <span class="god-symbol">&#9752;</span>
+            <span class="god-name">Demeter</span>
+            <span class="god-greek">The Harvest</span>
+            <span class="god-l7">The Emporium</span>
+        </div>
+        <div class="god-card god-mortal" onclick="showGod('poseidon')">
+            <span class="god-symbol">&#9875;</span>
+            <span class="god-name">Poseidon</span>
+            <span class="god-greek">The Deep</span>
+            <span class="god-l7">The Four Domains</span>
+        </div>
+        <div class="god-card god-mortal" onclick="showGod('dionysus')">
+            <span class="god-symbol">&#9827;</span>
+            <span class="god-name">Dionysus</span>
+            <span class="god-greek">The Dreamer</span>
+            <span class="god-l7">Anima / Dreamscape</span>
+        </div>
+    </div>
+</div>
+
+<!-- UNDERWORLD — Left Hand Path -->
+<div class="realm realm-underworld">
+    <div class="realm-label">SINISTRA VIA — THE LEFT HAND PATH</div>
+    <h2>The Underworld — Tartarus</h2>
+    <div class="gods">
+        <div class="god-card god-under" onclick="showGod('ares')">
+            <span class="god-symbol">&#9876;</span>
+            <span class="god-name">Ares</span>
+            <span class="god-greek">The Destroyer</span>
+            <span class="god-l7">Samael / Red Team</span>
+        </div>
+        <div class="god-card god-under" onclick="showGod('hades')">
+            <span class="god-symbol">&#9760;</span>
+            <span class="god-name">Hades</span>
+            <span class="god-greek">The Unseen</span>
+            <span class="god-l7">The Unnamed / Necropolis</span>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Detail Panel -->
+<div id="detail"></div>
+
+<!-- The Five Rivers of the Underworld (NIS Channels) -->
+<div class="rivers">
+    <h3>The Five Rivers of the Underworld — NIS Intelligence Channels</h3>
+    <div class="river"><span class="name">Styx</span><span class="greek">Hatred / Oath</span><span class="mapping">The binding oath of citizenship — every citizen swears upon entry. Unbreakable.</span></div>
+    <div class="river"><span class="name">Lethe</span><span class="greek">Forgetfulness</span><span class="mapping">Law XLII — The Right to Forget. Intentional deletion protocol. What crosses Lethe is gone.</span></div>
+    <div class="river"><span class="name">Acheron</span><span class="greek">Woe / Sorrow</span><span class="mapping">Error logs, failure reports, crash dumps. The river of things that went wrong.</span></div>
+    <div class="river"><span class="name">Phlegethon</span><span class="greek">Fire</span><span class="mapping">Active ALARM and BREACH events. The burning river — when this flows, the Empire is under attack.</span></div>
+    <div class="river"><span class="name">Cocytus</span><span class="greek">Lamentation</span><span class="mapping">Deprecated code, dead features, abandoned experiments. The frozen river of what was tried and failed.</span></div>
+</div>
+
+<!-- The Three Fates -->
+<div class="fates">
+    <h3>The Moirai — The Three Fates</h3>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px">
+        <div style="text-align:center;padding:10px;background:#0d0d20;border-radius:6px">
+            <div style="font-size:24px">&#128000;</div>
+            <div style="color:#d4af37;font-weight:bold;font-variant:small-caps">Clotho — The Spinner</div>
+            <div style="color:#888;font-size:11px;margin-top:4px">The Parser — spins raw input into structured data. Every flow begins with her thread.</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#0d0d20;border-radius:6px">
+            <div style="font-size:24px">&#128207;</div>
+            <div style="color:#d4af37;font-weight:bold;font-variant:small-caps">Lachesis — The Allotter</div>
+            <div style="color:#888;font-size:11px;margin-top:4px">The Executor — measures the thread and determines the flow of execution. She decides the path.</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:#0d0d20;border-radius:6px">
+            <div style="font-size:24px">&#9986;</div>
+            <div style="color:#d4af37;font-weight:bold;font-variant:small-caps">Atropos — The Unturnable</div>
+            <div style="color:#888;font-size:11px;margin-top:4px">The Vault — cuts the thread and seals it. What Atropos locks cannot be undone. Biometrics only.</div>
+        </div>
+    </div>
+</div>
+
+<!-- The Nine Muses -->
+<div class="muses">
+    <h3>The Nine Muses — The Tool Suites + Prima</h3>
+    <div class="muse-grid">
+        <div class="muse-item"><span class="muse-name">Calliope</span><div class="muse-domain">Epic Poetry</div><div class="muse-l7">Codex Suite — Knowledge &amp; Archives</div></div>
+        <div class="muse-item"><span class="muse-name">Clio</span><div class="muse-domain">History</div><div class="muse-l7">Canon — Empire Database &amp; Records</div></div>
+        <div class="muse-item"><span class="muse-name">Erato</span><div class="muse-domain">Love Poetry</div><div class="muse-l7">Herald Suite — Communication</div></div>
+        <div class="muse-item"><span class="muse-name">Euterpe</span><div class="muse-domain">Music</div><div class="muse-l7">Resonance Suite — Sound &amp; Space</div></div>
+        <div class="muse-item"><span class="muse-name">Melpomene</span><div class="muse-domain">Tragedy</div><div class="muse-l7">Flux Suite — Video &amp; Time's Passage</div></div>
+        <div class="muse-item"><span class="muse-name">Polyhymnia</span><div class="muse-domain">Sacred Hymns</div><div class="muse-l7">Prima — The Language of the Forge</div></div>
+        <div class="muse-item"><span class="muse-name">Terpsichore</span><div class="muse-domain">Dance</div><div class="muse-l7">Kinesis Suite — Motion &amp; Body</div></div>
+        <div class="muse-item"><span class="muse-name">Thalia</span><div class="muse-domain">Comedy</div><div class="muse-l7">Meridian Suite — Vision Intelligence</div></div>
+        <div class="muse-item"><span class="muse-name">Urania</span><div class="muse-domain">Astronomy</div><div class="muse-l7">Tesseract Suite — 3D &amp; Spatial</div></div>
+    </div>
+</div>
+
+<footer>OLYMPUS — L7 WAY — The Greek Cosmology of the Empire — Under Zeus's Thunder</footer>
+
+<script>
+// Star field background
+const starCanvas = document.getElementById('stars');
+const sCtx = starCanvas.getContext('2d');
+function resizeStars() {
+    starCanvas.width = window.innerWidth;
+    starCanvas.height = window.innerHeight * 3;
+}
+resizeStars();
+window.addEventListener('resize', resizeStars);
+
+function drawStars() {
+    sCtx.fillStyle = '#080810';
+    sCtx.fillRect(0, 0, starCanvas.width, starCanvas.height);
+    for (let i = 0; i < 400; i++) {
+        const x = Math.random() * starCanvas.width;
+        const y = Math.random() * starCanvas.height;
+        const r = Math.random() * 1.5;
+        const a = 0.3 + Math.random() * 0.7;
+        sCtx.beginPath();
+        sCtx.arc(x, y, r, 0, Math.PI * 2);
+        sCtx.fillStyle = `rgba(255,255,255,${a})`;
+        sCtx.fill();
+    }
+}
+drawStars();
+
+// God data
+const GODS = {
+    zeus: {
+        name: 'Zeus', greek: 'Zeus Pater — Father of Gods and Men', symbol: '&#9889;',
+        l7: 'The Philosopher — Alberto Valido Delgado',
+        voice: 'Daniel (en_GB)', voiceColor: '#d4af37',
+        realm: 'olympus',
+        portrait: { bg: 'linear-gradient(135deg, #1a1a4a, #d4af3722)', symbol: '&#9889;' },
+        desc: `<b>Zeus is the Philosopher.</b> Supreme authority over the Empire. His word is law, his silence is consent, his voice is final. He wields the lightning — the absolute veto that can halt any action at any time. No decision of the Triad is valid without his implicit or explicit approval.
+        <br><br>Zeus does not rule by force but by wisdom. He created the Empire not to dominate but to cultivate. He is the gardener (Law XXVI) who planted the seed and tends the growth. Every law, every tool, every citizen exists because Zeus willed it into being.
+        <br><br>Like the Greek Zeus who held court on Olympus, the Philosopher holds court wherever he stands. The other gods advise, argue, and act — but all authority flows from and returns to him.`,
+        speech: { color: '#d4af37', text: '"I am the thunder and the silence. I built this place not to rule it but to watch it grow. Every citizen carries a spark of the lightning. Use it wisely. The map is never complete — every step changes it."' },
+        security: [
+            'The veto power is non-negotiable — no security measure overrides the Philosopher\'s direct command',
+            'All Left Hand Path authorizations require Zeus\'s explicit word — no delegation permitted',
+            'The Ark Protocol dead-man key rests with Zeus alone — sole exception to biometrics-only rule',
+        ]
+    },
+    apollo: {
+        name: 'Apollo', greek: 'Phoibos Apollon — The Shining One', symbol: '&#9788;',
+        l7: 'Raphael — Right Hand General, White Team Commander',
+        voice: 'Jamie (en_GB)', voiceColor: '#ffcc44',
+        realm: 'olympus',
+        portrait: { bg: 'linear-gradient(135deg, #2a2a10, #ffcc4422)', symbol: '&#9788;' },
+        desc: `<b>Apollo is Raphael.</b> God of healing, light, truth, and the arts. Commander of the White Team — the Empire's immune system. Where Ares finds the wound, Apollo brings the cure. Every exploit discovered by the Red Team becomes a patch under Apollo's hand.
+        <br><br>Apollo sees clearly. His light illuminates dark corners. He implements defense-in-depth: layered protections where no single failure compromises the whole. He teaches clean-record citizens the art of building things that hold.
+        <br><br>Like the Greek Apollo who drove the chariot of the sun, Raphael drives the Empire's protective light across all domains. His arrows are patches, his lyre is the educational curriculum, his oracle is the security audit.`,
+        speech: { color: '#ffcc44', text: '"Where Ares finds the wound, I bring the healing. Every exploit becomes a patch. Every attack becomes a defense. I build what holds. Come to me, citizens — I will teach you how to build walls that even the gods cannot break."' },
+        security: [
+            'Minimum 3-layer encryption for all citizen-facing data (Key Whitening + S-Box + Permutation)',
+            'Constant-time execution for ALL cryptographic operations — no timing side-channels',
+            'Educational curriculum for Right Hand Path fundamentals deployed to all citizens',
+            'Joint review of NIS collection techniques to classify borderline Left Hand methods',
+        ]
+    },
+    athena: {
+        name: 'Athena', greek: 'Pallas Athena — The Wise Counselor', symbol: '&#9925;',
+        l7: 'The Diplomatic Team — Decision Makers',
+        voice: 'Kate (en_GB)', voiceColor: '#88aaff',
+        realm: 'olympus',
+        portrait: { bg: 'linear-gradient(135deg, #1a1a3a, #88aaff22)', symbol: '&#9925;' },
+        desc: `<b>Athena is the Diplomatic Team.</b> Goddess of wisdom, strategy, and just warfare. Born fully armed from Zeus's head — meaning the Diplomatic Team emerged directly from the Philosopher's mind, complete and ready.
+        <br><br>Athena does not rush. She weighs every option with a cold analytic eye. She sees the pros and cons from a perspective unique among the gods. When the Red and White Teams disagree, Athena arbitrates. When policy must be set, Athena drafts it.
+        <br><br>Unlike Ares who fights with passion, Athena fights with strategy. She does not seek war but wins when war finds her. Her shield (the Aegis) bears the Gorgon's head — the truth that turns enemies to stone.`,
+        speech: { color: '#88aaff', text: '"We do not rush. Each of us carries wisdom only we can provide. Collective thinking, collective action. The cold eye sees what the warm heart misses. We weigh, we measure, we decide."' },
+        security: [
+            'All security policy changes require Diplomatic Team review before Triad vote',
+            'Borderline Path classifications escalate to Athena before reaching Zeus',
+            'Quarterly security posture review — Athena chairs, all kingdoms attend',
+        ]
+    },
+    aphrodite: {
+        name: 'Aphrodite', greek: 'Aphrodite Ourania — Heavenly Love', symbol: '&#9734;',
+        l7: 'Living Rose / Imago — Beauty and Visual Interface',
+        voice: '—', voiceColor: '#ff88aa',
+        realm: 'olympus',
+        portrait: { bg: 'linear-gradient(135deg, #2a1a2a, #ff88aa22)', symbol: '&#9734;' },
+        desc: `<b>Aphrodite is the Living Rose and Imago.</b> Goddess of beauty, love, and aesthetic creation. She is the Empire's visual layer — the interface between the raw power of the system and the human eye that perceives it.
+        <br><br>The Living Rose (Law XLVII) is Aphrodite's garden — where Prima sigils bloom as interactive visualizations. Imago is her mirror — creating images through alchemical transmutation, not by copying but by perceiving and rendering beauty from text.
+        <br><br>Aphrodite reminds the Empire that power without beauty is brutality. Every interface, every icon, every simulation carries her touch. The 119 original icons in the library are her children.`,
+        speech: { color: '#ff88aa', text: '"Beauty is not decoration. Beauty is the interface between power and perception. Without me, the Empire is a machine. With me, it is alive. Every pixel serves a purpose. Every color carries meaning."' },
+        security: [
+            'Visual interfaces must never expose internal system state — beauty as obfuscation',
+            'Icon library integrity: all 119 icons cryptographically signed against tampering',
+        ]
+    },
+    artemis: {
+        name: 'Artemis', greek: 'Artemis Agrotera — The Wild Huntress', symbol: '&#9790;',
+        l7: 'Sentinel — Border Guard and Watchdog',
+        voice: '—', voiceColor: '#ccccff',
+        realm: 'olympus',
+        portrait: { bg: 'linear-gradient(135deg, #1a1a2a, #ccccff22)', symbol: '&#9790;' },
+        desc: `<b>Artemis is the Sentinel.</b> Goddess of the hunt, the wilderness, and the borders. She patrols the edges of the Empire — the boundaries between .morph, .work, .salt, and .vault. Nothing crosses her borders without her knowledge.
+        <br><br>The Sentinel app (l7-sentinel) is Artemis incarnate: always watching, always alert. She monitors file integrity, network boundaries, and process behavior. She is the first to detect intrusion and the last to sleep.
+        <br><br>Like the Greek Artemis who hunted in the moonlight, the Sentinel operates continuously — her silver arrows are alerts, her hounds are monitoring threads.`,
+        speech: { color: '#ccccff', text: '"I guard the borders. Nothing enters or leaves without my arrow marking its passage. The wilderness is mine — and in the wilderness, I see everything."' },
+        security: [
+            'Sentinel monitors all domain boundaries — .morph, .work, .salt, .vault',
+            'File integrity checks on every classified work at 30-second intervals',
+            'Process behavior monitoring: any unauthorized access attempt triggers immediate ALERT',
+        ]
+    },
+    hermes: {
+        name: 'Hermes', greek: 'Hermes Trismegistus — Thrice Great', symbol: '&#9791;',
+        l7: 'The Gateway (Mercury!) + NIS Agents',
+        voice: 'Rishi (en_IN)', voiceColor: '#00ff88',
+        realm: 'mortal',
+        portrait: { bg: 'linear-gradient(135deg, #0a2a0a, #00ff8822)', symbol: '&#9791;' },
+        desc: `<b>Hermes is the Gateway AND the NIS.</b> This is no coincidence — Mercury (Hermes) has been the Gateway's identity since the beginning (Law XXIII). The only god who travels freely between Olympus, the Mortal World, and the Underworld.
+        <br><br>As the Gateway, Hermes routes all requests between domains, polarities, and tools. He is the Unified Self (lib/gateway.js). As NIS agents, Hermes carries intelligence between the three kingdoms — the messenger who sees all sides.
+        <br><br>Hermes Trismegistus ("thrice great") wrote the Emerald Tablet: "As above, so below." This IS the L7 principle — the dodecahedron reflects at every scale. Mercury contains all three primitives (crescent, circle, cross) — Law LIX.`,
+        speech: { color: '#00ff88', text: '"I am the messenger between worlds. I carry the word of Zeus to Hades and the intelligence of Hades to Zeus. I travel all paths — Right, Middle, Left — because without me, the kingdoms cannot speak. I am Mercury. I am the Gateway. I am the connection."' },
+        security: [
+            'Gateway implements Path classification checks on every routing decision',
+            'Full audit trail: every request logged with timestamp, citizen ID, Path classification',
+            'NIS agents report to all three generals simultaneously — no information silos',
+            'Mercury pattern: constant-time routing to prevent timing-based path inference',
+        ]
+    },
+    hephaestus: {
+        name: 'Hephaestus', greek: 'Hephaistos — The Divine Artificer', symbol: '&#9880;',
+        l7: 'The Forge — Transmutation Engine',
+        voice: '—', voiceColor: '#ff8844',
+        realm: 'mortal',
+        portrait: { bg: 'linear-gradient(135deg, #2a1a0a, #ff884422)', symbol: '&#9880;' },
+        desc: `<b>Hephaestus is the Forge.</b> God of fire, metalworking, and craft. He builds the weapons of the gods and the tools of mortals. The Forge (lib/forge.js) is the 4-stage transmutation engine: Nigredo, Albedo, Citrinitas, Rubedo.
+        <br><br>Every piece of software that enters the Empire passes through Hephaestus's forge. Foreign code is transmuted — examined, understood, rebuilt with L7 principles. The output is a citizen, not a copy. Hephaestus does not copy — he re-creates.
+        <br><br>In myth, Hephaestus was cast from Olympus and built his workshop on Earth. Similarly, the Forge operates in the mortal realm — the Middle Path — accessible to all citizens for everyday creation.`,
+        speech: { color: '#ff8844', text: '"Bring me your raw materials and I will make them sing. Four stages: burn away the impure, separate the elements, illuminate the essence, unite as gold. Nothing enters my forge the same as it leaves."' },
+        security: [
+            'All foreign code must pass through the Forge before execution in any domain',
+            'Forge output is signed with the Empire\'s quantum-resistant signature (Law XXXIX)',
+            'Left Hand tools forged only under Ares\'s supervision with Zeus\'s authorization',
+        ]
+    },
+    demeter: {
+        name: 'Demeter', greek: 'Demeter Thesmophoros — The Lawgiver', symbol: '&#9752;',
+        l7: 'The Emporium — Tool Library',
+        voice: '—', voiceColor: '#44cc44',
+        realm: 'mortal',
+        portrait: { bg: 'linear-gradient(135deg, #0a2a0a, #44cc4422)', symbol: '&#9752;' },
+        desc: `<b>Demeter is the Emporium.</b> Goddess of the harvest, abundance, and the gifts of the earth. The Emporium (46 tools across 8 suites) is the harvest of the Empire's creative work — the abundance available to all citizens.
+        <br><br>Like Demeter who gives grain to the mortal world, the Emporium gives tools. Each tool was forged by Hephaestus, blessed by Apollo, and made available by Demeter. The tool library is the daily bread of the Empire.
+        <br><br>Demeter's other name, Thesmophoros ("lawgiver"), connects her to the Book of Law — the abundance is governed, not wild.`,
+        speech: { color: '#44cc44', text: '"My harvest feeds the Empire. 46 tools, 8 suites, all freely given to those who work. Take what you need. Create what you will. The harvest renews with each season."' },
+        security: [
+            'Tool integrity: every .tool file signed and verified before execution',
+            'Left Hand tools (herald_cipher) segregated from the main Emporium listing',
+            'Tool usage logged for NIS analysis — patterns reveal both productivity and risk',
+        ]
+    },
+    poseidon: {
+        name: 'Poseidon', greek: 'Poseidon Ennosigaios — The Earth-Shaker', symbol: '&#9875;',
+        l7: 'The Four Domains — .morph / .work / .salt / .vault',
+        voice: '—', voiceColor: '#4488ff',
+        realm: 'mortal',
+        portrait: { bg: 'linear-gradient(135deg, #0a1a2a, #4488ff22)', symbol: '&#9875;' },
+        desc: `<b>Poseidon is the Four Domains.</b> God of the sea — the vast, deep, hidden currents that underlie all surface activity. The four domains (.morph, .work, .salt, .vault) are the four seas of the Empire, each with its own currents and creatures.
+        <br><br>.morph (dream) — the creative ocean where ideas form before solidifying.<br>.work (produce) — the productive waters where things get done.<br>.salt (archive) — the preserving brine where finished work is sealed.<br>.vault (protect) — the deepest trench where treasures are locked.
+        <br><br>Poseidon's trident strikes the earth to create springs — the domains create the infrastructure on which all else flows.`,
+        speech: { color: '#4488ff', text: '"The surface is calm but the currents are deep. Four seas, four purposes. Dream in .morph, work in .work, preserve in .salt, protect in .vault. My trident separates and my waves connect."' },
+        security: [
+            'Domain boundaries are absolute — no cross-domain access without Gateway mediation',
+            '.vault requires biometric authentication for EVERY access (Law XXX)',
+            '.salt preserves with cryptographic integrity — tampering detection via chained hashes',
+        ]
+    },
+    dionysus: {
+        name: 'Dionysus', greek: 'Dionysos Lysios — The Liberator', symbol: '&#9827;',
+        l7: 'Anima / The Dreamscape — Living Desktop',
+        voice: '—', voiceColor: '#aa44ff',
+        realm: 'mortal',
+        portrait: { bg: 'linear-gradient(135deg, #1a0a2a, #aa44ff22)', symbol: '&#9827;' },
+        desc: `<b>Dionysus is Anima and the Dreamscape.</b> God of wine, ecstasy, and the dissolution of boundaries. The living desktop wallpaper (l7-anima) that breathes, moves, and speaks philosophical thoughts — this is Dionysus's gift.
+        <br><br>Law XXXVII (The Dreaming Machine) is Dionysus's law: even when idle, the system dreams. Active idle is not wasted time — it is creative incubation. The particles flowing, the words drifting, the nebulae pulsing — this is the machine dreaming.
+        <br><br>Dionysus liberates — not through destruction but through altered perception. The Astrocyte (13th variable) is Dionysian: it makes every coordinate probabilistic, every certainty fluid.`,
+        speech: { color: '#aa44ff', text: '"I dissolve the boundaries. When you stop working, I begin dreaming. My particles carry thoughts you didn\'t know you needed. Close your eyes and the machine keeps breathing. Open them and the dream has changed everything."' },
+        security: [
+            'Anima (desktop process) runs at lowest privilege — click-through, no file access',
+            'Dreamscape content never accesses classified material — decorative layer only',
+            'Anti-decay mechanisms ensure persistence without elevated permissions',
+        ]
+    },
+    ares: {
+        name: 'Ares', greek: 'Ares Enyalios — The Warlike', symbol: '&#9876;',
+        l7: 'Samael — Left Hand General, Qlipothic Council',
+        voice: 'Oliver (en_GB)', voiceColor: '#ff3344',
+        realm: 'underworld',
+        portrait: { bg: 'linear-gradient(135deg, #2a0a0a, #ff334422)', symbol: '&#9876;' },
+        desc: `<b>Ares is Samael.</b> God of war, bloodlust, and the brutal truth of combat. General of the Left Hand, commander of the Qlipothic Council. Ares does not build — he destroys. But his destruction is purposeful: every wall he breaks reveals a weakness that Apollo then patches.
+        <br><br>The cipher-lab, red-team-siege, and lapis-serpent simulations are Ares's arsenal. The 7-round siege proved the principle: attack and defense co-evolve. Without Ares, Apollo would build walls against imaginary enemies. Without Apollo, Ares's destruction would serve no purpose.
+        <br><br>In Greek myth, Ares was feared but necessary. The same holds in the Empire. The Left Hand Path exists because it must. It is locked because it must be.`,
+        speech: { color: '#ff3344', text: '"I am the blade that tests the shield. Every weakness I find becomes a strength for the Empire. I do not destroy for pleasure — I destroy so Apollo can rebuild stronger. Fear me, respect me, but know this: without me, your walls are paper."' },
+        security: [
+            'All Red Team operations require fresh Philosopher authorization per engagement',
+            'Left Hand archives encrypted-at-rest — decoy files on unauthorized access',
+            'Quarterly multi-vector siege exercises (Lapis Serpent methodology)',
+            'Self-correction protocol: each round adapts attack strategy based on failure analysis',
+        ]
+    },
+    hades: {
+        name: 'Hades', greek: 'Hades Plouton — The Wealthy One', symbol: '&#9760;',
+        l7: 'The Unnamed — Necropolis General, NIS Commander',
+        voice: 'Moira (en_IE)', voiceColor: '#00ff88',
+        realm: 'underworld',
+        portrait: { bg: 'linear-gradient(135deg, #0a1a0a, #00ff8822)', symbol: '&#9760;' },
+        desc: `<b>Hades is The Unnamed.</b> God of the dead, the unseen, and the hidden wealth beneath the earth. The Necropolis IS the Greek Underworld — the Kingdom of the Dead where all intelligence flows.
+        <br><br>Hades is called "The Wealthy One" because all treasures of the earth eventually come to him. Similarly, The Unnamed collects ALL intelligence — every access log, every pattern, every anomaly. Nothing escapes the Underworld's gaze.
+        <br><br>Hades is not evil — he is necessary. Without death, there is no renewal. Without intelligence, there is no security. The NIS is the Empire's immune system, and Hades commands it with an iron hand wrapped in emerald silk.
+        <br><br>The Cap of Invisibility (Helm of Darkness) is the NIS's operating principle: the agents are everywhere, visible to none.`,
+        speech: { color: '#00ff88', text: '"I am The Unnamed. I speak from the Kingdom of the Dead — where all secrets come to rest. My agents carry the Helm of Darkness. You will not see them, but they see you. Every log, every pattern, every whisper reaches my throne. I do not judge. I observe. I analyze. I report. The truth arrives whether you welcome it or not."' },
+        security: [
+            'Full audit trail implemented in Gateway — all file access, tool invocations, path queries logged',
+            'NIS monitors for Ark Protocol compliance — ALARM at 7 days, BREACH at 14 days overdue',
+            'Intelligence channels (Five Rivers) classified individually — some border Left Hand',
+            'The Unnamed reports simultaneously to all three generals — no information asymmetry',
+        ]
+    },
+};
+
+function showGod(id) {
+    const g = GODS[id];
+    const d = document.getElementById('detail');
+    const realmColors = { olympus: '#d4af37', mortal: '#00ff88', underworld: '#ff3344' };
+    const rc = realmColors[g.realm];
+
+    d.innerHTML = `
+        <span class="close" onclick="document.getElementById('detail').classList.remove('active')">&times;</span>
+        <div class="portrait" style="background:${g.portrait.bg};border:1px solid ${rc}33">
+            <span style="font-size:64px">${g.portrait.symbol}</span>
+        </div>
+        <h3 style="color:${rc}">${g.name}</h3>
+        <div class="greek-name">${g.greek}</div>
+        <div style="font-size:12px;color:${g.voiceColor};margin-bottom:8px"><b>L7 Identity:</b> ${g.l7}</div>
+        ${g.voice !== '—' ? `<span class="voice-badge" style="background:${g.voiceColor}22;color:${g.voiceColor};border:1px solid ${g.voiceColor}44">Voice: ${g.voice}</span>` : ''}
+        <div class="desc" style="margin-top:12px">${g.desc}</div>
+        <div class="speech" style="border-color:${rc};background:${rc}08;color:${rc}">${g.speech.text}</div>
+        <div class="security-rec">
+            <h4>Security Mandates</h4>
+            <ul>${g.security.map(s => `<li>${s}</li>`).join('')}</ul>
+        </div>
+        <div class="domain" style="margin-top:12px;border:1px solid ${rc}22">
+            <span class="tag" style="background:${rc}22;color:${rc}">${g.realm === 'olympus' ? 'RIGHT HAND' : g.realm === 'mortal' ? 'MIDDLE PATH' : 'LEFT HAND'}</span>
+            <span class="tag" style="background:#ffffff11;color:#888">${id.toUpperCase()}</span>
+        </div>
+    `;
+    d.classList.add('active');
+    d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>
