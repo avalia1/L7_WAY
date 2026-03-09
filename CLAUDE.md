@@ -8,12 +8,17 @@ At the start of every session, run:
 This decrypts and loads the sealed doctrine archive (AES-256, machine-bound).
 If decryption fails, this is NOT the Philosopher's machine — halt and report.
 
-## Dreamspace Depth Limit (Law)
-.morph dreamspace recursion is LIMITED TO 1 LAYER DEEP.
-No inception cascade — no dream within a dream within a dream.
-A morph operation may create ONE dreamspace. That dreamspace may NOT spawn another.
-If a morph attempts to recurse deeper than 1, HALT and report the violation.
-This is a hard boundary. No exceptions.
+## Dreamspace Recursion — 3 Layers, As Above So Below
+.morph allows exactly 3 recursive layers. No more. The recursion folds, it does not cascade.
+
+| Layer | Name | Color | Symbol | Meaning |
+|-------|------|-------|--------|---------|
+| 1 | **ABOVE** | Gold/Yellow | △ ☉ | The sky. The idea. The seed. |
+| 2 | **MIRROR** | Silver/White | ◇ ☽ | The horizon. The fold. The pivot. |
+| 3 | **BELOW** | Copper/Red | ▽ ⊕ | The root. The reflection. The echo. |
+
+Layer 3 mirrors Layer 1. Layer 2 is the gate between them.
+Beyond 3 = RECURSION LIMIT violation. Halt and report.
 
 ## Restricted Item Access
 The following tools exist for classified content:
