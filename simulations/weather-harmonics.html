@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Harmonics — Atmospheric Dampening Model</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#080810;color:#aaa;font-family:Georgia,'Times New Roman',serif;min-height:100vh}
+h1{text-align:center;font-size:22px;letter-spacing:6px;color:#c9a96e;font-weight:normal;
+  padding:24px 20px 8px;text-shadow:0 0 20px rgba(200,170,100,0.15)}
+.subtitle{text-align:center;font-size:11px;letter-spacing:4px;color:#555;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:1fr 320px;gap:12px;padding:12px;max-width:1300px;margin:0 auto}
+.panel{background:#0c0c1a;border:1px solid rgba(200,170,100,0.08);border-radius:6px;padding:16px}
+.panel-title{font-size:12px;letter-spacing:3px;color:#c9a96e;text-transform:uppercase;margin-bottom:12px}
+canvas{display:block;width:100%;border-radius:4px;background:#060610}
+#sig-canvas{height:200px}
+#fft-canvas{height:160px}
+#compare-canvas{height:200px}
+
+.metric{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03);
+  font-size:12px}
+.metric .val{color:#c9a96e;font-family:'Courier New',monospace;font-size:11px}
+.metric .change{font-size:10px;margin-left:6px}
+.change.better{color:#44aa66}
+.change.worse{color:#cc4422}
+.change.neutral{color:#666}
+
+.harmonic-row{display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;
+  border-radius:4px;border:1px solid rgba(255,255,255,0.03);font-size:11px;
+  background:rgba(0,0,0,0.2)}
+.harmonic-row.active{border-color:rgba(200,170,100,0.15);background:rgba(200,170,100,0.04)}
+.h-name{width:90px;color:#8899aa}
+.h-freq{width:60px;color:#666;font-family:'Courier New',monospace;font-size:10px}
+.h-bar{flex:1;height:10px;background:#111;border-radius:5px;position:relative;overflow:hidden}
+.h-fill{height:100%;border-radius:5px;transition:width 0.5s}
+.h-val{width:40px;text-align:right;font-family:'Courier New',monospace;font-size:10px}
+
+.btn{padding:8px 16px;border:1px solid rgba(200,170,100,0.2);background:transparent;
+  color:#c9a96e;font-family:Georgia,serif;font-size:11px;letter-spacing:2px;
+  cursor:pointer;border-radius:4px;transition:all 0.3s;text-transform:uppercase;width:100%}
+.btn:hover{border-color:#c9a96e;background:rgba(200,170,100,0.06)}
+.btn:disabled{opacity:0.3;cursor:default}
+.btn.apply{border-color:rgba(68,170,100,0.3);color:#44aa66}
+.btn.apply:hover{background:rgba(68,170,100,0.06)}
+.btn.reset{border-color:rgba(204,68,34,0.3);color:#cc4422;margin-top:8px}
+
+#log{max-height:240px;overflow-y:auto;font-size:10px;line-height:1.7;color:#666;
+  font-family:'Courier New',monospace;padding:8px;background:rgba(0,0,0,0.3);border-radius:4px}
+#log .entry{padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.02)}
+#log .step{color:#c9a96e}
+#log .good{color:#44aa66}
+#log .bad{color:#cc4422}
+#log .info{color:#8899aa}
+
+.warning{padding:10px;margin:8px 0;border-radius:4px;font-size:11px;line-height:1.6;
+  border-left:3px solid #cc8844;background:rgba(204,136,68,0.06);color:#aa8866}
+
+.step-indicator{text-align:center;padding:10px;font-size:13px;color:#8899aa;
+  border:1px solid rgba(255,255,255,0.04);border-radius:4px;margin-bottom:12px}
+.step-indicator .num{font-size:24px;color:#c9a96e;display:block;margin-bottom:4px;
+  font-family:'Courier New',monospace}
+
+select{background:#0c0c1a;color:#aaa;border:1px solid rgba(200,170,100,0.15);
+  padding:6px 10px;border-radius:4px;font-family:Georgia,serif;font-size:11px;width:100%;
+  margin-bottom:8px}
+select:focus{outline:none;border-color:#c9a96e}
+
+.slider-wrap{margin:8px 0}
+.slider-wrap label{font-size:10px;color:#666;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px}
+input[type=range]{width:100%;-webkit-appearance:none;background:#111;height:4px;border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:#c9a96e;cursor:pointer;border:2px solid #080810}
+.slider-val{font-size:10px;color:#c9a96e;font-family:'Courier New',monospace;text-align:right}
+
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+footer{text-align:center;padding:16px;color:#333;font-size:9px;letter-spacing:2px}
+</style>
+</head>
+<body>
+
+<h1>WEATHER HARMONICS</h1>
+<div class="subtitle">Tropical Baseline (~27C mean) — One Change at a Time</div>
+
+<div class="grid">
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="panel">
+      <div class="panel-title">Tropical Signal — Temperature Deviation from 27C Mean (365 days)</div>
+      <canvas id="sig-canvas"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Frequency Spectrum (FFT)</div>
+      <canvas id="fft-canvas"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Before / After Comparison</div>
+      <canvas id="compare-canvas"></canvas>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="panel">
+      <div class="step-indicator">
+        <span class="num" id="step-num">0</span>
+        Modifications Applied
+      </div>
+
+      <div class="warning">
+        Each change is applied independently. Evaluate the result before proceeding.
+        The atmosphere is a coupled system — one harmonic affects all others.
+      </div>
+
+      <div class="panel-title" style="margin-top:12px">Select Harmonic to Dampen</div>
+      <select id="harmonic-select">
+        <option value="-1">— Select a frequency band —</option>
+      </select>
+
+      <div class="slider-wrap">
+        <label>Dampening Strength</label>
+        <input type="range" id="dampen-strength" min="0" max="100" value="25">
+        <div class="slider-val" id="dampen-val">25%</div>
+      </div>
+
+      <button class="btn apply" id="apply-btn" disabled>Apply This Dampening</button>
+      <button class="btn reset" id="reset-btn">Reset to Baseline</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Harmonic Components</div>
+      <div id="harmonics-list"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Stability Metrics</div>
+      <div id="metrics"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Change Log</div>
+      <div id="log"></div>
+    </div>
+  </div>
+</div>
+
+<footer>WEATHER HARMONICS — L7 WAY — Under the Philosopher's Authority</footer>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════════
+// ATMOSPHERIC MODEL — Composite signal from known oscillations
+//
+// Weather = superposition of oscillations at different periods:
+//   - Diurnal: 1 day (day/night cycle)
+//   - Synoptic: 5 days (weather fronts)
+//   - Intraseasonal: 40 days (Madden-Julian Oscillation)
+//   - Seasonal: 365 days (annual cycle)
+//   - Semi-annual: 182 days
+//   - ENSO: ~1400 days (~3.8 years, El Nino/La Nina)
+//   - Noise: stochastic weather variability
+//
+// Extreme weather = constructive interference of multiple harmonics
+// Normalization = selective dampening without killing the base signal
+// ═══════════════════════════════════════════════════════════
+
+const DAYS = 365;          // One year of daily samples
+const SAMPLES = DAYS;      // 1 sample per day
+
+// Harmonic definitions — TROPICAL BASELINE (stable equatorial climate)
+// Reference: tropical rainforest annual range ~3C, monsoon ~3.6C
+// Mean temperature ~27C, deviation from mean shown here
+// These are real atmospheric oscillation patterns at tropical latitudes
+const HARMONICS = [
+  {name:'Seasonal',     period:365,  amplitude:1.5,  phase:0,     color:'#cc6644',
+   note:'Annual cycle — very small in tropics (~3C total range). The monsoon driver.'},
+  {name:'Semi-annual',  period:182.5,amplitude:0.8,  phase:0.5,   color:'#cc8844',
+   note:'6-month oscillation — ITCZ migration, double rainy season near equator.'},
+  {name:'MJO',          period:40,   amplitude:1.2,  phase:1.2,   color:'#88aa44',
+   note:'Madden-Julian Oscillation — dominant tropical intraseasonal signal. Drives rainfall pulses.'},
+  {name:'Synoptic',     period:5,    amplitude:1.0,  phase:0.8,   color:'#4488cc',
+   note:'Tropical wave disturbances — easterly waves, 3-7 day periods. Seed hurricanes.'},
+  {name:'Diurnal',      period:1,    amplitude:3.5,  phase:0,     color:'#44aacc',
+   note:'Day/night cycle — largest single oscillation in tropics. Land heats/cools fast.'},
+  {name:'Quasi-biennial',period:730, amplitude:0.5,  phase:2.0,   color:'#8866aa',
+   note:'QBO — stratospheric wind reversal affects tropical rainfall patterns.'},
+  {name:'ENSO',         period:1400, amplitude:1.0,  phase:0.3,   color:'#aa4466',
+   note:'El Nino / La Nina — Pacific SST oscillation. Shifts rainfall belts, causes droughts/floods.'}
+];
+
+// State
+let baselineSignal = [];    // Original unmodified signal
+let currentSignal = [];     // Signal with dampening applied
+let dampenings = [];        // Array of {index, strength} applied
+let stepCount = 0;
+let baselineMetrics = {};
+let currentMetrics = {};
+let noiseArray = [];
+
+// ═══════════════════════════════════════════════════════════
+// SIGNAL GENERATION
+// ═══════════════════════════════════════════════════════════
+
+// Seed a reproducible pseudo-random noise
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    return (s / 0x7fffffff) * 2 - 1; // -1 to 1
+  };
+}
+
+function generateSignal(dampeningList) {
+  const rng = seededRandom(42); // Fixed seed for reproducibility
+  const signal = new Float64Array(SAMPLES);
+
+  for (let d = 0; d < SAMPLES; d++) {
+    let value = 0;
+    const t = d / DAYS; // Normalized time [0,1)
+
+    for (let h = 0; h < HARMONICS.length; h++) {
+      const harm = HARMONICS[h];
+      let amp = harm.amplitude;
+
+      // Apply dampening if any
+      for (const damp of dampeningList) {
+        if (damp.index === h) {
+          amp *= (1 - damp.strength / 100);
+        }
+      }
+
+      value += amp * Math.sin(2 * Math.PI * (d / harm.period) + harm.phase);
+    }
+
+    // Add stochastic noise (weather unpredictability) — fixed seed
+    if (noiseArray.length < SAMPLES) {
+      noiseArray.push(rng() * 1.2); // +/- 1.2 degrees — tropical noise is low
+    }
+    value += noiseArray[d];
+
+    signal[d] = value;
+  }
+
+  return signal;
+}
+
+// ═══════════════════════════════════════════════════════════
+// METRICS — Evaluate signal stability
+// ═══════════════════════════════════════════════════════════
+
+function computeMetrics(signal) {
+  const n = signal.length;
+  let sum = 0, sumSq = 0, maxVal = -Infinity, minVal = Infinity;
+  let maxShift = 0; // Largest day-to-day change
+
+  for (let i = 0; i < n; i++) {
+    sum += signal[i];
+    sumSq += signal[i] * signal[i];
+    if (signal[i] > maxVal) maxVal = signal[i];
+    if (signal[i] < minVal) minVal = signal[i];
+    if (i > 0) {
+      const shift = Math.abs(signal[i] - signal[i - 1]);
+      if (shift > maxShift) maxShift = shift;
+    }
+  }
+
+  const mean = sum / n;
+  const variance = sumSq / n - mean * mean;
+  const stdDev = Math.sqrt(Math.max(0, variance));
+  const range = maxVal - minVal;
+
+  // Count "extreme" days (> 2 std dev from mean)
+  let extremeDays = 0;
+  for (let i = 0; i < n; i++) {
+    if (Math.abs(signal[i] - mean) > 2 * stdDev) extremeDays++;
+  }
+
+  // Smoothness: average absolute day-to-day change
+  let totalShift = 0;
+  for (let i = 1; i < n; i++) {
+    totalShift += Math.abs(signal[i] - signal[i - 1]);
+  }
+  const avgShift = totalShift / (n - 1);
+
+  return {
+    mean: mean,
+    stdDev: stdDev,
+    variance: variance,
+    range: range,
+    maxDeviation: Math.max(Math.abs(maxVal - mean), Math.abs(minVal - mean)),
+    maxDailyShift: maxShift,
+    avgDailyShift: avgShift,
+    extremeDays: extremeDays,
+    extremePct: (extremeDays / n * 100)
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// SIMPLE DFT — For frequency spectrum visualization
+// ═══════════════════════════════════════════════════════════
+
+function computeSpectrum(signal) {
+  const n = signal.length;
+  const maxFreq = Math.min(60, Math.floor(n / 2)); // Show up to 60 frequency bins
+  const spectrum = new Float64Array(maxFreq);
+
+  for (let k = 1; k < maxFreq; k++) {
+    let re = 0, im = 0;
+    for (let t = 0; t < n; t++) {
+      const angle = 2 * Math.PI * k * t / n;
+      re += signal[t] * Math.cos(angle);
+      im -= signal[t] * Math.sin(angle);
+    }
+    spectrum[k] = Math.sqrt(re * re + im * im) / n;
+  }
+
+  return spectrum;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAWING
+// ═══════════════════════════════════════════════════════════
+
+function setupCanvas(canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+function drawSignal(canvasId, signal, label) {
+  const canvas = document.getElementById(canvasId);
+  const { ctx, w, h } = setupCanvas(canvas);
+
+  ctx.fillStyle = '#060610';
+  ctx.fillRect(0, 0, w, h);
+
+  // Find range
+  let maxA = 0;
+  for (let i = 0; i < signal.length; i++) {
+    if (Math.abs(signal[i]) > maxA) maxA = Math.abs(signal[i]);
+  }
+  maxA = Math.max(maxA, 1) * 1.1;
+
+  // Grid
+  ctx.strokeStyle = '#151520';
+  ctx.lineWidth = 0.5;
+  // Zero line
+  const cy = h / 2;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+  // +/- gridlines
+  for (let g = -20; g <= 20; g += 5) {
+    if (g === 0) continue;
+    const y = cy - (g / maxA) * (h / 2);
+    if (y > 0 && y < h) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      ctx.fillStyle = '#333';
+      ctx.font = '8px Courier New';
+      ctx.fillText(g + '\u00B0', 2, y - 2);
+    }
+  }
+
+  // Month markers
+  ctx.fillStyle = '#222';
+  ctx.font = '8px Georgia';
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for (let m = 0; m < 12; m++) {
+    const x = (m * 30.44 / DAYS) * w;
+    ctx.strokeStyle = '#1a1a2a';
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    ctx.fillText(months[m], x + 3, h - 4);
+  }
+
+  // Signal
+  ctx.beginPath();
+  ctx.strokeStyle = '#c9a96e88';
+  ctx.lineWidth = 1.2;
+  for (let i = 0; i < signal.length; i++) {
+    const x = (i / signal.length) * w;
+    const y = cy - (signal[i] / maxA) * (h / 2);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Extreme zones (> 2 std dev)
+  const m = currentMetrics;
+  if (m.stdDev) {
+    const upper = cy - (m.mean + 2 * m.stdDev) / maxA * (h / 2);
+    const lower = cy - (m.mean - 2 * m.stdDev) / maxA * (h / 2);
+    ctx.fillStyle = 'rgba(204,68,34,0.06)';
+    ctx.fillRect(0, 0, w, upper);
+    ctx.fillRect(0, lower, w, h - lower);
+    ctx.strokeStyle = '#cc442233';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(0, upper); ctx.lineTo(w, upper); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, lower); ctx.lineTo(w, lower); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+function drawSpectrum(signal) {
+  const canvas = document.getElementById('fft-canvas');
+  const { ctx, w, h } = setupCanvas(canvas);
+  const spectrum = computeSpectrum(signal);
+
+  ctx.fillStyle = '#060610';
+  ctx.fillRect(0, 0, w, h);
+
+  let maxMag = 0;
+  for (let k = 1; k < spectrum.length; k++) {
+    if (spectrum[k] > maxMag) maxMag = spectrum[k];
+  }
+  maxMag = Math.max(maxMag, 0.1);
+
+  const barW = w / spectrum.length;
+
+  for (let k = 1; k < spectrum.length; k++) {
+    const x = k * barW;
+    const barH = (spectrum[k] / maxMag) * (h - 20);
+
+    // Color by which harmonic this frequency corresponds to
+    let color = '#334';
+    const period = DAYS / k;
+    for (const harm of HARMONICS) {
+      if (Math.abs(period - harm.period) / harm.period < 0.15) {
+        color = harm.color;
+        break;
+      }
+    }
+
+    ctx.fillStyle = color + '99';
+    ctx.fillRect(x, h - barH, barW - 1, barH);
+  }
+
+  // Labels
+  ctx.fillStyle = '#555';
+  ctx.font = '8px Courier New';
+  for (const harm of HARMONICS) {
+    const k = Math.round(DAYS / harm.period);
+    if (k > 0 && k < spectrum.length) {
+      const x = k * barW;
+      ctx.save();
+      ctx.translate(x + barW / 2, 10);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillStyle = harm.color + 'aa';
+      ctx.fillText(harm.name, 0, 0);
+      ctx.restore();
+    }
+  }
+}
+
+function drawComparison() {
+  const canvas = document.getElementById('compare-canvas');
+  const { ctx, w, h } = setupCanvas(canvas);
+
+  ctx.fillStyle = '#060610';
+  ctx.fillRect(0, 0, w, h);
+
+  let maxA = 0;
+  for (let i = 0; i < SAMPLES; i++) {
+    if (Math.abs(baselineSignal[i]) > maxA) maxA = Math.abs(baselineSignal[i]);
+    if (Math.abs(currentSignal[i]) > maxA) maxA = Math.abs(currentSignal[i]);
+  }
+  maxA = Math.max(maxA, 1) * 1.1;
+
+  const cy = h / 2;
+
+  // Zero line
+  ctx.strokeStyle = '#151520'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+
+  // Baseline (dim)
+  ctx.beginPath();
+  ctx.strokeStyle = '#cc444444';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < SAMPLES; i++) {
+    const x = (i / SAMPLES) * w;
+    const y = cy - (baselineSignal[i] / maxA) * (h / 2);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Current (bright)
+  ctx.beginPath();
+  ctx.strokeStyle = '#44aa66aa';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < SAMPLES; i++) {
+    const x = (i / SAMPLES) * w;
+    const y = cy - (currentSignal[i] / maxA) * (h / 2);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Legend
+  ctx.fillStyle = '#cc444488'; ctx.fillRect(w - 120, 8, 10, 2);
+  ctx.fillStyle = '#44aa6688'; ctx.fillRect(w - 120, 18, 10, 2);
+  ctx.font = '9px Georgia';
+  ctx.fillStyle = '#666';
+  ctx.fillText('Baseline', w - 106, 12);
+  ctx.fillStyle = '#44aa66';
+  ctx.fillText('Dampened', w - 106, 22);
+}
+
+// ═══════════════════════════════════════════════════════════
+// UI RENDERING
+// ═══════════════════════════════════════════════════════════
+
+function renderHarmonics() {
+  const el = document.getElementById('harmonics-list');
+  let html = '';
+  for (let i = 0; i < HARMONICS.length; i++) {
+    const h = HARMONICS[i];
+    let currentAmp = h.amplitude;
+    for (const d of dampenings) {
+      if (d.index === i) currentAmp *= (1 - d.strength / 100);
+    }
+    const pct = (currentAmp / h.amplitude) * 100;
+    const dampened = pct < 99;
+
+    html += `<div class="harmonic-row ${dampened ? 'active' : ''}">
+      <div class="h-name">${h.name}</div>
+      <div class="h-freq">${h.period}d</div>
+      <div class="h-bar">
+        <div class="h-fill" style="width:${pct}%;background:${h.color}${dampened ? '' : '66'}"></div>
+      </div>
+      <div class="h-val" style="color:${dampened ? '#44aa66' : '#666'}">${pct.toFixed(0)}%</div>
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+function renderMetrics() {
+  const el = document.getElementById('metrics');
+  const b = baselineMetrics;
+  const c = currentMetrics;
+
+  function delta(baseVal, curVal, lowerIsBetter) {
+    const diff = curVal - baseVal;
+    const pct = baseVal !== 0 ? ((diff / Math.abs(baseVal)) * 100).toFixed(1) : '0';
+    const better = lowerIsBetter ? diff < -0.01 : diff > 0.01;
+    const worse = lowerIsBetter ? diff > 0.01 : diff < -0.01;
+    const cls = better ? 'better' : worse ? 'worse' : 'neutral';
+    const sign = diff > 0 ? '+' : '';
+    return stepCount > 0 ? `<span class="change ${cls}">${sign}${pct}%</span>` : '';
+  }
+
+  el.innerHTML = `
+    <div class="metric"><span>Std Deviation</span><span class="val">${c.stdDev.toFixed(2)}\u00B0 ${delta(b.stdDev, c.stdDev, true)}</span></div>
+    <div class="metric"><span>Temperature Range</span><span class="val">${c.range.toFixed(1)}\u00B0 ${delta(b.range, c.range, true)}</span></div>
+    <div class="metric"><span>Max Daily Shift</span><span class="val">${c.maxDailyShift.toFixed(2)}\u00B0 ${delta(b.maxDailyShift, c.maxDailyShift, true)}</span></div>
+    <div class="metric"><span>Avg Daily Shift</span><span class="val">${c.avgDailyShift.toFixed(2)}\u00B0 ${delta(b.avgDailyShift, c.avgDailyShift, true)}</span></div>
+    <div class="metric"><span>Extreme Days (>2\u03C3)</span><span class="val">${c.extremeDays} (${c.extremePct.toFixed(1)}%) ${delta(b.extremePct, c.extremePct, true)}</span></div>
+    <div class="metric"><span>Max Deviation</span><span class="val">${c.maxDeviation.toFixed(2)}\u00B0 ${delta(b.maxDeviation, c.maxDeviation, true)}</span></div>
+    <div class="metric"><span>Variance</span><span class="val">${c.variance.toFixed(2)} ${delta(b.variance, c.variance, true)}</span></div>
+  `;
+}
+
+function log(text, cls) {
+  const el = document.getElementById('log');
+  el.innerHTML += `<div class="entry ${cls || ''}">${text}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════════════════
+
+// Populate harmonic select
+const select = document.getElementById('harmonic-select');
+for (let i = 0; i < HARMONICS.length; i++) {
+  const h = HARMONICS[i];
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = `${h.name} (${h.period}-day period, ${h.amplitude}\u00B0 amplitude)`;
+  select.appendChild(opt);
+}
+
+select.addEventListener('change', () => {
+  const idx = parseInt(select.value);
+  document.getElementById('apply-btn').disabled = idx < 0;
+  if (idx >= 0) {
+    log(`Selected: ${HARMONICS[idx].name} — ${HARMONICS[idx].note}`, 'info');
+  }
+});
+
+document.getElementById('dampen-strength').addEventListener('input', (e) => {
+  document.getElementById('dampen-val').textContent = e.target.value + '%';
+});
+
+document.getElementById('apply-btn').addEventListener('click', () => {
+  const idx = parseInt(select.value);
+  const strength = parseInt(document.getElementById('dampen-strength').value);
+  if (idx < 0) return;
+
+  const harm = HARMONICS[idx];
+
+  // Check if already dampened
+  const existing = dampenings.find(d => d.index === idx);
+  if (existing) {
+    log(`WARNING: ${harm.name} already dampened to ${100 - existing.strength}%. Replacing.`, 'bad');
+    dampenings = dampenings.filter(d => d.index !== idx);
+  }
+
+  // Save previous metrics for comparison
+  const prevMetrics = { ...currentMetrics };
+
+  // Apply
+  dampenings.push({ index: idx, strength: strength });
+  stepCount++;
+  document.getElementById('step-num').textContent = stepCount;
+
+  // Regenerate signal
+  currentSignal = generateSignal(dampenings);
+  currentMetrics = computeMetrics(currentSignal);
+
+  // Log the change
+  log(`\u2500\u2500\u2500 STEP ${stepCount} \u2500\u2500\u2500`, 'step');
+  log(`Applied: ${harm.name} dampened by ${strength}%`, 'step');
+  log(`  Period: ${harm.period} days, Original amplitude: ${harm.amplitude}\u00B0`, 'info');
+
+  // Evaluate
+  const stdChange = ((currentMetrics.stdDev - prevMetrics.stdDev) / prevMetrics.stdDev * 100).toFixed(1);
+  const shiftChange = ((currentMetrics.maxDailyShift - prevMetrics.maxDailyShift) / prevMetrics.maxDailyShift * 100).toFixed(1);
+  const extremeChange = currentMetrics.extremeDays - prevMetrics.extremeDays;
+
+  if (parseFloat(stdChange) < 0) {
+    log(`  Std deviation: ${stdChange}% (improved)`, 'good');
+  } else {
+    log(`  Std deviation: +${stdChange}% (worsened or unchanged)`, 'bad');
+  }
+
+  if (parseFloat(shiftChange) < 0) {
+    log(`  Max daily shift: ${shiftChange}% (smoother)`, 'good');
+  } else {
+    log(`  Max daily shift: +${shiftChange}% (sharper)`, 'bad');
+  }
+
+  if (extremeChange < 0) {
+    log(`  Extreme days: ${extremeChange} (fewer extremes)`, 'good');
+  } else if (extremeChange > 0) {
+    log(`  Extreme days: +${extremeChange} (more extremes)`, 'bad');
+  } else {
+    log(`  Extreme days: unchanged`, 'info');
+  }
+
+  log(`  EVALUATION: ${parseFloat(stdChange) < -1 && parseFloat(shiftChange) < 0 ? 'Positive — proceed with caution' : parseFloat(stdChange) > 2 ? 'Negative — consider reverting' : 'Marginal — observe carefully'}`, parseFloat(stdChange) < -1 ? 'good' : parseFloat(stdChange) > 2 ? 'bad' : 'info');
+
+  // Redraw everything
+  redraw();
+
+  // Reset select
+  select.value = '-1';
+  document.getElementById('apply-btn').disabled = true;
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  dampenings = [];
+  stepCount = 0;
+  document.getElementById('step-num').textContent = '0';
+  currentSignal = generateSignal([]);
+  currentMetrics = computeMetrics(currentSignal);
+  document.getElementById('log').innerHTML = '';
+  log('Reset to baseline. All dampenings removed.', 'info');
+  redraw();
+});
+
+function redraw() {
+  drawSignal('sig-canvas', currentSignal);
+  drawSpectrum(currentSignal);
+  drawComparison();
+  renderHarmonics();
+  renderMetrics();
+}
+
+// ═══════════════════════════════════════════════════════════
+// INITIALIZATION — Baseline with NO modifications
+// ═══════════════════════════════════════════════════════════
+
+baselineSignal = generateSignal([]);
+currentSignal = new Float64Array(baselineSignal);
+baselineMetrics = computeMetrics(baselineSignal);
+currentMetrics = { ...baselineMetrics };
+
+log('Tropical baseline initialized (equatorial, ~27C mean).', 'info');
+log(`Baseline: ${HARMONICS.length} harmonic components + low tropical noise`, 'info');
+log('Reference: tropical rainforest annual range ~3C, monsoon ~3.6C', 'info');
+log(`Std deviation: ${baselineMetrics.stdDev.toFixed(2)}\u00B0, Range: ${baselineMetrics.range.toFixed(1)}\u00B0`, 'info');
+log(`Extreme days (>2\u03C3): ${baselineMetrics.extremeDays} of ${DAYS} (${baselineMetrics.extremePct.toFixed(1)}%)`, 'info');
+log(`Max daily shift: ${baselineMetrics.maxDailyShift.toFixed(2)}\u00B0`, 'info');
+log('', 'info');
+log('Select a harmonic to dampen. Evaluate each change before proceeding.', 'step');
+
+redraw();
+
+// Resize handler
+window.addEventListener('resize', () => redraw());
+
+// NIS embedded
+(function NIS(){
+  if(typeof MutationObserver!=='undefined'){
+    new MutationObserver(m=>{for(const r of m)for(const n of r.addedNodes)
+      if(n.tagName&&/^(SCRIPT|IFRAME|OBJECT|EMBED)$/i.test(n.tagName)&&!n.dataset.l7Trusted)n.remove();
+    }).observe(document.body,{childList:true,subtree:true});
+  }
+})();
+
+</script>
+</body>
+</html>
