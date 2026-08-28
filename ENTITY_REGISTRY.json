@@ -712,6 +712,51 @@
       "l7_declaration": null
     },
     {
+      "entity_id": "tool:ollama",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "text.generate",
+      "source": "host/tools/ollama.tool",
+      "declared": true,
+      "l7_declaration": {
+        "capability": "communicate",
+        "data": {
+          "pii": "non_pii",
+          "source": "internal",
+          "shape": "record",
+          "freshness": "live"
+        },
+        "policyIntent": {
+          "mode": "test",
+          "risk": "low",
+          "requireApproval": false,
+          "compliance": "standard"
+        },
+        "presentation": {
+          "ui": "card",
+          "output": "json",
+          "density": "compact"
+        },
+        "orchestration": {
+          "flow": "single",
+          "trigger": "manual",
+          "retry": "none"
+        },
+        "timeVersioning": {
+          "toolVersion": "v1",
+          "schemaVersion": "v1",
+          "lifecycle": "active"
+        },
+        "identitySecurity": {
+          "role": "operator",
+          "auth": "token",
+          "audit": "on"
+        }
+      }
+    },
+    {
       "entity_id": "tool:openai_patterns",
       "entity_type": "tool",
       "birth_date": "2026-08-28",
@@ -1214,6 +1259,17 @@
       "status": "active",
       "lineage": "host/flows/mirror_across_devices.flow",
       "source": "host/flows/mirror_across_devices.flow",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "workflow:ollama_once",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "host/flows/ollama_once.flow",
+      "source": "host/flows/ollama_once.flow",
       "declared": false,
       "l7_declaration": null
     },
