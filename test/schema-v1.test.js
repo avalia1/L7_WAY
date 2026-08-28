@@ -44,7 +44,7 @@ test('12D internal_projection does not grant identity or domain', () => {
 test('host/tools samples declare valid 7D', () => {
   const parser = require('../lib/parser');
   const declaration = require('../lib/declaration');
-  for (const name of ['echo', 'gateway_doctor', 'herald_cast']) {
+  for (const name of ['echo', 'ollama', 'gateway_doctor', 'herald_cast']) {
     const file = path.join(ROOT, 'host', 'tools', `${name}.tool`);
     const obj = parser.parseFile(file);
     const yamlOk = parser.validate(obj, 'tool');
@@ -55,6 +55,11 @@ test('host/tools samples declare valid 7D', () => {
   const echo = parser.parseFile(path.join(ROOT, 'host', 'tools', 'echo.tool'));
   assert.equal(echo.server, 'http://127.0.0.1:18792/');
   assert.match(echo.description, /loopback echo worker/i);
+  const ollama = parser.parseFile(path.join(ROOT, 'host', 'tools', 'ollama.tool'));
+  assert.equal(ollama.server, 'http://127.0.0.1:18798/');
+  assert.equal(ollama.mcp_tool, 'text.generate');
+  assert.equal(ollama.needs.prompt, 'string');
+  assert.match(ollama.description, /loopback ollama worker/i);
 });
 
 test('host/flows/echo_once.flow is a valid one-step composition of echo', () => {
@@ -69,10 +74,24 @@ test('host/flows/echo_once.flow is a valid one-step composition of echo', () => 
   assert.equal(obj.steps[0].with.message, 'hello');
 });
 
+test('host/flows/ollama_once.flow is a valid one-step composition of ollama', () => {
+  const parser = require('../lib/parser');
+  const file = path.join(ROOT, 'host', 'flows', 'ollama_once.flow');
+  const obj = parser.parseFile(file);
+  const yamlOk = parser.validate(obj, 'flow');
+  assert.equal(yamlOk.valid, true, `ollama_once yaml: ${JSON.stringify(yamlOk.errors)}`);
+  assert.equal(obj.steps.length, 1);
+  assert.equal(obj.steps[0].do, 'ollama');
+  assert.equal(obj.steps[0].as, 'out');
+  assert.equal(obj.steps[0].with.prompt, 'hello');
+});
+
 test('committed ENTITY_REGISTRY.json is generated and not empty', () => {
   const doc = JSON.parse(fs.readFileSync(path.join(ROOT, 'ENTITY_REGISTRY.json'), 'utf8'));
   assert.equal(doc.schema, 'v1');
   assert.ok(doc.entities.length > 0, 'empty { entities: [] } is a bug');
   assert.ok(doc.entities.some((e) => e.entity_id === 'tool:echo' && e.declared));
   assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:echo_once'));
+  assert.ok(doc.entities.some((e) => e.entity_id === 'tool:ollama' && e.declared));
+  assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:ollama_once'));
 });
