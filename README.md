@@ -32,7 +32,7 @@ Env, if present, is loaded from an open vault mount and from `.env` / `.env.loca
 - `L7_CONTRACTS.md`
 - `TOOL_REGISTRY.md`
 - `ENFORCEMENT.md`
-- `L7_SCHEMA.json`
+- `schema/v1/common-lingua.schema.json`
 
 ## Codex Directive
 For every new project or session, read this repo first. Do not bypass the gateway or skip L7 declarations.
@@ -44,7 +44,7 @@ For every new project or session, read this repo first. Do not bypass the gatewa
 - `L7_CONTRACTS.md` — enforcement contracts.
 - `TOOL_REGISTRY.md` — tool discovery rules.
 - `ENFORCEMENT.md` — compliance requirements.
-- `L7_SCHEMA.json` — finite L7 schema.
+- `schema/v1/` — executable 7D contract. `L7_SCHEMA.json` is generated from `common-lingua.schema.json`.
 - `ENTITY_REGISTRY.md` — required entity metadata and lifecycle.
 - `REGISTRY_SCHEMA.json` — registry schema.
 - `ENTITY_TEMPLATE.md` — entity declaration template.

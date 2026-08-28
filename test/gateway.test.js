@@ -11,6 +11,7 @@ const path = require('path');
 // L7_MODE=mock keeps execute() off real MCP transport.
 const FIXTURE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'l7-gateway-test-'));
 process.env.L7_DIR = FIXTURE_DIR;
+process.env.L7_HOST_ROOT = FIXTURE_DIR;
 process.env.L7_MODE = 'mock';
 
 const TOOLS_DIR = path.join(FIXTURE_DIR, 'tools');

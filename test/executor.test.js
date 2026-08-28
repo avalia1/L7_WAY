@@ -13,6 +13,7 @@ const yaml = require('js-yaml');
 // gateway into the module cache, both *before* requiring the executor.
 const FIXTURE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'l7-executor-test-'));
 process.env.L7_DIR = FIXTURE_DIR;
+process.env.L7_HOST_ROOT = FIXTURE_DIR;
 
 // --- Fake gateway -----------------------------------------------------------
 // Records every execute() call and lets each test define the tool behavior.

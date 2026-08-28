@@ -16,7 +16,6 @@
  */
 
 const http = require('http');
-const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
@@ -25,12 +24,12 @@ const { parseFile } = require('./lib/parser');
 const { executeFlow, approve, reject } = require('./lib/executor');
 const gateway = require('./lib/gateway');
 const stateManager = require('./lib/state');
+const declaration = require('./lib/declaration');
+const registry = require('./lib/registry');
+const catalog = require('./lib/catalog');
 
 const PORT = parseInt(process.env.L7_PORT || '18793', 10);
 const BIND = process.env.L7_BIND || '127.0.0.1';
-const L7_DIR = path.join(process.env.HOME || '', '.l7');
-const TOOLS_DIR = path.join(L7_DIR, 'tools');
-const FLOWS_DIR = path.join(L7_DIR, 'flows');
 
 // ═══════════════════════════════════════════════════════════
 // HTTP HELPERS
@@ -136,7 +135,18 @@ const server = http.createServer(async (req, res) => {
     }
 
     // ── Tools ──
+    // GET /v1/tools — public contract. Declared 7D when present; never synthesized.
+    if (parsed.pathname === '/v1/tools') {
+      sendJson(res, 200, declaration.listPublicTools());
+      return;
+    }
+
+    // GET /api/tools — old shape (name/does/server/coordinate).
+    // Removal target: 2026-09-28. Successor: GET /v1/tools.
     if (parsed.pathname === '/api/tools') {
+      res.setHeader('Deprecation', 'true');
+      res.setHeader('Sunset', 'Wed, 28 Sep 2026 00:00:00 GMT');
+      res.setHeader('Link', '</v1/tools>; rel="successor-version"');
       sendJson(res, 200, { tools: gateway.listTools() });
       return;
     }
@@ -202,13 +212,10 @@ const server = http.createServer(async (req, res) => {
 
     // ── Flows ──
     if (parsed.pathname === '/api/flows') {
-      if (!fs.existsSync(FLOWS_DIR)) { sendJson(res, 200, { flows: [] }); return; }
-      const flows = fs.readdirSync(FLOWS_DIR)
-        .filter(f => f.endsWith('.flow'))
-        .map(f => {
-          try { return { name: path.basename(f, '.flow'), ...parseFile(path.join(FLOWS_DIR, f)) }; }
-          catch { return { name: path.basename(f, '.flow'), error: 'parse error' }; }
-        });
+      const flows = catalog.listFlows().map((entry) => {
+        try { return { name: entry.name, ...parseFile(entry.path) }; }
+        catch { return { name: entry.name, error: 'parse error' }; }
+      });
       sendJson(res, 200, { flows });
       return;
     }
@@ -257,6 +264,7 @@ function attachSignals() {
 }
 
 async function start() {
+  registry.produce();
   const report = await gateway.boot();
   await new Promise((resolve, reject) => {
     const onError = (err) => reject(err);

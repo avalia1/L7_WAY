@@ -5,12 +5,12 @@ Create a single common language that lets any tool, workflow, UI, or project plu
 
 ## System Model
 - **Registry**: Canonical index of tool names, schemas, versions, and metadata.
-- **Gateway**: Universal access layer (`/tools`, `/execute`) that routes to MCP servers. In this repo that process is `npm start` / `scripts/run-gateway.sh` → `serve.js` on `127.0.0.1:18793`. One listen port, one Node process. The Swift binary is stale; `~/.l7/l7-gateway` is a Mac egress valve (Phase 3), not this gateway. Tailscale, SSH, workers, and forge are `scripts/run-founder-loop.sh` (Founder Loop is not the gateway). `./start.sh` is a convenience wrapper that calls both.
+- **Gateway**: Universal access layer (`/v1/tools`, `/execute`) that routes to MCP servers. In this repo that process is `npm start` / `scripts/run-gateway.sh` → `serve.js` on `127.0.0.1:18793`. One listen port, one Node process. The Swift binary is stale; `~/.l7/l7-gateway` is a Mac egress valve (Phase 3), not this gateway. Tailscale, SSH, workers, and forge are `scripts/run-founder-loop.sh` (Founder Loop is not the gateway). `./start.sh` is a convenience wrapper that calls both.
 - **Tools**: Capabilities exposed via MCP servers; discoverable, versioned, swappable.
 - **Clients**: Adapter layer + UI (UI is a renderable tool consuming structured data).
 
 ## 7D Common Lingua (System Dimensions)
-Every entity must declare itself using the same seven L7 types:
+Every entity must declare the seven L7 types in an `l7:` block (declared, not inferred). Heuristic derivation is a shim behind `L7_SHIM_DERIVE`, not `GET /v1/tools`.
 1. **Capability** 🔧: what tools and actions exist.
 2. **Data** 📦: schemas, inputs, outputs, and sources.
 3. **Policy/Intent** 🧭: what is allowed, required, and prioritized.
@@ -50,7 +50,7 @@ Marching orders are non-composable mission logic and constraints for a legion. T
 5. **Config-only credentials**.
 
 ## Common Language
-- All tool calls use gateway contract: `GET /tools`, `POST /execute`.
+- All tool calls use gateway contract: `GET /v1/tools`, `POST /execute`.
 - Tools are addressed by stable names and versions.
 - Responses are normalized and human-safe for UI.
 

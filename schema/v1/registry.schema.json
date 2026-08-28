@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://l7.way/schema/v1/registry.schema.json",
+  "title": "L7 Entity Registry Document",
+  "description": "Produced at boot from *.tool and *.flow. Markdown registries are not the source of truth. Empty entities is a bug.",
+  "type": "object",
+  "required": ["schema", "entities"],
+  "properties": {
+    "schema": { "type": "string", "const": "v1" },
+    "generated_from": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "$ref": "#/$defs/entity" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "entity": {
+      "type": "object",
+      "required": [
+        "entity_id",
+        "entity_type",
+        "birth_date",
+        "owner",
+        "status",
+        "lineage",
+        "declared"
+      ],
+      "properties": {
+        "entity_id": { "type": "string" },
+        "entity_type": {
+          "type": "string",
+          "enum": ["tool", "service", "workflow", "ui", "project"]
+        },
+        "birth_date": { "type": "string" },
+        "owner": { "type": "string" },
+        "status": {
+          "$ref": "https://l7.way/schema/v1/common-lingua.schema.json#/$defs/entityStatus"
+        },
+        "lineage": { "type": "string" },
+        "source": { "type": "string" },
+        "declared": { "type": "boolean" },
+        "l7_declaration": {
+          "oneOf": [
+            { "$ref": "https://l7.way/schema/v1/common-lingua.schema.json" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
