@@ -2,9 +2,9 @@ name: echo
 suite: Gateway
 tagline: "Say it back"
 does: communicate
-server: l7-gateway
+server: "http://127.0.0.1:18792/"
 mcp_tool: echo
-description: "Returns the given payload. Canonical declared-7D sample."
+description: "loopback echo worker"
 needs:
   message: string
 gives:

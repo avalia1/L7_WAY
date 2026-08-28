@@ -21,7 +21,7 @@
     },
     "server": {
       "type": "string",
-      "description": "MCP server name (e.g., dialpad, ncls-comprehensive)"
+      "description": "MCP server name in mcp.json, or a loopback http(s) URL (127.0.0.1, localhost, or ::1 only; path defaults to /)"
     },
     "mcp_tool": {
       "type": "string",
