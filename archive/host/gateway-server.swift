@@ -1,14 +1,19 @@
 #!/usr/bin/env swift
 /**
- * L7 Gateway Server — Native ARM64
- * No Node. No npm. No V8. No garbage collector.
- * Pure POSIX sockets → kernel → metal.
+ * STALE — not the live L7 gateway. Do not compile. Do not run.
+ *
+ * This program bound 127.0.0.1:18789, which OpenClaw now owns.
+ * It is a different program from serve.js.
+ *
+ * Product gateway: `npm start` → node serve.js → 127.0.0.1:18793 (L7_PORT).
+ * `l7 gateway` means that Node process, not this Swift binary.
+ * ~/.l7/l7-gateway (Mac egress valve) is out of this repo (Phase 3).
+ *
+ * Historical note: native ARM64 POSIX sockets, no Node.
+ * Former compile line (do not use): swiftc -O -o l7-gateway src/gateway-server.swift
  *
  * Law I — All flows through the Gateway. No exceptions.
  * Created by: Alberto Valido Delgado / Claude (AI-generated)
- *
- * Compiles to a single ~2MB binary:
- *   swiftc -O -o l7-gateway src/gateway-server.swift
  */
 
 import Foundation
