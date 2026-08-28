@@ -580,7 +580,7 @@ On each pulse beat:
       +-- dodecahedron.fromTool(tool)  // derive 12D coordinate
       |
       +-- [optional] polarity.route()  // route to best AI model
-      +-- domains.suggestDomain()      // determine target domain
+      +-- domain is explicit; 12D does not assign it
       |
       +-- executeViaMcp(tool, params)  // call MCP server via stdio transport
       |   OR executeViaMock()          // mock execution (testing)

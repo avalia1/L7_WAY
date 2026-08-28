@@ -133,6 +133,23 @@ test('execute writes a tool_execution audit entry for a known tool', async () =>
   assert.equal(mine.ok, true);
 });
 
+test('execute without options.domain does not assign morph/salt from 12D coordinates', async () => {
+  writeTool('unfoldered', 'name: unfoldered\ndoes: act\nserver: test-server\n');
+  // This vector used to map to vault (Mars) then morph (Neptune/Pluto) via suggestDomain.
+  const coord = [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9];
+  await gateway.execute('unfoldered', { x: 1 }, { mode: 'mock', coordinate: coord });
+
+  const entries = fs
+    .readFileSync(path.join(FIXTURE_DIR, 'audit.log'), 'utf8')
+    .trim()
+    .split('\n')
+    .map((l) => JSON.parse(l));
+  const mine = entries.find((e) => e.type === 'tool_execution' && e.tool === 'unfoldered');
+  assert.ok(mine, 'an audit entry for the executed tool was recorded');
+  assert.equal(mine.domain, null);
+  assert.ok(!['morph', 'work', 'salt', 'vault'].includes(mine.domain));
+});
+
 test('execute with tool.audit === false suppresses the tool_execution entry only', async () => {
   writeTool('silent', 'name: silent\ndoes: act\nserver: test-server\naudit: false\n');
   await gateway.execute('silent', { x: 1 }, { mode: 'mock' });
