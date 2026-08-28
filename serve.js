@@ -27,6 +27,7 @@ const stateManager = require('./lib/state');
 const declaration = require('./lib/declaration');
 const registry = require('./lib/registry');
 const catalog = require('./lib/catalog');
+const { principal } = require('./lib/principal');
 
 const PORT = parseInt(process.env.L7_PORT || '18793', 10);
 const BIND = process.env.L7_BIND || '127.0.0.1';
@@ -69,6 +70,7 @@ function parseBody(req) {
 
 const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
+  const who = principal(req);
 
   if (req.method === 'OPTIONS') {
     setCorsHeaders(res);
@@ -102,7 +104,7 @@ const server = http.createServer(async (req, res) => {
         tools: health.tools,
         citizens: health.citizens,
         polarities: health.polarities,
-        founder: gateway.FOUNDER.legal_name
+        principal: { kind: who.kind, loopback: who.loopback }
       });
       return;
     }

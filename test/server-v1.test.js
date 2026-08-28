@@ -58,13 +58,23 @@ console.log = () => {};
 
 const serve = require('../serve');
 
+let started;
+
+test.before(async () => {
+  started = await serve.start();
+});
+
 test.after(async () => {
   console.log = origLog;
   await serve.stop();
 });
 
+function healthText(body) {
+  return JSON.stringify(body);
+}
+
 test('serve.start listens on one loopback port and /health answers', async () => {
-  const { port, bind, server } = await serve.start();
+  const { port, bind, server } = started;
   assert.equal(bind, '127.0.0.1');
   assert.equal(typeof port, 'number');
   assert.ok(port > 0);
@@ -74,5 +84,58 @@ test('serve.start listens on one loopback port and /health answers', async () =>
   assert.equal(res.status, 200);
   const body = await res.json();
   assert.equal(body.alive, true);
-  assert.equal(body.founder, 'Alberto Valido Delgado');
+  assert.equal(body.principal.kind, 'local');
+  assert.equal(body.principal.loopback, true);
+  assert.equal(body.founder, undefined);
+});
+
+test('GET /health does not leak founder legal_name or email', async () => {
+  const res = await fetch(`http://127.0.0.1:${started.port}/health`);
+  assert.equal(res.status, 200);
+  const raw = await res.text();
+  const body = JSON.parse(raw);
+  assert.equal(body.founder, undefined);
+  assert.equal('founder' in body, false);
+  assert.match(raw, /"kind": "local"/);
+  assert.doesNotMatch(raw, /legal_name/);
+  assert.doesNotMatch(raw, /Alberto Valido Delgado/);
+  assert.doesNotMatch(raw, /avalia@avli\.cloud/);
+  assert.equal(healthText(body).includes('avalia@avli.cloud'), false);
+});
+
+test('GET /health with a matching bearer reports kind bearer and stays 200', async () => {
+  const prev = process.env.L7_TOKEN;
+  process.env.L7_TOKEN = 'phase6-http-secret';
+  try {
+    const res = await fetch(`http://127.0.0.1:${started.port}/health`, {
+      headers: { Authorization: 'Bearer phase6-http-secret' },
+    });
+    assert.equal(res.status, 200);
+    const raw = await res.text();
+    const body = JSON.parse(raw);
+    assert.equal(body.principal.kind, 'bearer');
+    assert.equal(body.principal.loopback, true);
+    assert.doesNotMatch(raw, /Alberto Valido Delgado/);
+    assert.doesNotMatch(raw, /avalia@avli\.cloud/);
+  } finally {
+    if (prev === undefined) delete process.env.L7_TOKEN;
+    else process.env.L7_TOKEN = prev;
+  }
+});
+
+test('GET /health with a wrong token stays local (loopback remains open)', async () => {
+  const prev = process.env.L7_TOKEN;
+  process.env.L7_TOKEN = 'phase6-http-secret';
+  try {
+    const res = await fetch(`http://127.0.0.1:${started.port}/health`, {
+      headers: { Authorization: 'Bearer wrong-token' },
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.principal.kind, 'local');
+    assert.equal(body.principal.loopback, true);
+  } finally {
+    if (prev === undefined) delete process.env.L7_TOKEN;
+    else process.env.L7_TOKEN = prev;
+  }
 });
