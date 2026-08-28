@@ -1241,6 +1241,17 @@
       "l7_declaration": null
     },
     {
+      "entity_id": "workflow:echo_then_ollama",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "host/flows/echo_then_ollama.flow",
+      "source": "host/flows/echo_then_ollama.flow",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
       "entity_id": "workflow:edge_to_field",
       "entity_type": "workflow",
       "birth_date": "2026-08-28",

@@ -86,6 +86,21 @@ test('host/flows/ollama_once.flow is a valid one-step composition of ollama', ()
   assert.equal(obj.steps[0].with.prompt, 'hello');
 });
 
+test('host/flows/echo_then_ollama.flow interpolates $a.message from echo into ollama', () => {
+  const parser = require('../lib/parser');
+  const file = path.join(ROOT, 'host', 'flows', 'echo_then_ollama.flow');
+  const obj = parser.parseFile(file);
+  const yamlOk = parser.validate(obj, 'flow');
+  assert.equal(yamlOk.valid, true, `echo_then_ollama yaml: ${JSON.stringify(yamlOk.errors)}`);
+  assert.equal(obj.steps.length, 2);
+  assert.equal(obj.steps[0].do, 'echo');
+  assert.equal(obj.steps[0].as, 'a');
+  assert.equal(obj.steps[0].with.message, 'hello');
+  assert.equal(obj.steps[1].do, 'ollama');
+  assert.equal(obj.steps[1].as, 'out');
+  assert.equal(obj.steps[1].with.prompt, '$a.message');
+});
+
 test('committed ENTITY_REGISTRY.json is generated and not empty', () => {
   const doc = JSON.parse(fs.readFileSync(path.join(ROOT, 'ENTITY_REGISTRY.json'), 'utf8'));
   assert.equal(doc.schema, 'v1');
@@ -94,4 +109,5 @@ test('committed ENTITY_REGISTRY.json is generated and not empty', () => {
   assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:echo_once'));
   assert.ok(doc.entities.some((e) => e.entity_id === 'tool:ollama' && e.declared));
   assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:ollama_once'));
+  assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:echo_then_ollama'));
 });

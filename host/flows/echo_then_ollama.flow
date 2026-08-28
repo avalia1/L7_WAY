@@ -1,0 +1,13 @@
+name: echo_then_ollama
+description: "Declared composition: echo then ollama. Step 2 interpolates $a.message from step 1."
+owner: Alberto Valido Delgado
+birth_date: "2026-08-28"
+steps:
+  - do: echo
+    as: a
+    with:
+      message: hello
+  - do: ollama
+    as: out
+    with:
+      prompt: $a.message
