@@ -14,6 +14,15 @@
 
 L7_DIR="$HOME/.l7"
 
+# Repo root: prefix pointer, then env, then default checkout.
+# ~/.l7 is install-only (binaries, copied tools, state, logs, secrets).
+if [ -f "$HOME/.l7/L7_WAY_ROOT" ]; then
+    L7_WAY="$(head -n 1 "$HOME/.l7/L7_WAY_ROOT")"
+elif [ -z "${L7_WAY:-}" ]; then
+    L7_WAY="$HOME/L7_WAY"
+fi
+HOST="$L7_WAY/host"
+
 # Ensure core directories (0o700 — owner only)
 mkdir -p "$L7_DIR/state" "$L7_DIR/canon" "$L7_DIR/wallet" "$L7_DIR/sentinel"
 chmod 700 "$L7_DIR/wallet" "$L7_DIR/sentinel" 2>/dev/null
@@ -26,7 +35,7 @@ chmod 700 "$L7_DIR/wallet" "$L7_DIR/sentinel" 2>/dev/null
 case "$1" in
     canon)
         BINARY="$L7_DIR/l7-canon"
-        SOURCE="$L7_DIR/l7-canon.swift"
+        SOURCE="$HOST/swift/l7-canon.swift"
         LABEL="Canon"
         ATOMS="A1 M2 M4 G1 N1 I1 I2"
         EXTRA_FLAGS="-framework LocalAuthentication"
@@ -34,7 +43,7 @@ case "$1" in
         ;;
     gallery)
         BINARY="$L7_DIR/l7-gallery"
-        SOURCE="$L7_DIR/l7-gallery.swift"
+        SOURCE="$HOST/swift/l7-gallery.swift"
         LABEL="Gallery"
         ATOMS="A1 M1 M4 G1 E1-E5 N1 I1 I2"
         EXTRA_FLAGS="-framework LocalAuthentication"
@@ -42,7 +51,7 @@ case "$1" in
         ;;
     wallet)
         BINARY="$L7_DIR/l7-wallet"
-        SOURCE="$L7_DIR/l7-wallet.swift"
+        SOURCE="$HOST/swift/l7-wallet.swift"
         LABEL="Wallet"
         ATOMS="A1 A4 M1 M2 M3 G1 G2 E1-E5 N1 N2 I1 I2 I3"
         EXTRA_FLAGS="-framework Security -framework LocalAuthentication"
@@ -50,7 +59,7 @@ case "$1" in
         ;;
     sentinel)
         BINARY="$L7_DIR/l7-sentinel"
-        SOURCE="$L7_DIR/l7-sentinel.swift"
+        SOURCE="$HOST/swift/l7-sentinel.swift"
         LABEL="Sentinel"
         ATOMS="A1 A4 S1-S5 M1 M2 G1 G2 G4 N1 N3 I1 I2 I3"
         EXTRA_FLAGS="-framework Security -framework LocalAuthentication"
@@ -58,7 +67,7 @@ case "$1" in
         ;;
     grok|daughter)
         BINARY="$L7_DIR/l7-grok"
-        SOURCE="$L7_DIR/l7-grok.swift"
+        SOURCE="$HOST/swift/l7-grok.swift"
         LABEL="Grok"
         ATOMS="A1 M1 G1 N1 I1"
         EXTRA_FLAGS="-framework Cocoa -framework WebKit"
@@ -66,7 +75,7 @@ case "$1" in
         ;;
     anima|wallpaper|desktop)
         BINARY="$L7_DIR/l7-anima"
-        SOURCE="$L7_DIR/l7-anima.swift"
+        SOURCE="$HOST/swift/l7-anima.swift"
         LABEL="Anima"
         ATOMS="A1 M1 G1 N1 I1"
         EXTRA_FLAGS="-framework Cocoa -framework WebKit"
@@ -74,7 +83,7 @@ case "$1" in
         ;;
     imago|imagine|image)
         BINARY="$L7_DIR/l7-imago"
-        SOURCE="$L7_DIR/l7-imago.swift"
+        SOURCE="$HOST/swift/l7-imago.swift"
         LABEL="Imago"
         ATOMS="A1 M1 G1 E1-E5 N1 I1"
         EXTRA_FLAGS="-framework Cocoa -framework WebKit"
@@ -82,16 +91,23 @@ case "$1" in
         ;;
     vault-reader|reader|sealed|classified)
         BINARY="$L7_DIR/l7-vault-reader"
-        SOURCE="$L7_DIR/l7-vault-reader.swift"
+        SOURCE="$HOST/swift/l7-vault-reader.swift"
         LABEL="Vault Reader"
         ATOMS="A1 M1 G1 N1 I1 I2"
         EXTRA_FLAGS="-framework LocalAuthentication -framework CryptoKit"
         shift
         ;;
-    gateway|gate|gw|claw)
-        BINARY="$L7_DIR/l7-gateway"
-        SOURCE="$L7_DIR/l7-gateway.swift"
-        LABEL="Gateway"
+    gateway|gate|gw)
+        # Node control plane on 127.0.0.1:18793 — not the Swift pf binary.
+        if [ -x "$L7_WAY/scripts/run-gateway.sh" ]; then
+            exec "$L7_WAY/scripts/run-gateway.sh"
+        fi
+        cd "$L7_WAY" && exec npm start
+        ;;
+    egress|claw)
+        BINARY="$L7_DIR/l7-egress"
+        SOURCE="$HOST/swift/l7-gateway.swift"
+        LABEL="Egress"
         ATOMS="A1 M2 M3 G1 G2 N1 N2 N3 I1 I2 I3"
         EXTRA_FLAGS="-framework Security -framework LocalAuthentication"
         shift
@@ -108,7 +124,7 @@ case "$1" in
         # Requires macOS 26+ (FoundationModels framework), so it's compiled
         # separately from the generic block below, which targets macOS 14.
         BIN="$L7_DIR/l7-foundation"
-        SRC="$L7_DIR/l7-foundation.swift"
+        SRC="$HOST/swift/l7-foundation.swift"
         if [ ! -f "$BIN" ] || [ "$SRC" -nt "$BIN" ]; then
             echo ""
             echo "  ═══ Forging L7 Foundation (arm64, macOS 26+, on-device) ═══"
@@ -124,7 +140,7 @@ case "$1" in
         # design — one file, one instruction. For real multi-file coding
         # work use `l7 dev` instead.
         BIN="$L7_DIR/l7-foundation"
-        SRC="$L7_DIR/l7-foundation.swift"
+        SRC="$HOST/swift/l7-foundation.swift"
         if [ ! -f "$BIN" ] || [ "$SRC" -nt "$BIN" ]; then
             swiftc "$SRC" -o "$BIN" -O || { echo "  Forging failed. Check $SRC."; exit 1; }
             chmod +x "$BIN"
@@ -148,9 +164,9 @@ case "$1" in
         ;;
     skills|skill)
         # AI Playground skill runtime — list/route/validate/execute
-        # See ~/.l7/programs/skill-runtime/ and skill: l7-empire
+        # Source of truth: host/programs/skill-runtime/. Prefix copies are post-install runtime.
         shift
-        exec python3 "$L7_DIR/programs/skill-runtime/l7skills.py" "$@"
+        exec python3 "$HOST/programs/skill-runtime/l7skills.py" "$@"
         ;;
     forge)
         # M2 skill-runtime forge: HTTP on :7378 or one-shot execute
@@ -158,7 +174,7 @@ case "$1" in
         #   l7 forge exec <tool> '{}' → skill_bridge execute
         #   l7 forge tools           → list executable tools
         shift
-        FORGE="$L7_DIR/programs/skill-runtime/forge"
+        FORGE="$HOST/programs/skill-runtime/forge"
         case "${1:-}" in
             ""|serve|server|start)
                 exec python3 "$FORGE/forge_server.py"
@@ -187,7 +203,7 @@ case "$1" in
         echo ""
         echo "  L7 ASHRAMS"
         echo "  ══════════════════════════════════════"
-        for app in l7-forge l7-canon l7-gallery l7-vault-reader l7-wallet l7-sentinel l7-gateway l7-grok l7-imago l7-anima l7-foundation; do
+        for app in l7-forge l7-canon l7-gallery l7-vault-reader l7-wallet l7-sentinel l7-egress l7-grok l7-imago l7-anima l7-foundation; do
             if [ -f "$L7_DIR/$app" ]; then
                 SIZE=$(ls -lh "$L7_DIR/$app" | awk '{print $5}')
                 MOD=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$L7_DIR/$app")
@@ -202,7 +218,7 @@ case "$1" in
         ;;
     *)
         BINARY="$L7_DIR/l7-forge"
-        SOURCE="$L7_DIR/l7-forge.swift"
+        SOURCE="$HOST/swift/l7-forge.swift"
         LABEL="Forge"
         ATOMS="A1 A4 S3 M1 M2 M4 G1 G2 N1 I1 I3"
         EXTRA_FLAGS="-framework LocalAuthentication"
