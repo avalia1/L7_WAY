@@ -1,3 +1,1221 @@
 {
-  "entities": []
+  "schema": "v1",
+  "generated_from": [
+    "host"
+  ],
+  "entities": [
+    {
+      "entity_id": "tool:agent_workflows",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.agent-workflows",
+      "source": "host/tools/agent_workflows.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:ai_playground_index",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.ai-playground-index",
+      "source": "host/tools/ai_playground_index.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:alchemy_albedo",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.alchemy-albedo",
+      "source": "host/tools/alchemy_albedo.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:alchemy_citrinitas",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.alchemy-citrinitas",
+      "source": "host/tools/alchemy_citrinitas.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:alchemy_nigredo",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.alchemy-nigredo",
+      "source": "host/tools/alchemy_nigredo.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:alchemy_rubedo",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.alchemy-rubedo",
+      "source": "host/tools/alchemy_rubedo.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:alchemy_transmutation",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.alchemy-transmutation",
+      "source": "host/tools/alchemy_transmutation.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:alchemy_transmute",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.alchemy-transmutation",
+      "source": "host/tools/alchemy_transmute.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:autonomous_agents",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.autonomous-agents",
+      "source": "host/tools/autonomous_agents.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:brand_guidelines",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.brand-guidelines",
+      "source": "host/tools/brand_guidelines.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:claude_agent",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "claude.invoke",
+      "source": "host/tools/claude_agent.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:claude_skills_dev",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.claude-skills-dev",
+      "source": "host/tools/claude_skills_dev.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:codex_amber",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.preserve",
+      "source": "host/tools/codex_amber.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:codex_cron",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.cron",
+      "source": "host/tools/codex_cron.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:codex_fossil",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.snapshot",
+      "source": "host/tools/codex_fossil.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:codex_index",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.search",
+      "source": "host/tools/codex_index.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:codex_memory",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.memory",
+      "source": "host/tools/codex_memory.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:codex_scribe",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.generate",
+      "source": "host/tools/codex_scribe.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:codex_skill",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.skill",
+      "source": "host/tools/codex_skill.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:council_seven",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "council.seven",
+      "source": "host/tools/council_seven.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:council_triad",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "council.triad",
+      "source": "host/tools/council_triad.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:council_tribunal",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "council.tribunal",
+      "source": "host/tools/council_tribunal.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:dcf_valuation",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.dcf-valuation",
+      "source": "host/tools/dcf_valuation.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:echo",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "echo",
+      "source": "host/tools/echo.tool",
+      "declared": true,
+      "l7_declaration": {
+        "capability": "communicate",
+        "data": {
+          "pii": "non_pii",
+          "source": "internal",
+          "shape": "record",
+          "freshness": "live"
+        },
+        "policyIntent": {
+          "mode": "test",
+          "risk": "low",
+          "requireApproval": false,
+          "compliance": "standard"
+        },
+        "presentation": {
+          "ui": "card",
+          "output": "json",
+          "density": "compact"
+        },
+        "orchestration": {
+          "flow": "single",
+          "trigger": "manual",
+          "retry": "none"
+        },
+        "timeVersioning": {
+          "toolVersion": "v1",
+          "schemaVersion": "v1",
+          "lifecycle": "active"
+        },
+        "identitySecurity": {
+          "role": "operator",
+          "auth": "token",
+          "audit": "on"
+        }
+      }
+    },
+    {
+      "entity_id": "tool:elevenlabs_video_blueprints",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.elevenlabs-video-blueprints",
+      "source": "host/tools/elevenlabs_video_blueprints.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:financial_analysis",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.financial-analysis",
+      "source": "host/tools/financial_analysis.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:financial_ratios",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.financial-ratios",
+      "source": "host/tools/financial_ratios.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:flux_render",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "flux.process",
+      "source": "host/tools/flux_render.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:flux_splice",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "flux.compose",
+      "source": "host/tools/flux_splice.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:flux_stream",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "flux.broadcast",
+      "source": "host/tools/flux_stream.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:flux_tempo",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "flux.time",
+      "source": "host/tools/flux_tempo.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:gateway_doctor",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "gateway.doctor",
+      "source": "host/tools/gateway_doctor.tool",
+      "declared": true,
+      "l7_declaration": {
+        "capability": "analyze",
+        "data": {
+          "pii": "non_pii",
+          "source": "internal",
+          "shape": "summary",
+          "freshness": "live"
+        },
+        "policyIntent": {
+          "mode": "live",
+          "risk": "low",
+          "requireApproval": false,
+          "compliance": "standard"
+        },
+        "presentation": {
+          "ui": "table",
+          "output": "json",
+          "density": "detailed"
+        },
+        "orchestration": {
+          "flow": "single",
+          "trigger": "manual",
+          "retry": "none"
+        },
+        "timeVersioning": {
+          "toolVersion": "v1",
+          "schemaVersion": "v1",
+          "lifecycle": "active"
+        },
+        "identitySecurity": {
+          "role": "operator",
+          "auth": "token",
+          "audit": "on"
+        }
+      }
+    },
+    {
+      "entity_id": "tool:gateway_node",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "gateway.node",
+      "source": "host/tools/gateway_node.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:gemini_vertex",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.gemini-vertex",
+      "source": "host/tools/gemini_vertex.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:harmonics_cascade",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "harmonics.cascade",
+      "source": "host/tools/harmonics_cascade.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:harmonics_tune",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "harmonics.tune",
+      "source": "host/tools/harmonics_tune.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:herald_beacon",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "herald.discover",
+      "source": "host/tools/herald_beacon.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:herald_cast",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "herald.broadcast",
+      "source": "host/tools/herald_cast.tool",
+      "declared": true,
+      "l7_declaration": {
+        "capability": "communicate",
+        "data": {
+          "pii": "non_pii",
+          "source": "mixed",
+          "shape": "list",
+          "freshness": "live"
+        },
+        "policyIntent": {
+          "mode": "live",
+          "risk": "medium",
+          "requireApproval": true,
+          "compliance": "standard"
+        },
+        "presentation": {
+          "ui": "card",
+          "output": "json",
+          "density": "standard"
+        },
+        "orchestration": {
+          "flow": "single",
+          "trigger": "manual",
+          "retry": "none"
+        },
+        "timeVersioning": {
+          "toolVersion": "v1",
+          "schemaVersion": "v1",
+          "lifecycle": "active"
+        },
+        "identitySecurity": {
+          "role": "operator",
+          "auth": "token",
+          "audit": "on"
+        }
+      }
+    },
+    {
+      "entity_id": "tool:herald_channel",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "herald.channel",
+      "source": "host/tools/herald_channel.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:herald_cipher",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "herald.encrypt",
+      "source": "host/tools/herald_cipher.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:herald_relay",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "herald.bridge",
+      "source": "host/tools/herald_relay.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:herald_webhook",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "herald.webhook",
+      "source": "host/tools/herald_webhook.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:kinesis_flow",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "kinesis.optical",
+      "source": "host/tools/kinesis_flow.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:kinesis_gesture",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "kinesis.gesture",
+      "source": "host/tools/kinesis_gesture.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:kinesis_mirror",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "kinesis.avatar",
+      "source": "host/tools/kinesis_mirror.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:kinesis_track",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "kinesis.body",
+      "source": "host/tools/kinesis_track.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:l7_empire",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.l7-empire",
+      "source": "host/tools/l7_empire.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:langchain_agents",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.langchain-agents",
+      "source": "host/tools/langchain_agents.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:llamaindex_rag",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.llamaindex-rag",
+      "source": "host/tools/llamaindex_rag.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:llm_engineer",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.llm-engineer",
+      "source": "host/tools/llm_engineer.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:meridian_chroma",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "meridian.chroma",
+      "source": "host/tools/meridian_chroma.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:meridian_core",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "meridian.contour",
+      "source": "host/tools/meridian_core.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:meridian_depth",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "meridian.depth",
+      "source": "host/tools/meridian_depth.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:meridian_iris",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "meridian.recognize",
+      "source": "host/tools/meridian_iris.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:multiagent_autogen",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.multiagent-autogen",
+      "source": "host/tools/multiagent_autogen.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:openai_patterns",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.openai-patterns",
+      "source": "host/tools/openai_patterns.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:orisha_youtube_documentary_n8n",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.orisha-youtube-documentary-n8n",
+      "source": "host/tools/orisha_youtube_documentary_n8n.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:project_index",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.alchemy-transmutation",
+      "source": "host/tools/project_index.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:prompt_engineering",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.prompt-engineering",
+      "source": "host/tools/prompt_engineering.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:rag_pipeline",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.rag-pipeline",
+      "source": "host/tools/rag_pipeline.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:resonance_ambient",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "resonance.generate",
+      "source": "host/tools/resonance_ambient.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:resonance_beat",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "resonance.rhythm",
+      "source": "host/tools/resonance_beat.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:resonance_chronos",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "resonance.chronos",
+      "source": "host/tools/resonance_chronos.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:resonance_field",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "resonance.spatial",
+      "source": "host/tools/resonance_field.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:resonance_voice",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "resonance.voice",
+      "source": "host/tools/resonance_voice.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:studio_export",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "studio.export",
+      "source": "host/tools/studio_export.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:studio_synth",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "studio.synthesize",
+      "source": "host/tools/studio_synth.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:studio_visual",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "studio.visualize",
+      "source": "host/tools/studio_visual.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:tesseract_anchor",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "tesseract.anchor",
+      "source": "host/tools/tesseract_anchor.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:tesseract_forge",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "tesseract.generate",
+      "source": "host/tools/tesseract_forge.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:tesseract_portal",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "tesseract.portal",
+      "source": "host/tools/tesseract_portal.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:tesseract_scene",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "tesseract.scene",
+      "source": "host/tools/tesseract_scene.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:tool_use_patterns",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.tool-use-patterns",
+      "source": "host/tools/tool_use_patterns.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:vault_reader",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "codex.vault_reader",
+      "source": "host/tools/vault_reader.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:vector_chroma",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.vector-chroma",
+      "source": "host/tools/vector_chroma.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:vector_qdrant",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "skill.vector-qdrant",
+      "source": "host/tools/vector_qdrant.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:watermark_provenance",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "watermark.stamp",
+      "source": "host/tools/watermark_provenance.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:watermark_verify",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "watermark.verify",
+      "source": "host/tools/watermark_verify.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_anchor",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.anchor.manage",
+      "source": "host/tools/xr_anchor.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_audio",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.audio.manage",
+      "source": "host/tools/xr_audio.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_avatar",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.avatar.manage",
+      "source": "host/tools/xr_avatar.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_browser",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.browser",
+      "source": "host/tools/xr_browser.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_component",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.component.manage",
+      "source": "host/tools/xr_component.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_compositor",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.compositor.manage",
+      "source": "host/tools/xr_compositor.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_container",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.container.manage",
+      "source": "host/tools/xr_container.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_entity",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.entity.manage",
+      "source": "host/tools/xr_entity.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_eye",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.eye.track",
+      "source": "host/tools/xr_eye.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_frame",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.frame.submit",
+      "source": "host/tools/xr_frame.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_gesture",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.gesture.detect",
+      "source": "host/tools/xr_gesture.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_hand",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.hand.track",
+      "source": "host/tools/xr_hand.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_material",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.material.manage",
+      "source": "host/tools/xr_material.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_mesh",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.mesh.manage",
+      "source": "host/tools/xr_mesh.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_passthrough",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.passthrough.control",
+      "source": "host/tools/xr_passthrough.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_scene",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.scene.query",
+      "source": "host/tools/xr_scene.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_session",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.session.manage",
+      "source": "host/tools/xr_session.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_shared_anchor",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.anchor.share",
+      "source": "host/tools/xr_shared_anchor.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:xr_space",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "xr.space.manage",
+      "source": "host/tools/xr_space.tool",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "workflow:ai_playground_rag",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "host/flows/ai_playground_rag.flow",
+      "source": "host/flows/ai_playground_rag.flow",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "workflow:edge_to_field",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "The Philosopher",
+      "status": "active",
+      "lineage": "host/flows/edge_to_field.flow",
+      "source": "host/flows/edge_to_field.flow",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "workflow:mirror_across_devices",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "The Philosopher",
+      "status": "active",
+      "lineage": "host/flows/mirror_across_devices.flow",
+      "source": "host/flows/mirror_across_devices.flow",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "workflow:openclaw_gateway",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "The Philosopher",
+      "status": "active",
+      "lineage": "host/flows/openclaw_gateway.flow",
+      "source": "host/flows/openclaw_gateway.flow",
+      "declared": false,
+      "l7_declaration": null
+    }
+  ]
 }

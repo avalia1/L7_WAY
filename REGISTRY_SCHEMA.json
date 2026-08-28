@@ -17,7 +17,7 @@
     "owner": { "type": "string" },
     "status": { "type": "string", "enum": ["active", "deprecated", "archived"] },
     "lineage": { "type": "string" },
-    "l7_declaration": { "$ref": "L7_SCHEMA.json" }
+    "l7_declaration": { "$ref": "schema/v1/common-lingua.schema.json" }
   },
   "additionalProperties": false
 }

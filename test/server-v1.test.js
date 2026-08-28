@@ -8,6 +8,7 @@ const path = require('path');
 // at a throwaway dir and bind an ephemeral port *before* requiring serve.
 const FIXTURE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'l7-server-v1-'));
 process.env.L7_DIR = FIXTURE_DIR;
+process.env.L7_HOST_ROOT = FIXTURE_DIR;
 process.env.L7_PORT = '0';
 process.env.L7_BIND = '127.0.0.1';
 process.env.L7_MODE = 'mock';

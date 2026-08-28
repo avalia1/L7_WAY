@@ -30,3 +30,33 @@ runs: once
 version: v1
 icon: stethoscope
 color: "#22c55e"
+owner: Alberto Valido Delgado
+birth_date: "2026-08-28"
+l7:
+  capability: analyze
+  data:
+    pii: non_pii
+    source: internal
+    shape: summary
+    freshness: live
+  policyIntent:
+    mode: live
+    risk: low
+    requireApproval: false
+    compliance: standard
+  presentation:
+    ui: table
+    output: json
+    density: detailed
+  orchestration:
+    flow: single
+    trigger: manual
+    retry: none
+  timeVersioning:
+    toolVersion: v1
+    schemaVersion: v1
+    lifecycle: active
+  identitySecurity:
+    role: operator
+    auth: token
+    audit: on

@@ -11,6 +11,7 @@
     "validate": "node lib/parser.js validate",
     "parse": "node lib/parser.js parse",
     "list": "node lib/parser.js list",
+    "schema:sync": "node scripts/sync-schema.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {

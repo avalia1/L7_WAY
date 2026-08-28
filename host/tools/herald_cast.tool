@@ -21,3 +21,33 @@ runs: once
 version: v1
 icon: megaphone
 color: "#ec4899"
+owner: Alberto Valido Delgado
+birth_date: "2026-08-28"
+l7:
+  capability: communicate
+  data:
+    pii: non_pii
+    source: mixed
+    shape: list
+    freshness: live
+  policyIntent:
+    mode: live
+    risk: medium
+    requireApproval: true
+    compliance: standard
+  presentation:
+    ui: card
+    output: json
+    density: standard
+  orchestration:
+    flow: single
+    trigger: manual
+    retry: none
+  timeVersioning:
+    toolVersion: v1
+    schemaVersion: v1
+    lifecycle: active
+  identitySecurity:
+    role: operator
+    auth: token
+    audit: on

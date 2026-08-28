@@ -13,7 +13,7 @@ Every tool entry must include:
 - `l7_declaration` (all seven L7 types)
 
 ## Gateway Tool Registry Contract
-`GET /tools` must return:
+`GET /v1/tools` must return:
 - `tool`: name
 - `version`
 - `description`

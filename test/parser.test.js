@@ -8,6 +8,7 @@ const path = require('path');
 // fixture directory *before* requiring the module — never touch the real ~/.l7.
 const FIXTURE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'l7-parser-test-'));
 process.env.L7_DIR = FIXTURE_DIR;
+process.env.L7_HOST_ROOT = FIXTURE_DIR;
 
 const parser = require('../lib/parser');
 
