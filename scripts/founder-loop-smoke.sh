@@ -42,7 +42,7 @@ grep -q 'avli_cloud/workers/start.sh' "${ROOT}/scripts/run-founder-loop.sh" \
 grep -E 'exec npm start|exec node serve.js' "${ROOT}/scripts/run-founder-loop.sh" >/dev/null \
   && fail "run-founder-loop.sh must not boot the Node gateway"
 # Must mention the forbidden ports only as a refuse list, never as serve targets.
-if grep -E 'tailscale serve --bg 18792|tailscale serve --bg 18798|tailscale serve --bg 7378' \
+if grep -E 'tailscale serve --bg 18792|tailscale serve --bg 18794|tailscale serve --bg 18795|tailscale serve --bg 18798|tailscale serve --bg 7378' \
   "${ROOT}/scripts/run-founder-loop.sh" >/dev/null; then
   fail "run-founder-loop.sh must not Tailscale-serve worker/forge ports"
 fi
@@ -108,7 +108,7 @@ else
   LISTEN=""
 fi
 if [ -n "$LISTEN" ]; then
-  echo "$LISTEN" | grep -E ':18792|:18798|:7378|:7377' >/dev/null \
+  echo "$LISTEN" | grep -E ':18792|:18794|:18795|:18798|:7378|:7377' >/dev/null \
     && fail "gateway boot must not listen on worker/forge/empire ports"
   pass "no worker/forge/empire listeners after run-gateway"
 fi

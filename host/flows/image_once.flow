@@ -1,0 +1,9 @@
+name: image_once
+description: "Live composition: one image step on the loopback worker (127.0.0.1:18794)."
+owner: Alberto Valido Delgado
+birth_date: "2026-08-28"
+steps:
+  - do: image
+    as: out
+    with:
+      prompt: hello

@@ -1,0 +1,13 @@
+name: prompt_then_image
+description: "Declared composition: ollama then image. Step 2 interpolates $a.text from step 1."
+owner: Alberto Valido Delgado
+birth_date: "2026-08-28"
+steps:
+  - do: ollama
+    as: a
+    with:
+      prompt: a short image-prompt request
+  - do: image
+    as: out
+    with:
+      prompt: $a.text

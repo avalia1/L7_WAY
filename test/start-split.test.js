@@ -30,6 +30,8 @@ test('operator scripts split gateway from founder-loop', () => {
   assert.match(loop, /not the gateway/);
   assert.equal(/exec npm start|exec node serve\.js/.test(loop), false);
   assert.equal(/tailscale serve --bg 18792/.test(loop), false);
+  assert.equal(/tailscale serve --bg 18794/.test(loop), false);
+  assert.equal(/tailscale serve --bg 18795/.test(loop), false);
   assert.equal(/tailscale serve --bg 18798/.test(loop), false);
   assert.equal(/tailscale serve --bg 7378/.test(loop), false);
 

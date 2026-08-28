@@ -6,6 +6,6 @@
 - **Founder Loop** is `scripts/run-founder-loop.sh`. It is operator plumbing, not the gateway.
 - `./start.sh` calls both for the founder. It is not the architecture.
 
-Do not start `~/avli_cloud/start.sh`. Workers only via `~/avli_cloud/workers/start.sh` if that file exists. Do not Tailscale-serve `:18792`, `:18798`, or forge `:7378`. Do not grow tunnel/n8n/Tailscale code in `serve.js`. Do not invent `lib/avli-worker-client.js` if it is not already in the tree.
+Do not start `~/avli_cloud/start.sh`. Workers only via `~/avli_cloud/workers/start.sh` if that file exists. Do not Tailscale-serve `:18792`, `:18794`, `:18795`, `:18798`, or forge `:7378`. Do not grow tunnel/n8n/Tailscale code in `serve.js`. Do not invent `lib/avli-worker-client.js` if it is not already in the tree.
 
 Loop smoke: `./scripts/founder-loop-smoke.sh`. Gateway tests: `test/server-v1.test.js`, `test/one-listener.test.js`, `test/schema-v1.test.js`, `test/v1-tools.test.js`, `test/v1-flows.test.js`. Public: `GET /v1/tools` (declared 7D), `POST /v1/flows/:name/run` (the flow file is the orchestrator; a model is a tool only if a step names one).

@@ -44,7 +44,7 @@ test('12D internal_projection does not grant identity or domain', () => {
 test('host/tools samples declare valid 7D', () => {
   const parser = require('../lib/parser');
   const declaration = require('../lib/declaration');
-  for (const name of ['echo', 'ollama', 'gateway_doctor', 'herald_cast']) {
+  for (const name of ['echo', 'ollama', 'image', 'ffmpeg', 'gateway_doctor', 'herald_cast']) {
     const file = path.join(ROOT, 'host', 'tools', `${name}.tool`);
     const obj = parser.parseFile(file);
     const yamlOk = parser.validate(obj, 'tool');
@@ -60,6 +60,21 @@ test('host/tools samples declare valid 7D', () => {
   assert.equal(ollama.mcp_tool, 'text.generate');
   assert.equal(ollama.needs.prompt, 'string');
   assert.match(ollama.description, /loopback ollama worker/i);
+  const image = parser.parseFile(path.join(ROOT, 'host', 'tools', 'image.tool'));
+  assert.equal(image.server, 'http://127.0.0.1:18794/');
+  assert.equal(image.mcp_tool, 'image.generate');
+  assert.equal(image.does, 'render');
+  assert.equal(image.needs.prompt, 'string');
+  assert.equal(image.gives.path, 'string');
+  assert.match(image.description, /loopback ComfyUI image worker/i);
+  assert.notEqual(image.server, 'http://127.0.0.1:8188/');
+  assert.notEqual(image.server, 'l7-media');
+  const ffmpeg = parser.parseFile(path.join(ROOT, 'host', 'tools', 'ffmpeg.tool'));
+  assert.equal(ffmpeg.server, 'http://127.0.0.1:18795/');
+  assert.equal(ffmpeg.mcp_tool, 'ffmpeg.assemble');
+  assert.equal(ffmpeg.needs.images, 'array');
+  assert.equal(ffmpeg.needs.output, 'string');
+  assert.match(ffmpeg.description, /loopback ffmpeg assemble worker/i);
 });
 
 test('host/flows/echo_once.flow is a valid one-step composition of echo', () => {
@@ -101,6 +116,33 @@ test('host/flows/echo_then_ollama.flow interpolates $a.message from echo into ol
   assert.equal(obj.steps[1].with.prompt, '$a.message');
 });
 
+test('host/flows/image_once.flow is a valid one-step composition of image', () => {
+  const parser = require('../lib/parser');
+  const file = path.join(ROOT, 'host', 'flows', 'image_once.flow');
+  const obj = parser.parseFile(file);
+  const yamlOk = parser.validate(obj, 'flow');
+  assert.equal(yamlOk.valid, true, `image_once yaml: ${JSON.stringify(yamlOk.errors)}`);
+  assert.equal(obj.steps.length, 1);
+  assert.equal(obj.steps[0].do, 'image');
+  assert.equal(obj.steps[0].as, 'out');
+  assert.equal(obj.steps[0].with.prompt, 'hello');
+});
+
+test('host/flows/prompt_then_image.flow interpolates $a.text from ollama into image', () => {
+  const parser = require('../lib/parser');
+  const file = path.join(ROOT, 'host', 'flows', 'prompt_then_image.flow');
+  const obj = parser.parseFile(file);
+  const yamlOk = parser.validate(obj, 'flow');
+  assert.equal(yamlOk.valid, true, `prompt_then_image yaml: ${JSON.stringify(yamlOk.errors)}`);
+  assert.equal(obj.steps.length, 2);
+  assert.equal(obj.steps[0].do, 'ollama');
+  assert.equal(obj.steps[0].as, 'a');
+  assert.equal(obj.steps[0].with.prompt, 'a short image-prompt request');
+  assert.equal(obj.steps[1].do, 'image');
+  assert.equal(obj.steps[1].as, 'out');
+  assert.equal(obj.steps[1].with.prompt, '$a.text');
+});
+
 test('committed ENTITY_REGISTRY.json is generated and not empty', () => {
   const doc = JSON.parse(fs.readFileSync(path.join(ROOT, 'ENTITY_REGISTRY.json'), 'utf8'));
   assert.equal(doc.schema, 'v1');
@@ -110,4 +152,8 @@ test('committed ENTITY_REGISTRY.json is generated and not empty', () => {
   assert.ok(doc.entities.some((e) => e.entity_id === 'tool:ollama' && e.declared));
   assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:ollama_once'));
   assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:echo_then_ollama'));
+  assert.ok(doc.entities.some((e) => e.entity_id === 'tool:image' && e.declared));
+  assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:image_once'));
+  assert.ok(doc.entities.some((e) => e.entity_id === 'workflow:prompt_then_image'));
+  assert.ok(doc.entities.some((e) => e.entity_id === 'tool:ffmpeg' && e.declared));
 });

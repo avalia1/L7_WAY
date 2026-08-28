@@ -121,6 +121,28 @@ test('executeFlow pipes step A into step B via $a (declared composition)', async
   assert.equal(fakeGateway.calls[1].params.from, 'alpha');
 });
 
+test('executeFlow interpolates $a.text from ollama into image (prompt_then_image)', async () => {
+  fakeGateway.reset(async (toolName) => {
+    if (toolName === 'ollama') return { ok: true, text: 'a cat' };
+    return { ok: true, mock: true, tool: toolName };
+  });
+  const hostFlow = fs.readFileSync(
+    path.join(__dirname, '..', 'host', 'flows', 'prompt_then_image.flow'),
+    'utf8',
+  );
+  fs.mkdirSync(path.join(FIXTURE_DIR, 'flows'), { recursive: true });
+  fs.writeFileSync(path.join(FIXTURE_DIR, 'flows', 'prompt_then_image.flow'), hostFlow);
+
+  const st = await executor.executeFlow('prompt_then_image');
+
+  assert.equal(st.status, 'completed');
+  assert.equal(st.results.a.text, 'a cat');
+  assert.equal(fakeGateway.calls.length, 2);
+  assert.equal(fakeGateway.calls[0].toolName, 'ollama');
+  assert.equal(fakeGateway.calls[1].toolName, 'image');
+  assert.equal(fakeGateway.calls[1].params.prompt, 'a cat');
+});
+
 test('executeFlow interpolates $a.message into a later step (not [object Object])', async () => {
   fakeGateway.reset(async (toolName, params) => {
     if (toolName === 'echo') return { ok: true, message: params.message };
