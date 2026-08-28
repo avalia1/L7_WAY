@@ -5,7 +5,7 @@
 # Avli loopback workers (if present), optional l7 forge on :7378.
 #
 # Does not: start the Node control plane, start ~/avli_cloud/start.sh,
-# Tailscale-serve worker ports (:18792, :18798) or forge :7378,
+# Tailscale-serve worker ports (:18792, :18794, :18795, :18798) or forge :7378,
 # apply VPS compose, or grow tunnel code inside serve.js.
 set -euo pipefail
 
@@ -22,7 +22,7 @@ hold_pid() {
 
 refuse_worker_or_forge_port() {
   case "$1" in
-    18792|18798|7378)
+    18792|18794|18795|18798|7378)
       echo "founder-loop: refusing Tailscale Serve of :$1 (workers/forge are not the gateway)" >&2
       return 1
       ;;
@@ -54,7 +54,7 @@ serve_gateway_tailscale() {
     echo "founder-loop: Tailscale not installed; skip Serve of :${L7_PORT}"
     return 0
   fi
-  echo "founder-loop: Tailscale Serve of gateway :${L7_PORT} only (not 18792/18798/7378)"
+  echo "founder-loop: Tailscale Serve of gateway :${L7_PORT} only (not 18792/18794/18795/18798/7378)"
   # --bg returns; Tailscale keeps the serve mapping. Do not serve other ports.
   if ! tailscale serve --bg "$L7_PORT"; then
     echo "founder-loop: tailscale serve failed; skip"

@@ -23,7 +23,7 @@ Tool ecosystems grow fast and fracture faster. L7_WAY stops divergence by requir
 | `./start.sh` | Calls gateway, then founder-loop |
 | `./scripts/founder-loop-smoke.sh` | Loop smoke (gateway tests stay in `test/server-v1.test.js` and `test/one-listener.test.js`) |
 
-Env, if present, is loaded from an open vault mount and from `.env` / `.env.local`. Do not Tailscale-serve worker ports (`:18792`, `:18798`) or forge `:7378`. Do not start `~/avli_cloud/start.sh`.
+Env, if present, is loaded from an open vault mount and from `.env` / `.env.local`. Do not Tailscale-serve worker ports (`:18792`, `:18794`, `:18795`, `:18798`) or forge `:7378`. Do not start `~/avli_cloud/start.sh`.
 
 ## Required Reading (for every new project)
 - `ARCHITECTURE.md`

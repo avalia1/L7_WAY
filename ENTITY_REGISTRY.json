@@ -314,6 +314,51 @@
       "l7_declaration": null
     },
     {
+      "entity_id": "tool:ffmpeg",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "ffmpeg.assemble",
+      "source": "host/tools/ffmpeg.tool",
+      "declared": true,
+      "l7_declaration": {
+        "capability": "render",
+        "data": {
+          "pii": "non_pii",
+          "source": "internal",
+          "shape": "record",
+          "freshness": "live"
+        },
+        "policyIntent": {
+          "mode": "test",
+          "risk": "low",
+          "requireApproval": false,
+          "compliance": "standard"
+        },
+        "presentation": {
+          "ui": "card",
+          "output": "json",
+          "density": "compact"
+        },
+        "orchestration": {
+          "flow": "single",
+          "trigger": "manual",
+          "retry": "none"
+        },
+        "timeVersioning": {
+          "toolVersion": "v1",
+          "schemaVersion": "v1",
+          "lifecycle": "active"
+        },
+        "identitySecurity": {
+          "role": "operator",
+          "auth": "token",
+          "audit": "on"
+        }
+      }
+    },
+    {
       "entity_id": "tool:financial_analysis",
       "entity_type": "tool",
       "birth_date": "2026-08-28",
@@ -567,6 +612,51 @@
       "source": "host/tools/herald_webhook.tool",
       "declared": false,
       "l7_declaration": null
+    },
+    {
+      "entity_id": "tool:image",
+      "entity_type": "tool",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "image.generate",
+      "source": "host/tools/image.tool",
+      "declared": true,
+      "l7_declaration": {
+        "capability": "render",
+        "data": {
+          "pii": "non_pii",
+          "source": "internal",
+          "shape": "record",
+          "freshness": "live"
+        },
+        "policyIntent": {
+          "mode": "test",
+          "risk": "low",
+          "requireApproval": false,
+          "compliance": "standard"
+        },
+        "presentation": {
+          "ui": "card",
+          "output": "json",
+          "density": "compact"
+        },
+        "orchestration": {
+          "flow": "single",
+          "trigger": "manual",
+          "retry": "none"
+        },
+        "timeVersioning": {
+          "toolVersion": "v1",
+          "schemaVersion": "v1",
+          "lifecycle": "active"
+        },
+        "identitySecurity": {
+          "role": "operator",
+          "auth": "token",
+          "audit": "on"
+        }
+      }
     },
     {
       "entity_id": "tool:kinesis_flow",
@@ -1263,6 +1353,17 @@
       "l7_declaration": null
     },
     {
+      "entity_id": "workflow:image_once",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "host/flows/image_once.flow",
+      "source": "host/flows/image_once.flow",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
       "entity_id": "workflow:mirror_across_devices",
       "entity_type": "workflow",
       "birth_date": "2026-08-28",
@@ -1292,6 +1393,17 @@
       "status": "active",
       "lineage": "host/flows/openclaw_gateway.flow",
       "source": "host/flows/openclaw_gateway.flow",
+      "declared": false,
+      "l7_declaration": null
+    },
+    {
+      "entity_id": "workflow:prompt_then_image",
+      "entity_type": "workflow",
+      "birth_date": "2026-08-28",
+      "owner": "Alberto Valido Delgado",
+      "status": "active",
+      "lineage": "host/flows/prompt_then_image.flow",
+      "source": "host/flows/prompt_then_image.flow",
       "declared": false,
       "l7_declaration": null
     }
