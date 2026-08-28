@@ -1,0 +1,9 @@
+name: pipe_ab
+description: Declared A then B. The flow file is the orchestrator.
+steps:
+  - do: alpha
+    as: a
+  - do: beta
+    with:
+      from: $a.tool
+    as: b

@@ -103,6 +103,48 @@ test('executeFlow interpolates $vars and {{ }} from inputs into step params', as
   assert.equal(fakeGateway.calls[0].params.text, 'Hi Sofia from Wake');
 });
 
+test('executeFlow pipes step A into step B via $a (declared composition)', async () => {
+  fakeGateway.reset(async (toolName, params) => ({ ok: true, mock: true, tool: toolName, params }));
+  writeFlow('pipe_ab', {
+    steps: [
+      { do: 'alpha', as: 'a' },
+      { do: 'beta', with: { from: '$a.tool' }, as: 'b' },
+    ],
+  });
+
+  const st = await executor.executeFlow('pipe_ab');
+
+  assert.equal(st.status, 'completed');
+  assert.ok(st.results.a, 'results.a exists');
+  assert.equal(fakeGateway.calls.length, 2);
+  assert.equal(fakeGateway.calls[1].toolName, 'beta');
+  assert.equal(fakeGateway.calls[1].params.from, 'alpha');
+});
+
+test('executeFlow audits options.principal when given, else executor/system', async () => {
+  fakeGateway.reset();
+  writeFlow('whoami', { steps: [{ do: 'ping' }] });
+
+  await executor.executeFlow('whoami');
+  let entries = fs.readFileSync(path.join(FIXTURE_DIR, 'audit.log'), 'utf8')
+    .trim().split('\n').map((l) => JSON.parse(l));
+  let mine = entries.filter((e) => e.what && e.what.tool === 'ping');
+  assert.ok(mine.length >= 1);
+  assert.equal(mine[0].who.entity_id, 'executor');
+  assert.equal(mine[0].who.role, 'system');
+
+  fakeGateway.reset();
+  await executor.executeFlow('whoami', {}, {
+    principal: { id: 'local', kind: 'local', loopback: true },
+  });
+  entries = fs.readFileSync(path.join(FIXTURE_DIR, 'audit.log'), 'utf8')
+    .trim().split('\n').map((l) => JSON.parse(l));
+  mine = entries.filter((e) => e.what && e.what.tool === 'ping' && e.who.entity_id === 'local');
+  assert.ok(mine.length >= 1, 'HTTP principal is recorded in audit who');
+  assert.equal(mine[0].who.role, 'local');
+  assert.equal(mine[0].who.loopback, true);
+});
+
 test('executeFlow honors a do step `if` condition (skip when false, run when true)', async () => {
   writeFlow('cond', { steps: [{ do: 'publish', if: '$enabled', with: { x: '1' } }] });
 
