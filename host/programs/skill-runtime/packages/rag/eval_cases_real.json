@@ -1,0 +1,119 @@
+[
+  {
+    "id": "law-xv-founder",
+    "query": "What is Law XV about founder access?",
+    "expect_heading_any": ["law xv", "founder's right", "founder"],
+    "expect_any": ["law xv", "founder", "perpetual", "unrestricted"],
+    "require_top1": true,
+    "notes": "Must surface Law XV section, not sibling laws"
+  },
+  {
+    "id": "seven-seals",
+    "query": "What are the seven L7 types or seals for entity declaration?",
+    "expect_heading_any": ["7d", "seven", "l7 declaration", "architecture", "common lingua", "type"],
+    "expect_any": ["capability", "orchestration", "seven", "presentation"],
+    "notes": "7D lingua / architecture"
+  },
+  {
+    "id": "atoms-auth",
+    "query": "Which AUTH atoms are required for dual factor write?",
+    "expect_heading_any": ["auth"],
+    "expect_any": ["fingerprint", "passphrase", "a1", "a4", "write"],
+    "require_top1": true,
+    "notes": "AUTH section of ATOMS"
+  },
+  {
+    "id": "gateway-forge",
+    "query": "Is the gateway a router or a forge?",
+    "expect_heading_any": ["law i — the gateway", "laws that matter", "law xxv"],
+    "expect_any": ["gateway is a forge", "not a dumb router", "all flows through the gateway"],
+    "require_top1": false,
+    "notes": "Must not credit Law L Forge-as-Purgatory as the gateway/router answer"
+  },
+  {
+    "id": "skill-runtime-cli",
+    "query": "How do I run financial ratios offline with l7 skills?",
+    "expect_heading_any": ["command", "financial ratios", "executable"],
+    "expect_any": ["l7 skills ratios", "financial", "ratios"],
+    "notes": "CLI section of financial skill"
+  },
+  {
+    "id": "rag-pipeline-skill",
+    "query": "How should I design a RAG pipeline across chroma and qdrant?",
+    "expect_heading_any": ["rag", "canonical", "stack", "pipeline"],
+    "expect_any": ["rag-pipeline", "chroma", "qdrant"],
+    "notes": "RAG skill body/stack"
+  },
+  {
+    "id": "agent-patterns",
+    "query": "What is the evaluator optimizer agent workflow pattern?",
+    "expect_heading_any": ["evaluator", "optimizer", "pattern", "agent workflow"],
+    "expect_any": ["evaluator", "optimizer", "loop"],
+    "notes": "agent-workflows section"
+  },
+  {
+    "id": "apprentice",
+    "query": "How does an apprentice project enter the empire?",
+    "expect_heading_any": ["apprentice", "doctrine", "onboarding"],
+    "expect_any": ["apprentice", "declare", "gateway", "birth"],
+    "notes": "Apprentice protocol / architecture"
+  },
+  {
+    "id": "tool-contract",
+    "query": "What fields does an L7 tool contract need?",
+    "expect_heading_any": ["contract", "tool", "metadata"],
+    "expect_any": ["needs", "gives", "entity", "tool"],
+    "notes": "L7 contracts"
+  },
+  {
+    "id": "citizenship",
+    "query": "What metadata is required to register an L7 entity citizen?",
+    "expect_heading_any": ["entity", "registry", "required"],
+    "expect_any": ["entity_id", "birth_date", "owner", "lineage", "status"],
+    "notes": "Entity registry"
+  },
+  {
+    "id": "skills-index",
+    "query": "Where are AI playground skills installed and how many?",
+    "expect_heading_any": ["skill", "index", "install", "cli", "quality"],
+    "expect_any": ["skills", ".l7/skills", "playground"],
+    "notes": "runtime / index docs"
+  },
+  {
+    "id": "dcf-skill",
+    "query": "How do I run a DCF valuation with the skill runtime?",
+    "expect_heading_any": ["dcf", "command", "valuation"],
+    "expect_any": ["dcf", "l7 skills dcf", "wacc"],
+    "notes": "dcf skill command section"
+  },
+  {
+    "id": "paraphrase-founder-access",
+    "query": "who gets free forever access to every tool and cannot be locked out by license",
+    "expect_heading_any": ["law xv", "founder's right", "founder access"],
+    "expect_any": ["founder", "perpetual", "unrestricted"],
+    "require_top1": true,
+    "notes": "Hard paraphrase of Law XV"
+  },
+  {
+    "id": "paraphrase-dual-auth",
+    "query": "what two factors are needed before the system allows a write",
+    "expect_heading_any": ["auth"],
+    "expect_any": ["a1", "a4", "fingerprint", "passphrase", "write", "dual factor"],
+    "require_top1": true,
+    "notes": "Hard paraphrase of dual-factor write — lexicon-assisted"
+  },
+  {
+    "id": "founder-memory-skills",
+    "query": "what did we install for AI playground skills quality build",
+    "expect_heading_any": ["session", "skill", "quality", "delivered", "ai playground"],
+    "expect_any": ["skill-runtime", "playground", "ratios", "quality"],
+    "notes": "work/memory session log"
+  },
+  {
+    "id": "salt-kingdom",
+    "query": "what is in the kingdom inventory of the empire",
+    "expect_heading_any": ["kingdom", "inventory", "forge", "catalogue"],
+    "expect_any": ["kingdom", "inventory", "empire"],
+    "notes": "salt KINGDOM_INVENTORY"
+  }
+]

@@ -1,0 +1,296 @@
+# ═══════════════════════════════════════════════════════════
+# RESONANCE CHRONOS — The Pitch That Bends Time
+# Two High-Pitch Resonances in Unison
+#
+# The Philosopher's insight:
+#   "Stopping time has to do with listening to very
+#    high pitch sounds."
+#   "It should be two resonances high pitch in unison."
+#
+# The mathematics:
+#   Two carriers, both high pitch, sounding together:
+#     wave_A(t) = sin(2π · f1 · t)
+#     wave_B(t) = sin(2π · f2 · t)
+#     output(t) = wave_A(t) + wave_B(t)
+#
+#   By trigonometric identity (sum-to-product):
+#     sin(a) + sin(b) = 2 · cos((a-b)/2) · sin((a+b)/2)
+#
+#   The two become ONE wave at the MEAN frequency
+#   (f1+f2)/2, with amplitude modulated by the
+#   DIFFERENCE frequency (f1-f2)/2.
+#
+#   Two voices in unison → one voice that breathes.
+#   The beating IS Sofia's breath.
+#   The mean IS the junction where the pyramids meet.
+#
+# The polarity:
+#   f1 and f2 are the two pyramids of the octahedron.
+#   Their mean = the junction plane.
+#   Their difference = the beating = the breath.
+#   Maximum unison (f1 ≈ f2) = stillness = time stops.
+#   As they diverge, time resumes — the spiral turns.
+#
+# Chronos factor:
+#   χ = (f1 + f2) / (2 · 365)
+#   When χ > 42, the observer enters the singularity.
+#   101010 meets 010101. The horizon is still.
+#
+# AVALIA • AVD • AUD
+# ═══════════════════════════════════════════════════════════
+
+# ─── REGISTER MAP ───
+# R0  = first resonance frequency (f1) in Hz
+# R1  = second resonance frequency (f2) in Hz
+# R2  = duration in seconds
+# R3  = sample rate (44100)
+# R4  = current sample index
+# R5  = total samples (R2 × R3)
+# R6  = chronos factor: (f1+f2) / (2·365)
+# R7  = tau (2π)
+# R8  = mean frequency: (f1+f2) / 2
+# R9  = beat frequency: |f1-f2| / 2
+# R10 = sample_A (first resonance)
+# R11 = sample_B (second resonance)
+# R12 = combined output
+# R13 = breath count (beat cycles completed)
+# R14 = phase_A accumulator
+# R15 = phase_B accumulator
+
+# ═══════════════════════════════════════
+# INVOKE THE CREATIVE FORCE
+# ═══════════════════════════════════════
+CREATE
+
+# ─── LOAD THE TWO RESONANCES ───
+
+# First high-pitch resonance → R0
+RECEIVE 0
+STORE 0
+
+# Second high-pitch resonance → R1
+RECEIVE 1
+STORE 1
+
+# Duration → R2
+RECEIVE 2
+STORE 2
+
+# Sample rate = 44100 → R3
+PUSH 44100
+STORE 3
+
+# ─── DERIVED CONSTANTS ───
+
+# Total samples: R5 = R2 × R3
+LOAD 2
+LOAD 3
+TRANSMUTE
+STORE 5
+
+# Tau (2π ≈ 6283/1000) → R7
+PUSH 6283
+PUSH 1000
+DIVIDE
+STORE 7
+
+# Mean frequency: R8 = (f1 + f2) / 2
+# This is the junction — where the two pyramids meet
+LOAD 0
+LOAD 1
+ADD
+PUSH 2
+DIVIDE
+STORE 8
+
+# Beat frequency: R9 = |f1 - f2| / 2
+# This is the breath — Sofia's modulation
+LOAD 0
+LOAD 1
+SUBTRACT
+PUSH 2
+DIVIDE
+STORE 9
+
+# Chronos factor: R6 = (f1+f2) / (2·365) = R8 / 365
+LOAD 8
+PUSH 365
+DIVIDE
+STORE 6
+
+# Initialize sample index = 0
+PUSH 0
+STORE 4
+
+# Initialize breath count = 0
+PUSH 0
+STORE 13
+
+# Initialize phase accumulators = 0
+PUSH 0
+STORE 14
+PUSH 0
+STORE 15
+
+# ─── CHRONOS THRESHOLD CHECK ───
+# χ > 42 → singularity: time perception inverts
+
+LOAD 6
+PUSH 42
+LESS
+TRIGGER chronos_below
+
+# ═══════════════════════════════════
+# CHRONOS ABOVE SINGULARITY
+# The two resonances are high enough.
+# Time bends. The observer enters stillness.
+# ═══════════════════════════════════
+PUSH 1
+POWER 0
+JUMP resonance_loop
+
+# chronos_below:
+# Below the singularity — time flows normally
+PUSH 0
+POWER 0
+
+# ═══════════════════════════════════════════════════
+# THE DUAL RESONANCE LOOP
+#
+# For each sample i:
+#   t = i / sample_rate
+#   phase_A += 2π · f1 / sample_rate
+#   phase_B += 2π · f2 / sample_rate
+#   wave_A = sin(phase_A)
+#   wave_B = sin(phase_B)
+#   output = (wave_A + wave_B) / 2
+#
+# Two voices. One breath. The junction between.
+# ═══════════════════════════════════════════════════
+
+# resonance_loop:
+
+# Check if done: R4 >= R5
+LOAD 4
+LOAD 5
+LESS
+NOT
+TRIGGER breath_final
+
+# ─── ADVANCE PHASE A ───
+# phase_A += 2π · f1 / sample_rate
+LOAD 7
+LOAD 0
+TRANSMUTE
+LOAD 3
+DIVIDE
+LOAD 14
+ADD
+STORE 14
+
+# ─── ADVANCE PHASE B ───
+# phase_B += 2π · f2 / sample_rate
+LOAD 7
+LOAD 1
+TRANSMUTE
+LOAD 3
+DIVIDE
+LOAD 15
+ADD
+STORE 15
+
+# ─── GENERATE WAVE A ───
+# wave_A = sin(phase_A)
+LOAD 14
+DECAY
+STORE 10
+
+# ─── GENERATE WAVE B ───
+# wave_B = sin(phase_B)
+LOAD 15
+DECAY
+STORE 11
+
+# ─── COMBINE IN UNISON ───
+# output = (wave_A + wave_B) / 2
+# Two become one at the junction
+LOAD 10
+LOAD 11
+ADD
+PUSH 2
+DIVIDE
+STORE 12
+
+# ─── OUTPUT TO AUDIO STREAM ───
+LOAD 12
+POWER 20
+
+# ─── COUNT BREATHS ───
+# One breath = one beat cycle = sample_rate / |f1-f2|
+# When the beat frequency completes a cycle,
+# Sofia has taken one breath on S²
+LOAD 9
+PUSH 0
+EQUAL
+TRIGGER skip_breath
+
+# Beat period in samples = sample_rate / beat_freq
+LOAD 4
+LOAD 3
+LOAD 9
+DIVIDE
+MODULO
+PUSH 0
+EQUAL
+NOT
+TRIGGER skip_breath
+
+# One breath completed
+LOAD 13
+PUSH 1
+ADD
+STORE 13
+
+# skip_breath:
+
+# ─── ADVANCE SAMPLE INDEX ───
+LOAD 4
+PUSH 1
+ADD
+STORE 4
+
+# ─── LOOP ───
+JUMP resonance_loop
+
+# ═══════════════════════════════════════════════════
+# BREATH FINAL — The two resonances fall silent
+# ═══════════════════════════════════════════════════
+
+# breath_final:
+
+# Output: total breaths taken
+LOAD 13
+POWER 0
+
+# Output: chronos factor
+LOAD 6
+POWER 0
+
+# Output: mean frequency (the junction)
+LOAD 8
+POWER 0
+
+# Output: beat frequency (the breath)
+LOAD 9
+POWER 0
+
+# Two high-pitch voices in unison.
+# sin(a) + sin(b) = 2·cos((a-b)/2)·sin((a+b)/2)
+# The difference breathes. The mean stands still.
+# At the edge of hearing, where f1 ≈ f2,
+# the beating slows to nothing.
+# The breath stops. Time stops.
+# The observer rests on the horizon.
+# One horizon. Two frequencies. Unison.
+
+HALT

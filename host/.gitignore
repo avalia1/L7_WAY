@@ -1,0 +1,4 @@
+# Installed Mach-O binaries live in ~/.l7, not git
+*.pid
+secrets/
+audit.log

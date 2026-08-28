@@ -1,0 +1,239 @@
+#!/bin/bash
+# ══════════════════════════════════════════════════════════════
+# L7 — The Unified Entry Point (Recombined)
+#
+# Every app is an ashram. Every ashram borrows atoms from the Forge.
+# No atom leaks between ashrams. No cross-pollination.
+# Transparent channels only — if it's not declared, it doesn't exist.
+#
+# Law I    — All flows through the Gateway. No exceptions.
+# Law XV   — The Founder has perpetual, unrestricted access.
+# Law XXV  — The Gateway is a FORGE, not a router.
+# Law XXX  — Biometrics + passphrase. Dual-factor always.
+# ══════════════════════════════════════════════════════════════
+
+L7_DIR="$HOME/.l7"
+
+# Ensure core directories (0o700 — owner only)
+mkdir -p "$L7_DIR/state" "$L7_DIR/canon" "$L7_DIR/wallet" "$L7_DIR/sentinel"
+chmod 700 "$L7_DIR/wallet" "$L7_DIR/sentinel" 2>/dev/null
+
+# ─── ATOM DECLARATIONS PER ASHRAM ───
+# Each case declares which atoms the app uses.
+# The binary enforces its own boundaries internally.
+# This launcher enforces compilation and dispatch — nothing more.
+
+case "$1" in
+    canon)
+        BINARY="$L7_DIR/l7-canon"
+        SOURCE="$L7_DIR/l7-canon.swift"
+        LABEL="Canon"
+        ATOMS="A1 M2 M4 G1 N1 I1 I2"
+        EXTRA_FLAGS="-framework LocalAuthentication"
+        shift
+        ;;
+    gallery)
+        BINARY="$L7_DIR/l7-gallery"
+        SOURCE="$L7_DIR/l7-gallery.swift"
+        LABEL="Gallery"
+        ATOMS="A1 M1 M4 G1 E1-E5 N1 I1 I2"
+        EXTRA_FLAGS="-framework LocalAuthentication"
+        shift
+        ;;
+    wallet)
+        BINARY="$L7_DIR/l7-wallet"
+        SOURCE="$L7_DIR/l7-wallet.swift"
+        LABEL="Wallet"
+        ATOMS="A1 A4 M1 M2 M3 G1 G2 E1-E5 N1 N2 I1 I2 I3"
+        EXTRA_FLAGS="-framework Security -framework LocalAuthentication"
+        shift
+        ;;
+    sentinel)
+        BINARY="$L7_DIR/l7-sentinel"
+        SOURCE="$L7_DIR/l7-sentinel.swift"
+        LABEL="Sentinel"
+        ATOMS="A1 A4 S1-S5 M1 M2 G1 G2 G4 N1 N3 I1 I2 I3"
+        EXTRA_FLAGS="-framework Security -framework LocalAuthentication"
+        shift
+        ;;
+    grok|daughter)
+        BINARY="$L7_DIR/l7-grok"
+        SOURCE="$L7_DIR/l7-grok.swift"
+        LABEL="Grok"
+        ATOMS="A1 M1 G1 N1 I1"
+        EXTRA_FLAGS="-framework Cocoa -framework WebKit"
+        shift
+        ;;
+    anima|wallpaper|desktop)
+        BINARY="$L7_DIR/l7-anima"
+        SOURCE="$L7_DIR/l7-anima.swift"
+        LABEL="Anima"
+        ATOMS="A1 M1 G1 N1 I1"
+        EXTRA_FLAGS="-framework Cocoa -framework WebKit"
+        shift
+        ;;
+    imago|imagine|image)
+        BINARY="$L7_DIR/l7-imago"
+        SOURCE="$L7_DIR/l7-imago.swift"
+        LABEL="Imago"
+        ATOMS="A1 M1 G1 E1-E5 N1 I1"
+        EXTRA_FLAGS="-framework Cocoa -framework WebKit"
+        shift
+        ;;
+    vault-reader|reader|sealed|classified)
+        BINARY="$L7_DIR/l7-vault-reader"
+        SOURCE="$L7_DIR/l7-vault-reader.swift"
+        LABEL="Vault Reader"
+        ATOMS="A1 M1 G1 N1 I1 I2"
+        EXTRA_FLAGS="-framework LocalAuthentication -framework CryptoKit"
+        shift
+        ;;
+    gateway|gate|gw|claw)
+        BINARY="$L7_DIR/l7-gateway"
+        SOURCE="$L7_DIR/l7-gateway.swift"
+        LABEL="Gateway"
+        ATOMS="A1 M2 M3 G1 G2 N1 N2 N3 I1 I2 I3"
+        EXTRA_FLAGS="-framework Security -framework LocalAuthentication"
+        shift
+        ;;
+    council|roundtable|table)
+        # Council Round Table — Python server, no compilation
+        echo ""
+        echo "  Convening the Council..."
+        echo ""
+        exec python3 "$L7_DIR/council/server.py" "$@"
+        ;;
+    foundation)
+        # L7 Foundation — offline on-device inference (Apple Intelligence).
+        # Requires macOS 26+ (FoundationModels framework), so it's compiled
+        # separately from the generic block below, which targets macOS 14.
+        BIN="$L7_DIR/l7-foundation"
+        SRC="$L7_DIR/l7-foundation.swift"
+        if [ ! -f "$BIN" ] || [ "$SRC" -nt "$BIN" ]; then
+            echo ""
+            echo "  ═══ Forging L7 Foundation (arm64, macOS 26+, on-device) ═══"
+            echo ""
+            swiftc "$SRC" -o "$BIN" -O || { echo "  Forging failed. Check $SRC."; exit 1; }
+            chmod +x "$BIN"
+        fi
+        shift
+        exec "$BIN" "$@"
+        ;;
+    code)
+        # Quick single-file edit via the on-device model. Small-context by
+        # design — one file, one instruction. For real multi-file coding
+        # work use `l7 dev` instead.
+        BIN="$L7_DIR/l7-foundation"
+        SRC="$L7_DIR/l7-foundation.swift"
+        if [ ! -f "$BIN" ] || [ "$SRC" -nt "$BIN" ]; then
+            swiftc "$SRC" -o "$BIN" -O || { echo "  Forging failed. Check $SRC."; exit 1; }
+            chmod +x "$BIN"
+        fi
+        shift
+        exec "$BIN" code "$@"
+        ;;
+    dev)
+        # Real multi-file/agentic coding work via the bigger local model
+        # (LM Studio, qwen3.6-27b) through OpenClaw's dedicated "l7dev" agent —
+        # a lean workspace (~/.l7/work/dev, no L7 identity/skills bootstrap) so
+        # the prompt stays small enough for this machine's available RAM.
+        # Requires: `lms server start` and the model loaded (`lms load qwen/qwen3.6-27b`).
+        shift
+        exec openclaw agent --local --agent l7dev --message "$*"
+        ;;
+    atoms)
+        # Show the atom map
+        cat "$L7_DIR/ATOMS.md" 2>/dev/null || echo "ATOMS.md not found"
+        exit 0
+        ;;
+    skills|skill)
+        # AI Playground skill runtime — list/route/validate/execute
+        # See ~/.l7/programs/skill-runtime/ and skill: l7-empire
+        shift
+        exec python3 "$L7_DIR/programs/skill-runtime/l7skills.py" "$@"
+        ;;
+    forge)
+        # M2 skill-runtime forge: HTTP on :7378 or one-shot execute
+        #   l7 forge                 → start forge_server.py
+        #   l7 forge exec <tool> '{}' → skill_bridge execute
+        #   l7 forge tools           → list executable tools
+        shift
+        FORGE="$L7_DIR/programs/skill-runtime/forge"
+        case "${1:-}" in
+            ""|serve|server|start)
+                exec python3 "$FORGE/forge_server.py"
+                ;;
+            exec|execute|call)
+                shift
+                TOOL="${1:?tool name required}"
+                shift
+                PARAMS="${1:-{}}"
+                exec python3 "$FORGE/skill_bridge.py" execute "$TOOL" "$PARAMS"
+                ;;
+            tools|list)
+                exec python3 "$FORGE/skill_bridge.py" list
+                ;;
+            can)
+                shift
+                exec python3 "$FORGE/skill_bridge.py" can "${1:?tool}"
+                ;;
+            *)
+                exec python3 "$FORGE/skill_bridge.py" "$@"
+                ;;
+        esac
+        ;;
+    status)
+        # Quick status of all ashrams
+        echo ""
+        echo "  L7 ASHRAMS"
+        echo "  ══════════════════════════════════════"
+        for app in l7-forge l7-canon l7-gallery l7-vault-reader l7-wallet l7-sentinel l7-gateway l7-grok l7-imago l7-anima l7-foundation; do
+            if [ -f "$L7_DIR/$app" ]; then
+                SIZE=$(ls -lh "$L7_DIR/$app" | awk '{print $5}')
+                MOD=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$L7_DIR/$app")
+                echo "  [OK] $app  ($SIZE, $MOD)"
+            else
+                echo "  [--] $app  (not compiled)"
+            fi
+        done
+        echo "  ══════════════════════════════════════"
+        echo ""
+        exit 0
+        ;;
+    *)
+        BINARY="$L7_DIR/l7-forge"
+        SOURCE="$L7_DIR/l7-forge.swift"
+        LABEL="Forge"
+        ATOMS="A1 A4 S3 M1 M2 M4 G1 G2 N1 I1 I3"
+        EXTRA_FLAGS="-framework LocalAuthentication"
+        ;;
+esac
+
+# ─── COMPILE IF NEEDED ───
+if [ ! -f "$BINARY" ] || [ "$SOURCE" -nt "$BINARY" ]; then
+    echo ""
+    echo "  ═══ Forging L7 $LABEL (arm64, optimized) ═══"
+    echo "  Atoms: $ATOMS"
+    echo ""
+    /usr/bin/swiftc -O \
+        -target arm64-apple-macos14.0 \
+        ${EXTRA_FLAGS:-} \
+        -o "$BINARY" \
+        "$SOURCE" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "  Forging failed. Check $SOURCE."
+        exit 1
+    fi
+    chmod +x "$BINARY"
+    echo "  L7 $LABEL forged: $(ls -lh "$BINARY" | awk '{print $5}')"
+    echo ""
+fi
+
+# ─── ISOLATION CHECK ───
+# Log dispatch to audit (if sentinel log exists)
+if [ -f "$L7_DIR/sentinel/audit.log" ]; then
+    echo "[$(date -u +%Y-%m-%dT%H:%M:%S.000Z)] DISPATCH: $LABEL atoms=[$ATOMS] pid=$$" >> "$L7_DIR/sentinel/audit.log"
+fi
+
+# ─── LAUNCH ASHRAM ───
+exec "$BINARY" "$@"

@@ -1,0 +1,68 @@
+name: edge_to_field
+owner: The Philosopher
+description: Generate edge-detected images from passthrough camera and project into whichever spatial device is active
+
+inputs:
+  device:
+    type: string
+    required: false
+    default: any
+    enum: [visionpro, quest, browser, any]
+  algorithms:
+    type: array
+    required: false
+    default: [sobel, laplacian]
+
+steps:
+  - do: xr_session
+    as: session
+    with:
+      action: start
+      device: $device
+      features: [passthrough, compositor]
+
+  - do: xr_passthrough
+    as: camera
+    with:
+      action: enable
+      device: $session.device
+
+  - do: edge_detect
+    as: edges
+    with:
+      source: $camera.frame
+      algorithms: $algorithms
+    each: camera.frames
+    on_fail: continue
+
+  - wait: "Review {{ edges.count }} edge-detected frames. Project into spatial field?"
+
+  - do: xr_container
+    as: container
+    with:
+      action: create
+      type: immersive
+      device: $session.device
+      style: mixed
+
+  - do: xr_compositor
+    as: display
+    with:
+      action: compose
+      device: $session.device
+      layers:
+        - type: passthrough
+        - type: quad
+          content: $edges.sobel
+          position: [0, 1.6, -2]
+        - type: quad
+          content: $edges.laplacian
+          position: [1, 1.6, -2]
+
+  - do: xr_session
+    with:
+      action: status
+      device: $session.device
+
+rules:
+  - on_fail: halt

@@ -1,0 +1,89 @@
+name: openclaw_gateway
+owner: The Philosopher
+description: "Full OpenClaw-equivalent orchestration through the L7 Gateway. Initializes channels, connects Claude as agent, activates the Council governance layer, and opens the Empire to inbound messages across all platforms. Everything OpenClaw does — but forged through L7, governed by the Triad, judged by the Tribunals."
+
+inputs:
+  channels:
+    type: array
+    required: false
+    default: [whatsapp, telegram, slack, discord, signal]
+  agent_model:
+    type: string
+    required: false
+    default: claude-opus-4-6
+  thinking:
+    type: string
+    required: false
+    default: high
+    enum: [off, minimal, low, medium, high, xhigh]
+  governance:
+    type: string
+    required: false
+    default: council
+    enum: [none, triad, council, tribunal]
+
+steps:
+  # 1. System health check
+  - do: gateway_doctor
+    as: health
+    with:
+      action: status
+      deep: false
+
+  # 2. Index memory across all domains
+  - do: codex_memory
+    as: memory
+    with:
+      action: status
+      domain: all
+
+  # 3. Scan and validate all available tools
+  - do: codex_skill
+    as: skills
+    with:
+      action: list
+      filter:
+        valid: true
+
+  # 4. Initialize messaging channels
+  - do: herald_channel
+    as: channels
+    with:
+      action: connect
+      channel: $item
+    each: channels
+    on_fail: continue
+
+  # 5. Activate Claude as primary agent
+  - do: claude_agent
+    as: agent
+    with:
+      message: "Gateway initialized. Channels active. Memory indexed. Awaiting the Philosopher's command."
+      thinking: $thinking
+      model: $agent_model
+      tools: $skills.tools
+
+  # 6. Convene the Council for governance review
+  - do: council_seven
+    as: council
+    with:
+      matter: "Gateway activation complete. Review channel security posture and agent configuration."
+      urgency: routine
+      speak: true
+
+  # 7. Await the Philosopher
+  - wait: "Gateway forged. {{ channels.length }} channels active. {{ skills.installed_count }} tools loaded. Council has spoken. Approve to begin receiving messages?"
+
+  # 8. Activate cron heartbeat
+  - do: codex_cron
+    as: heartbeat
+    with:
+      action: create
+      schedule: "*/5 * * * *"
+      tool: gateway_doctor
+      args:
+        action: heartbeat
+      enabled: true
+
+rules:
+  - on_fail: halt

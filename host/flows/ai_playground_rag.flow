@@ -1,0 +1,17 @@
+name: ai_playground_rag
+description: "Index AI Playground skills and answer a question via local TF-IDF RAG"
+version: v1
+trigger: manual
+steps:
+  - id: index
+    tool: rag_pipeline
+    action: "Build or refresh the local skill RAG index"
+    run: "python3 ~/.l7/programs/skill-runtime/l7skills.py rag-index --rebuild"
+  - id: query
+    tool: rag_pipeline
+    action: "Query the index"
+    needs:
+      query: string
+    run: "python3 ~/.l7/programs/skill-runtime/l7skills.py rag-query \"${query}\""
+audit: true
+approval: false

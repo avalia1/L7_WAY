@@ -1,0 +1,112 @@
+{
+  "financial_ratios": {
+    "cli": ["ratios"],
+    "param_map": {
+      "period": "--period",
+      "industry": "--industry",
+      "data": "--data",
+      "data_path": "--data"
+    }
+  },
+  "dcf_valuation": {
+    "cli": ["dcf"],
+    "param_map": {
+      "company": "--company",
+      "data": "--data",
+      "data_path": "--data"
+    }
+  },
+  "brand_guidelines": {
+    "cli": ["brand"],
+    "param_map": {}
+  },
+  "rag_pipeline": {
+    "cli": ["rag-query"],
+    "param_map": {
+      "query": "POSITIONAL",
+      "k": "-k",
+      "profile": "--profile"
+    },
+    "defaults": { "profile": "real-corpus", "k": 5 },
+    "actions": {
+      "query": { "cli": ["rag-query"], "param_map": { "query": "POSITIONAL", "k": "-k", "profile": "--profile" } },
+      "index": {
+        "cli": ["rag-index"],
+        "param_map": { "rebuild": "--rebuild", "profile": "--profile", "root": "--root" },
+        "flags": ["rebuild"],
+        "defaults": { "rebuild": true, "profile": "real-corpus" }
+      },
+      "eval": { "cli": ["rag-eval"], "param_map": { "profile": "--profile", "k": "-k" } }
+    }
+  },
+  "alchemy_transmute": {
+    "cli": ["alchemy", "transmute"],
+    "param_map": {
+      "path": "POSITIONAL",
+      "no_write": "--no-write"
+    },
+    "flags": ["no_write"]
+  },
+  "alchemy_nigredo": {
+    "cli": ["alchemy", "nigredo"],
+    "param_map": { "path": "POSITIONAL" }
+  },
+  "alchemy_albedo": {
+    "cli": ["alchemy", "albedo"],
+    "param_map": { "path": "POSITIONAL" }
+  },
+  "alchemy_citrinitas": {
+    "cli": ["alchemy", "citrinitas"],
+    "param_map": { "path": "POSITIONAL" }
+  },
+  "alchemy_rubedo": {
+    "cli": ["alchemy", "rubedo"],
+    "param_map": { "path": "POSITIONAL" }
+  },
+  "alchemy_transmutation": {
+    "cli": ["alchemy", "transmute"],
+    "param_map": {
+      "path": "POSITIONAL",
+      "no_write": "--no-write"
+    },
+    "flags": ["no_write"],
+    "actions": {
+      "transmute": { "cli": ["alchemy", "transmute"], "param_map": { "path": "POSITIONAL", "no_write": "--no-write" }, "flags": ["no_write"] },
+      "nigredo": { "cli": ["alchemy", "nigredo"], "param_map": { "path": "POSITIONAL" } },
+      "albedo": { "cli": ["alchemy", "albedo"], "param_map": { "path": "POSITIONAL" } },
+      "citrinitas": { "cli": ["alchemy", "citrinitas"], "param_map": { "path": "POSITIONAL" } },
+      "rubedo": { "cli": ["alchemy", "rubedo"], "param_map": { "path": "POSITIONAL" } },
+      "full": { "cli": ["alchemy", "transmute"], "param_map": { "path": "POSITIONAL", "no_write": "--no-write" }, "flags": ["no_write"] }
+    }
+  },
+  "project_index": {
+    "cli": ["project-index"],
+    "param_map": {
+      "root": "--root",
+      "limit": "--limit"
+    }
+  },
+  "ai_playground_index": {
+    "cli": ["route"],
+    "param_map": { "task": "POSITIONAL", "query": "POSITIONAL" }
+  },
+  "agent_workflows": { "cli": ["show"], "param_map": {}, "fixed_args": ["agent-workflows", "--meta-only"] },
+  "tool_use_patterns": { "cli": ["show"], "param_map": {}, "fixed_args": ["tool-use-patterns", "--meta-only"] },
+  "claude_skills_dev": { "cli": ["show"], "param_map": {}, "fixed_args": ["claude-skills-dev", "--meta-only"] },
+  "financial_analysis": {
+    "cli": ["ratios"],
+    "param_map": { "period": "--period", "industry": "--industry", "data": "--data" }
+  },
+  "multiagent_autogen": { "cli": ["show"], "param_map": {}, "fixed_args": ["multiagent-autogen", "--meta-only"] },
+  "autonomous_agents": { "cli": ["show"], "param_map": {}, "fixed_args": ["autonomous-agents", "--meta-only"] },
+  "langchain_agents": { "cli": ["show"], "param_map": {}, "fixed_args": ["langchain-agents", "--meta-only"] },
+  "llamaindex_rag": { "cli": ["show"], "param_map": {}, "fixed_args": ["llamaindex-rag", "--meta-only"] },
+  "vector_chroma": { "cli": ["show"], "param_map": {}, "fixed_args": ["vector-chroma", "--meta-only"] },
+  "vector_qdrant": { "cli": ["show"], "param_map": {}, "fixed_args": ["vector-qdrant", "--meta-only"] },
+  "prompt_engineering": { "cli": ["show"], "param_map": {}, "fixed_args": ["prompt-engineering", "--meta-only"] },
+  "openai_patterns": { "cli": ["show"], "param_map": {}, "fixed_args": ["openai-patterns", "--meta-only"] },
+  "gemini_vertex": { "cli": ["show"], "param_map": {}, "fixed_args": ["gemini-vertex", "--meta-only"] },
+  "llm_engineer": { "cli": ["show"], "param_map": {}, "fixed_args": ["llm-engineer", "--meta-only"] },
+  "l7_empire": { "cli": ["doctor"], "param_map": {} },
+  "skill_doctor": { "cli": ["doctor"], "param_map": {} }
+}
