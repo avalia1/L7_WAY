@@ -1,0 +1,9 @@
+name: echo_once
+description: "Live composition: one echo step on the loopback worker (127.0.0.1:18792)."
+owner: Alberto Valido Delgado
+birth_date: "2026-08-28"
+steps:
+  - do: echo
+    as: out
+    with:
+      message: hello
