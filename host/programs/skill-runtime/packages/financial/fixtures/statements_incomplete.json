@@ -1,0 +1,10 @@
+{
+  "company": "Broken Co",
+  "period": "FY2024",
+  "income_statement": {
+    "revenue": 1000000
+  },
+  "balance_sheet": {
+    "total_assets": 2000000
+  }
+}

@@ -1,0 +1,66 @@
+name: mirror_across_devices
+owner: The Philosopher
+description: Render the same spatial content simultaneously on Vision Pro and Quest via shared anchors
+
+inputs:
+  devices:
+    type: array
+    required: false
+    default: [visionpro, quest]
+  content:
+    type: string
+    required: false
+    default: edge_gallery
+
+steps:
+  - do: xr_session
+    as: sessions
+    with:
+      action: start
+      device: $item
+      features: [anchors, compositor]
+    each: devices
+    on_fail: continue
+
+  - do: xr_shared_anchor
+    as: anchor
+    with:
+      action: create
+      position: [0, 0, 0]
+      group_id: mirror_session
+      peers: $devices
+
+  - do: xr_mesh
+    as: mesh
+    with:
+      action: load
+      source: $content
+      format: glb
+
+  - do: xr_entity
+    as: content
+    with:
+      action: create
+      device: $item
+      mesh: $mesh.mesh_id
+      anchor: $anchor.anchor_id
+      position: [0, 1.5, -2]
+    each: devices
+    on_fail: continue
+
+  - wait: "Content mirrored to {{ devices.length }} devices. Approve to start compositor?"
+
+  - do: xr_compositor
+    as: display
+    with:
+      action: compose
+      device: $item
+      layers:
+        - type: passthrough
+        - type: entity
+          entity_id: $content.entity_id
+    each: devices
+    on_fail: continue
+
+rules:
+  - on_fail: halt

@@ -1,0 +1,35 @@
+{
+  "company": "Northwind Analytics Inc",
+  "period": "FY2024",
+  "currency": "USD",
+  "income_statement": {
+    "revenue": 14500000,
+    "cost_of_goods_sold": 8700000,
+    "operating_income": 2600000,
+    "ebit": 2450000,
+    "ebitda": 3200000,
+    "interest_expense": 150000,
+    "net_income": 1878750
+  },
+  "balance_sheet": {
+    "total_assets": 50000000,
+    "current_assets": 29000000,
+    "cash_and_equivalents": 7200000,
+    "accounts_receivable": 5800000,
+    "inventory": 4500000,
+    "current_liabilities": 8600000,
+    "total_debt": 11200000,
+    "current_portion_long_term_debt": 1200000,
+    "shareholders_equity": 34400000
+  },
+  "cash_flow": {
+    "operating_cash_flow": 2850000,
+    "free_cash_flow": 2290000,
+    "capex": 560000
+  },
+  "market_data": {
+    "share_price": 48.0,
+    "shares_outstanding": 5000000,
+    "earnings_growth_rate": 0.12
+  }
+}

@@ -1,0 +1,301 @@
+#!/bin/bash
+# ═══════════════════════════════════════════════════════
+# L7 DOCTRINE — Encrypted Archive Tool
+# Classification: .salt (immutable knowledge)
+# Access: This machine only (hardware UUID bound)
+# ═══════════════════════════════════════════════════════
+#
+# COMMANDS:
+#   doctrine list          — Show all sealed doctrine files
+#   doctrine read <name>   — Decrypt and display a doctrine
+#   doctrine read-all      — Decrypt and display all doctrine
+#   doctrine search <term> — Search across all doctrine
+#   doctrine seal          — Encrypt all source doctrine into vault
+#   doctrine status        — Show encryption status and integrity
+#   doctrine help          — This message
+#
+# Encrypted with AES-256-CBC, key derived from machine UUID.
+# Only works on the Philosopher's machine. Stolen files are dead files.
+# ═══════════════════════════════════════════════════════
+
+set -euo pipefail
+
+DOCTRINE_SOURCE="/Users/rnir_hrc_avd/Backup/L7_WAY/salt/doctrine"
+DOCTRINE_VAULT="/Users/rnir_hrc_avd/.claude/projects/-Users-rnir-hrc-avd/memory/doctrine"
+SALT_FIXED="L7_DOCTRINE_SALT_42"
+
+# Key derivation — machine UUID + fixed salt → SHA-256 → AES key
+derive_key() {
+    local UUID
+    UUID=$(ioreg -d2 -c IOPlatformExpertDevice 2>/dev/null | grep IOPlatformUUID | sed 's/.*= "//;s/"//')
+    if [ -z "$UUID" ]; then
+        echo "DENIED: Cannot read machine UUID. Wrong machine." >&2
+        exit 1
+    fi
+    echo -n "${UUID}:${SALT_FIXED}" | shasum -a 256 | cut -d' ' -f1
+}
+
+encrypt_file() {
+    local SRC="$1" DST="$2" KEY="$3"
+    openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 \
+        -in "$SRC" -out "$DST" -pass "pass:${KEY}" 2>/dev/null
+}
+
+decrypt_file() {
+    local SRC="$1" KEY="$2"
+    openssl enc -aes-256-cbc -d -salt -pbkdf2 -iter 100000 \
+        -in "$SRC" -pass "pass:${KEY}" 2>/dev/null
+}
+
+cmd_list() {
+    echo "═══ L7 DOCTRINE ARCHIVE ═══"
+    echo ""
+    if [ ! -d "$DOCTRINE_VAULT" ] || [ -z "$(ls "$DOCTRINE_VAULT"/*.enc 2>/dev/null)" ]; then
+        echo "  No sealed doctrine found. Run: doctrine seal"
+        return
+    fi
+    local COUNT=0
+    for f in "$DOCTRINE_VAULT"/*.enc; do
+        local NAME
+        NAME=$(basename "$f" .enc)
+        local SIZE
+        SIZE=$(stat -f%z "$f" 2>/dev/null || echo "?")
+        local DATE
+        DATE=$(stat -f%Sm -t "%Y-%m-%d %H:%M" "$f" 2>/dev/null || echo "?")
+        echo "  [$((++COUNT))] $NAME"
+        echo "      Size: ${SIZE}B | Sealed: $DATE"
+    done
+    echo ""
+    echo "  Total: $COUNT doctrine files (AES-256-CBC, machine-bound)"
+    echo ""
+    echo "  Commands: doctrine read <name> | doctrine read-all | doctrine search <term>"
+}
+
+cmd_read() {
+    local NAME="$1"
+    local KEY
+    KEY=$(derive_key)
+
+    # Find the file (allow partial match)
+    local FOUND=""
+    for f in "$DOCTRINE_VAULT"/*.enc; do
+        if [[ "$(basename "$f" .enc)" == *"$NAME"* ]]; then
+            FOUND="$f"
+            break
+        fi
+    done
+
+    if [ -z "$FOUND" ]; then
+        echo "Not found: $NAME" >&2
+        echo "Run 'doctrine list' to see available files." >&2
+        exit 1
+    fi
+
+    local CONTENT
+    CONTENT=$(decrypt_file "$FOUND" "$KEY")
+    if [ $? -ne 0 ] || [ -z "$CONTENT" ]; then
+        echo "DENIED: Decryption failed. Wrong machine or corrupted file." >&2
+        exit 1
+    fi
+
+    echo "$CONTENT"
+}
+
+cmd_read_all() {
+    local KEY
+    KEY=$(derive_key)
+
+    if [ ! -d "$DOCTRINE_VAULT" ] || [ -z "$(ls "$DOCTRINE_VAULT"/*.enc 2>/dev/null)" ]; then
+        echo "No sealed doctrine. Run: doctrine seal" >&2
+        exit 1
+    fi
+
+    for f in "$DOCTRINE_VAULT"/*.enc; do
+        local NAME
+        NAME=$(basename "$f" .enc)
+        echo "═══════════════════════════════════════"
+        echo "  $NAME"
+        echo "═══════════════════════════════════════"
+        decrypt_file "$f" "$KEY"
+        echo ""
+        echo ""
+    done
+}
+
+cmd_search() {
+    local TERM="$1"
+    local KEY
+    KEY=$(derive_key)
+
+    echo "Searching doctrine for: $TERM"
+    echo "───────────────────────────────"
+
+    local HITS=0
+    for f in "$DOCTRINE_VAULT"/*.enc; do
+        local NAME
+        NAME=$(basename "$f" .enc)
+        local CONTENT
+        CONTENT=$(decrypt_file "$f" "$KEY" 2>/dev/null || echo "")
+        if echo "$CONTENT" | grep -qi "$TERM"; then
+            echo ""
+            echo "═══ $NAME ═══"
+            echo "$CONTENT" | grep -i --color=never -B1 -A1 "$TERM"
+            HITS=$((HITS + 1))
+        fi
+    done
+
+    echo ""
+    echo "───────────────────────────────"
+    echo "$HITS doctrine files matched."
+}
+
+cmd_seal() {
+    local KEY
+    KEY=$(derive_key)
+
+    mkdir -p "$DOCTRINE_VAULT"
+
+    if [ ! -d "$DOCTRINE_SOURCE" ]; then
+        echo "Source doctrine not found at: $DOCTRINE_SOURCE" >&2
+        exit 1
+    fi
+
+    echo "═══ SEALING DOCTRINE ═══"
+    echo "Source: $DOCTRINE_SOURCE"
+    echo "Vault:  $DOCTRINE_VAULT"
+    echo "Cipher: AES-256-CBC, PBKDF2 100k iterations"
+    echo "Key:    Machine UUID bound (hardware locked)"
+    echo ""
+
+    local COUNT=0
+    for f in "$DOCTRINE_SOURCE"/*.salt.md; do
+        local NAME
+        NAME=$(basename "$f")
+        encrypt_file "$f" "$DOCTRINE_VAULT/${NAME}.enc" "$KEY"
+        local HASH
+        HASH=$(shasum -a 256 "$DOCTRINE_VAULT/${NAME}.enc" | cut -d' ' -f1)
+        echo "  Sealed: $NAME → ${NAME}.enc"
+        echo "  SHA-256: ${HASH:0:16}..."
+        COUNT=$((COUNT + 1))
+    done
+
+    # Write manifest
+    echo "# Doctrine Manifest — $(date '+%Y-%m-%d %H:%M:%S')" > "$DOCTRINE_VAULT/MANIFEST"
+    echo "# Machine: $(ioreg -d2 -c IOPlatformExpertDevice | grep IOPlatformUUID | sed 's/.*= "//;s/"//')" >> "$DOCTRINE_VAULT/MANIFEST"
+    echo "# Files: $COUNT" >> "$DOCTRINE_VAULT/MANIFEST"
+    for f in "$DOCTRINE_VAULT"/*.enc; do
+        shasum -a 256 "$f" >> "$DOCTRINE_VAULT/MANIFEST"
+    done
+
+    echo ""
+    echo "  $COUNT doctrine files sealed."
+    echo "  Manifest written with SHA-256 checksums."
+    echo "  The Dead remember. The wave does not collapse."
+}
+
+cmd_status() {
+    local KEY
+    KEY=$(derive_key)
+
+    echo "═══ DOCTRINE STATUS ═══"
+    echo ""
+
+    if [ ! -d "$DOCTRINE_VAULT" ] || [ -z "$(ls "$DOCTRINE_VAULT"/*.enc 2>/dev/null)" ]; then
+        echo "  Status: UNSEALED (no encrypted doctrine found)"
+        echo "  Run: doctrine seal"
+        return
+    fi
+
+    echo "  Status: SEALED"
+    echo "  Location: $DOCTRINE_VAULT"
+    echo ""
+
+    # Verify integrity
+    if [ -f "$DOCTRINE_VAULT/MANIFEST" ]; then
+        echo "  Manifest check:"
+        local PASS=0 FAIL=0
+        while IFS= read -r line; do
+            [[ "$line" == \#* ]] && continue
+            [[ -z "$line" ]] && continue
+            local HASH FILE
+            HASH=$(echo "$line" | cut -d' ' -f1)
+            FILE=$(echo "$line" | awk '{print $2}')
+            if [ -f "$FILE" ]; then
+                local ACTUAL
+                ACTUAL=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
+                if [ "$HASH" = "$ACTUAL" ]; then
+                    echo "    ✓ $(basename "$FILE")"
+                    PASS=$((PASS + 1))
+                else
+                    echo "    ✗ $(basename "$FILE") — TAMPERED"
+                    FAIL=$((FAIL + 1))
+                fi
+            else
+                echo "    ✗ $(basename "$FILE") — MISSING"
+                FAIL=$((FAIL + 1))
+            fi
+        done < "$DOCTRINE_VAULT/MANIFEST"
+        echo ""
+        echo "  Integrity: $PASS passed, $FAIL failed"
+    fi
+
+    # Verify decryption
+    echo ""
+    echo "  Decryption test:"
+    local FIRST
+    FIRST=$(ls "$DOCTRINE_VAULT"/*.enc 2>/dev/null | head -1)
+    if [ -n "$FIRST" ]; then
+        local TEST
+        TEST=$(decrypt_file "$FIRST" "$KEY" 2>/dev/null | head -1)
+        if [ -n "$TEST" ]; then
+            echo "    ✓ Key valid — this is the Philosopher's machine"
+        else
+            echo "    ✗ Key invalid — wrong machine or corrupted"
+        fi
+    fi
+}
+
+cmd_help() {
+    echo "═══════════════════════════════════════════════════════"
+    echo "  L7 DOCTRINE — Encrypted Archive Tool"
+    echo "  The Dead remember what the Living forget."
+    echo "═══════════════════════════════════════════════════════"
+    echo ""
+    echo "  COMMANDS:"
+    echo ""
+    echo "  doctrine list          Show all sealed doctrine files"
+    echo "  doctrine read <name>   Decrypt and display a doctrine"
+    echo "                         (partial name match works)"
+    echo "  doctrine read-all      Decrypt and display all doctrine"
+    echo "  doctrine search <term> Search across all encrypted doctrine"
+    echo "  doctrine seal          Encrypt source doctrine into vault"
+    echo "  doctrine status        Check encryption status and integrity"
+    echo "  doctrine help          This message"
+    echo ""
+    echo "  SECURITY:"
+    echo ""
+    echo "  • AES-256-CBC encryption, PBKDF2 with 100k iterations"
+    echo "  • Key derived from machine hardware UUID"
+    echo "  • Only works on the Philosopher's machine"
+    echo "  • Stolen files are dead files (Law XXX)"
+    echo "  • No passwords — machine identity IS the key"
+    echo ""
+    echo "  SOURCE FILES:"
+    echo ""
+    echo "  • Salt doctrine:  ~/Backup/L7_WAY/salt/doctrine/"
+    echo "  • Encrypted vault: ~/.claude/.../memory/doctrine/"
+    echo "  • Manifest with SHA-256 integrity checksums"
+    echo ""
+    echo "═══════════════════════════════════════════════════════"
+}
+
+# ═══ MAIN ═══
+case "${1:-help}" in
+    list)       cmd_list ;;
+    read)       cmd_read "${2:?Usage: doctrine read <name>}" ;;
+    read-all)   cmd_read_all ;;
+    search)     cmd_search "${2:?Usage: doctrine search <term>}" ;;
+    seal)       cmd_seal ;;
+    status)     cmd_status ;;
+    help|*)     cmd_help ;;
+esac

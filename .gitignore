@@ -1,4 +1,6 @@
 node_modules/
+.env
+.env.local
 .vault/
 .vault_encrypted.dmg.sparseimage
 .DS_Store

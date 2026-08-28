@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "L7 DCF Case v1",
+  "type": "object",
+  "required": ["company", "historical"],
+  "properties": {
+    "company": { "type": "string" },
+    "historical": {
+      "type": "object",
+      "required": ["years", "revenue", "ebitda"],
+      "properties": {
+        "years": { "type": "array", "items": { "type": "number" }, "minItems": 2 },
+        "revenue": { "type": "array", "items": { "type": "number" }, "minItems": 2 },
+        "ebitda": { "type": "array", "items": { "type": "number" }, "minItems": 2 },
+        "capex": { "type": "array", "items": { "type": "number" } },
+        "nwc": { "type": "array", "items": { "type": "number" } }
+      }
+    },
+    "assumptions": {
+      "type": "object",
+      "properties": {
+        "projection_years": { "type": "integer", "minimum": 1 },
+        "revenue_growth": { "type": "array", "items": { "type": "number" } },
+        "ebitda_margin": { "type": "array", "items": { "type": "number" } },
+        "tax_rate": { "type": "number" },
+        "capex_percent": { "type": "array", "items": { "type": "number" } },
+        "nwc_percent": { "type": "array", "items": { "type": "number" } },
+        "terminal_growth": { "type": "number" }
+      }
+    },
+    "wacc": {
+      "type": "object",
+      "properties": {
+        "risk_free_rate": { "type": "number" },
+        "beta": { "type": "number" },
+        "market_premium": { "type": "number" },
+        "cost_of_debt": { "type": "number" },
+        "debt_to_equity": { "type": "number" },
+        "tax_rate": { "type": "number" }
+      }
+    },
+    "equity": {
+      "type": "object",
+      "properties": {
+        "net_debt": { "type": "number" },
+        "cash": { "type": "number" },
+        "shares_outstanding": { "type": "number" }
+      }
+    }
+  },
+  "additionalProperties": true
+}

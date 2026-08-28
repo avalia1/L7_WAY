@@ -1,0 +1,24 @@
+# ═══════════════════════════════════════════
+# VOICE STOP — Kill all speech immediately
+# Translated to L7 Hexagram Format
+# Original: voice-stop.sh (zsh)
+# AVALIA • AVD • AUD
+# ═══════════════════════════════════════════
+
+# Invoke the creative force — begin program
+CREATE
+
+# System call: kill process "say"
+PUSH 1
+POWER 10
+
+# System call: kill process "afplay"
+PUSH 2
+POWER 10
+
+# Output confirmation
+PUSH 1
+POWER 0
+
+# Halt
+HALT
