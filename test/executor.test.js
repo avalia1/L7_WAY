@@ -121,6 +121,61 @@ test('executeFlow pipes step A into step B via $a (declared composition)', async
   assert.equal(fakeGateway.calls[1].params.from, 'alpha');
 });
 
+test('executeFlow interpolates $a.message into a later step (not [object Object])', async () => {
+  fakeGateway.reset(async (toolName, params) => {
+    if (toolName === 'echo') return { ok: true, message: params.message };
+    return { ok: true, mock: true, tool: toolName, params };
+  });
+  writeFlow('echo_then_ollama', {
+    steps: [
+      { do: 'echo', as: 'a', with: { message: 'hello' } },
+      { do: 'ollama', as: 'out', with: { prompt: '$a.message' } },
+    ],
+  });
+
+  const st = await executor.executeFlow('echo_then_ollama');
+
+  assert.equal(st.status, 'completed');
+  assert.equal(st.results.a.message, 'hello');
+  assert.equal(fakeGateway.calls.length, 2);
+  assert.equal(fakeGateway.calls[0].toolName, 'echo');
+  assert.equal(fakeGateway.calls[1].toolName, 'ollama');
+  assert.equal(fakeGateway.calls[1].params.prompt, 'hello');
+  assert.notEqual(fakeGateway.calls[1].params.prompt, '[object Object]');
+});
+
+test('executeFlow does not String() a whole step result when the template is lone $a', async () => {
+  const record = { ok: true, message: 'hello', nested: { k: 1 } };
+  fakeGateway.reset(async (toolName, params) => {
+    if (toolName === 'echo') return record;
+    return { ok: true, mock: true, tool: toolName, params };
+  });
+  writeFlow('pass_record', {
+    steps: [
+      { do: 'echo', as: 'a', with: { message: 'hello' } },
+      { do: 'next', as: 'b', with: { payload: '$a' } },
+    ],
+  });
+
+  await executor.executeFlow('pass_record');
+
+  const payload = fakeGateway.calls[1].params.payload;
+  assert.equal(typeof payload, 'object', 'lone $a must pass the record through, not String() it');
+  assert.notEqual(payload, '[object Object]');
+  assert.equal(payload.message, 'hello');
+  assert.deepEqual(payload.nested, { k: 1 });
+});
+
+test('executeFlow leaves non-string with values uncoerced', async () => {
+  fakeGateway.reset();
+  writeFlow('typed', { steps: [{ do: 't', with: { n: 3, flag: true } }] });
+
+  await executor.executeFlow('typed');
+
+  assert.equal(fakeGateway.calls[0].params.n, 3);
+  assert.equal(fakeGateway.calls[0].params.flag, true);
+});
+
 test('executeFlow audits options.principal when given, else executor/system', async () => {
   fakeGateway.reset();
   writeFlow('whoami', { steps: [{ do: 'ping' }] });

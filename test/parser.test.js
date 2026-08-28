@@ -112,6 +112,42 @@ test('validate rejects an undetectable type instead of defaulting to the tool va
   assert.match(result.errors[0].message, /unknown L7 type/i);
 });
 
+test('interpolate resolves $a.message and {{a.message}} to the nested string field', () => {
+  const ctx = { a: { ok: true, message: 'hello' } };
+  assert.equal(parser.interpolate('$a.message', ctx), 'hello');
+  assert.equal(parser.interpolate('{{a.message}}', ctx), 'hello');
+  assert.equal(parser.interpolate('{{ a.message }}', ctx), 'hello');
+});
+
+test('interpolate resolves nested $a.result.message when that is how results are stored', () => {
+  const ctx = { a: { result: { message: 'hello' } } };
+  assert.equal(parser.interpolate('$a.result.message', ctx), 'hello');
+});
+
+test('interpolate does not String() a whole record when the template is lone $a', () => {
+  const rec = { ok: true, message: 'hello' };
+  const out = parser.interpolate('$a', { a: rec });
+  assert.equal(out, rec);
+  assert.equal(typeof out, 'object');
+  assert.notEqual(out, '[object Object]');
+  assert.equal(String(rec), '[object Object]', 'proves String() of the record is the failure mode');
+});
+
+test('interpolate leaves non-string values unchanged', () => {
+  assert.equal(parser.interpolate(3, {}), 3);
+  assert.equal(parser.interpolate(true, {}), true);
+  const obj = { k: 1 };
+  assert.equal(parser.interpolate(obj, {}), obj);
+});
+
+test('interpolateValue walks nested with-objects so string fields still resolve', () => {
+  const ctx = { a: { message: 'hello' } };
+  assert.deepEqual(
+    parser.interpolateValue({ prompt: '$a.message', n: 2, flag: false }, ctx),
+    { prompt: 'hello', n: 2, flag: false },
+  );
+});
+
 test('CLI validate reports a clean error (no stack trace) for malformed YAML', () => {
   const { execFileSync } = require('node:child_process');
   const badPath = path.join(FIXTURE_DIR, 'cli-malformed.tool');
