@@ -64,6 +64,40 @@ function parseBody(req) {
   });
 }
 
+function publicPrincipal(who) {
+  return { kind: who.kind, loopback: who.loopback };
+}
+
+function flowRunMatch(pathname) {
+  if (pathname === '/v1/flows/run') return { alias: true, name: null };
+  const m = typeof pathname === 'string' && pathname.match(/^\/v1\/flows\/([^/]+)\/run$/);
+  if (m) return { alias: false, name: decodeURIComponent(m[1]) };
+  return null;
+}
+
+async function runDeclaredFlow(res, who, flowName, body) {
+  if (!flowName) {
+    sendJson(res, 400, { error: 'Flow name required' });
+    return;
+  }
+  if (!catalog.findFlow(flowName)) {
+    sendJson(res, 404, { error: `Flow not found: ${flowName}` });
+    return;
+  }
+  const execState = await executeFlow(flowName, body.inputs || {}, {
+    dryRun: body.dryRun || false,
+    principal: who,
+  });
+  sendJson(res, 200, {
+    id: execState.id,
+    flow: execState.flow,
+    status: execState.status,
+    step: execState.step,
+    results: execState.results,
+    principal: publicPrincipal(who),
+  });
+}
+
 // ═══════════════════════════════════════════════════════════
 // REQUEST HANDLER
 // ═══════════════════════════════════════════════════════════
@@ -222,10 +256,30 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    // POST /v1/flows/:name/run — public contract. The flow file is the orchestrator.
+    // POST /v1/flows/run with body.flow is an alias (name still required).
+    if (req.method === 'POST') {
+      const run = flowRunMatch(parsed.pathname);
+      if (run) {
+        const body = await parseBody(req);
+        const flowName = run.alias ? body.flow : run.name;
+        await runDeclaredFlow(res, who, flowName, body || {});
+        return;
+      }
+    }
+
+    // POST /api/execute — old shape. Removal target: 2026-09-28.
+    // Successor: POST /v1/flows/:name/run
     if (parsed.pathname === '/api/execute' && req.method === 'POST') {
       const body = await parseBody(req);
       if (!body.flow) { sendJson(res, 400, { error: 'Flow name required' }); return; }
-      const execState = await executeFlow(body.flow, body.inputs || {}, { dryRun: body.dryRun || false });
+      res.setHeader('Deprecation', 'true');
+      res.setHeader('Sunset', 'Wed, 28 Sep 2026 00:00:00 GMT');
+      res.setHeader('Link', `</v1/flows/${encodeURIComponent(body.flow)}/run>; rel="successor-version"`);
+      const execState = await executeFlow(body.flow, body.inputs || {}, {
+        dryRun: body.dryRun || false,
+        principal: who,
+      });
       sendJson(res, 200, { id: execState.id, flow: execState.flow, status: execState.status, step: execState.step, results: execState.results });
       return;
     }
