@@ -1,9 +1,15 @@
-
-
 #!/usr/bin/env node
 /**
- * L7 Gateway Server — The Unified Self, listening.
- * Boots the gateway, then starts the HTTP API on port 18789.
+ * L7 public control plane — the product HTTP gateway.
+ *
+ * One listen port, one Node process, one meaning of "gateway":
+ *   npm start  →  node serve.js  →  127.0.0.1:18793 (L7_PORT / L7_BIND)
+ *
+ * `l7 gateway` means this process. It is not:
+ *   - archive/host/gateway-server.swift (stale; 18789 is OpenClaw)
+ *   - ~/.l7/l7-gateway (Mac egress valve; Phase 3, not this repo)
+ *   - archive/empire/server.js (former second listener; frozen)
+ *
  * Law I — All flows through the Gateway. No exceptions.
  *
  * Created by: Alberto Valido Delgado / Claude (AI-generated)
@@ -20,7 +26,7 @@ const { executeFlow, approve, reject } = require('./lib/executor');
 const gateway = require('./lib/gateway');
 const stateManager = require('./lib/state');
 
-const PORT = parseInt(process.env.L7_PORT || '18789', 10);
+const PORT = parseInt(process.env.L7_PORT || '18793', 10);
 const BIND = process.env.L7_BIND || '127.0.0.1';
 const L7_DIR = path.join(process.env.HOME || '', '.l7');
 const TOOLS_DIR = path.join(L7_DIR, 'tools');
@@ -238,31 +244,65 @@ const server = http.createServer(async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// BOOT SEQUENCE
+// BOOT SEQUENCE — listen only from start()
 // ═══════════════════════════════════════════════════════════
 
-(async () => {
-  try {
-    const report = await gateway.boot();
+function attachSignals() {
+  const shutdown = async () => {
+    await stop();
+    process.exit(0);
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+}
 
+async function start() {
+  const report = await gateway.boot();
+  await new Promise((resolve, reject) => {
+    const onError = (err) => reject(err);
+    server.once('error', onError);
     server.listen(PORT, BIND, () => {
+      server.removeListener('error', onError);
+      const addr = server.address();
+      const port = typeof addr === 'object' && addr ? addr.port : PORT;
       console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
       console.log(`  L7 Gateway — ONLINE`);
-      console.log(`  http://${BIND}:${PORT}`);
+      console.log(`  http://${BIND}:${port}`);
       console.log(`  Tools: ${report.tools_count} | Citizens: ${report.citizens_count} | Flows: ${report.flows_count}`);
       console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      resolve();
     });
+  });
 
-    // Graceful shutdown
-    process.on('SIGTERM', async () => { await gateway.shutdown(); server.close(); process.exit(0); });
-    process.on('SIGINT', async () => { await gateway.shutdown(); server.close(); process.exit(0); });
+  const entry = require.main && path.basename(require.main.filename);
+  if (entry === 'serve.js' || entry === 'serve-gateway.js') {
+    attachSignals();
+  }
 
-  } catch (err) {
+  const addr = server.address();
+  return { server, port: typeof addr === 'object' && addr ? addr.port : PORT, bind: BIND };
+}
+
+async function stop() {
+  await gateway.shutdown();
+  await new Promise((resolve, reject) => {
+    if (!server.listening) {
+      resolve();
+      return;
+    }
+    server.close((err) => (err ? reject(err) : resolve()));
+  });
+}
+
+if (require.main === module) {
+  start().catch((err) => {
     console.error('FATAL:', err.message);
     console.error(err.stack);
     process.exit(1);
-  }
-})();
+  });
+}
+
+module.exports = { start, stop, PORT, BIND };
 
 // L7:PROVENANCE
 // Creator: Alberto Valido Delgado | System: L7 WAY | License: Proprietary — Framework free, products licensed (Law XXII)

@@ -1,13 +1,5 @@
-# Empire (Lightweight .l7 IDE)
+# Empire (frozen UI)
 
-Empire is a split-view workflow: terminal on one side, browser on the other. It renders `.l7` citizens in a minimal UI.
+Empire is not a product HTTP server. The control plane is `npm start` (`serve.js` on `127.0.0.1:18793`).
 
-## Start
-```bash
-/Users/alberto_work/L7_WAY/empire/empire.sh
-```
-
-## Notes
-- Uses Node.js for a tiny local server on port `7377` (override with `EMPIRE_PORT`).
-- If `tmux` is installed, it opens a split session (CLI + server).
-- Without `tmux`, it starts the server and drops you into a shell.
+`empire/public/` remains as a frozen client. The former listener is `archive/empire/server.js` — do not run it as a gateway. If this UI is revived, it should call `http://127.0.0.1:18793`, not bind a second port.

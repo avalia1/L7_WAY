@@ -11,6 +11,9 @@ Tool ecosystems grow fast and fracture faster. L7_WAY stops divergence by requir
 - **Swappable by design**: replace tools without rewriting UI.
 - **Gateway-first**: a universal entry point for all tools.
 
+## Live gateway
+`l7 gateway` means `npm start` / `node serve.js` on `127.0.0.1:18793` (`L7_PORT`). That is the only product HTTP listener in this repo. It is not the stale Swift binary (`archive/host/gateway-server.swift`, port 18789 / OpenClaw) and not `~/.l7/l7-gateway` (Mac egress valve; Phase 3).
+
 ## Required Reading (for every new project)
 - `ARCHITECTURE.md`
 - `BOOK_OF_LAW.md`
