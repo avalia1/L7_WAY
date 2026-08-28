@@ -14,6 +14,17 @@ Tool ecosystems grow fast and fracture faster. L7_WAY stops divergence by requir
 ## Live gateway
 `l7 gateway` means `npm start` / `node serve.js` on `127.0.0.1:18793` (`L7_PORT`). That is the only product HTTP listener in this repo. It is not the stale Swift binary (`archive/host/gateway-server.swift`, port 18789 / OpenClaw) and not `~/.l7/l7-gateway` (Mac egress valve; Phase 3).
 
+**Founder Loop is not the gateway.** `start.sh` is a founder convenience wrapper, not the architecture.
+
+| How to run | What it is |
+|---|---|
+| `npm start` or `./scripts/run-gateway.sh` | Node control plane only. No Tailscale, SSH, or workers. Health: `GET http://127.0.0.1:18793/health` |
+| `./scripts/run-founder-loop.sh` | Operator plumbing: Tailscale Serve of `:18793`, SSH reverse tunnel + docker-bridge, Avli workers if `~/avli_cloud/workers/start.sh` exists, optional forge on `:7378` |
+| `./start.sh` | Calls gateway, then founder-loop |
+| `./scripts/founder-loop-smoke.sh` | Loop smoke (gateway tests stay in `test/server-v1.test.js` and `test/one-listener.test.js`) |
+
+Env, if present, is loaded from an open vault mount and from `.env` / `.env.local`. Do not Tailscale-serve worker ports (`:18792`, `:18798`) or forge `:7378`. Do not start `~/avli_cloud/start.sh`.
+
 ## Required Reading (for every new project)
 - `ARCHITECTURE.md`
 - `BOOK_OF_LAW.md`

@@ -5,7 +5,7 @@ Create a single common language that lets any tool, workflow, UI, or project plu
 
 ## System Model
 - **Registry**: Canonical index of tool names, schemas, versions, and metadata.
-- **Gateway**: Universal access layer (`/tools`, `/execute`) that routes to MCP servers. In this repo that process is `npm start` → `serve.js` on `127.0.0.1:18793`. One listen port, one Node process. The Swift binary is stale; `~/.l7/l7-gateway` is a Mac egress valve (Phase 3), not this gateway.
+- **Gateway**: Universal access layer (`/tools`, `/execute`) that routes to MCP servers. In this repo that process is `npm start` / `scripts/run-gateway.sh` → `serve.js` on `127.0.0.1:18793`. One listen port, one Node process. The Swift binary is stale; `~/.l7/l7-gateway` is a Mac egress valve (Phase 3), not this gateway. Tailscale, SSH, workers, and forge are `scripts/run-founder-loop.sh` (Founder Loop is not the gateway). `./start.sh` is a convenience wrapper that calls both.
 - **Tools**: Capabilities exposed via MCP servers; discoverable, versioned, swappable.
 - **Clients**: Adapter layer + UI (UI is a renderable tool consuming structured data).
 
