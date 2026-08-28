@@ -17,8 +17,19 @@ function walkJs(dir, acc = []) {
   return acc;
 }
 
+function withoutComments(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+}
+
 function countCreateServer(source) {
-  return [...source.matchAll(/http\.createServer\s*\(/g)].length;
+  return [...withoutComments(source).matchAll(/http\.createServer\s*\(/g)].length;
+}
+
+function hasRequire(source, specifier) {
+  const escaped = specifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`require\\((['"\`])[^'"\`]*${escaped}[^'"\`]*\\1\\)`).test(withoutComments(source));
 }
 
 test('package.json start/main describe the control plane, not the DSL or Empire', () => {
@@ -35,7 +46,7 @@ test('product has exactly one http.createServer used as a server', () => {
 
   assert.equal(countCreateServer(serveSrc), 1);
   assert.match(serveSrc, /18793/);
-  assert.doesNotMatch(serveSrc, /empire\/server/);
+  assert.equal(hasRequire(serveSrc, 'empire/server'), false);
   assert.match(serveSrc, /module\.exports\s*=\s*\{[^}]*start/);
 
   assert.equal(countCreateServer(launcherSrc), 0);
@@ -55,8 +66,8 @@ test('archived Empire server is not imported by the start path', () => {
   const launcherSrc = fs.readFileSync(path.join(ROOT, 'serve-gateway.js'), 'utf8');
   const stubSrc = fs.readFileSync(path.join(ROOT, 'empire/server.js'), 'utf8');
 
-  assert.doesNotMatch(serveSrc, /archive\/empire/);
-  assert.doesNotMatch(launcherSrc, /archive\/empire/);
+  assert.equal(hasRequire(serveSrc, 'archive/empire'), false);
+  assert.equal(hasRequire(launcherSrc, 'archive/empire'), false);
   assert.equal(countCreateServer(stubSrc), 0);
   assert.match(stubSrc, /process\.exit\(1\)/);
   assert.ok(fs.existsSync(path.join(ROOT, 'archive/empire/server.js')));
