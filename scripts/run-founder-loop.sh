@@ -75,15 +75,17 @@ start_ssh_tunnel() {
   if [ -n "${L7_TUNNEL_USER:-}" ]; then
     target="${L7_TUNNEL_USER}@${target}"
   fi
-  local ident=()
-  if [ -n "${L7_TUNNEL_IDENTITY:-}" ]; then
-    ident=(-i "$L7_TUNNEL_IDENTITY")
-  fi
   echo "founder-loop: SSH reverse tunnel remote:${remote_port} -> 127.0.0.1:${L7_PORT}"
-  ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes \
-    "${ident[@]}" \
-    -R "${remote_port}:127.0.0.1:${L7_PORT}" \
-    "$target" &
+  if [ -n "${L7_TUNNEL_IDENTITY:-}" ]; then
+    ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes \
+      -i "$L7_TUNNEL_IDENTITY" \
+      -R "${remote_port}:127.0.0.1:${L7_PORT}" \
+      "$target" &
+  else
+    ssh -N -o BatchMode=yes -o ExitOnForwardFailure=yes \
+      -R "${remote_port}:127.0.0.1:${L7_PORT}" \
+      "$target" &
+  fi
   hold_pid $!
 }
 
